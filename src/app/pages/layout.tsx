@@ -5,9 +5,9 @@ import Image from "next/image";
 import * as React from "react";
 import {
   FileTextOutlined,
-  DesktopOutlined,
   FileSearchOutlined,
   LogoutOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
 import ICONS from "@rtrw-monitoring-system/public/assets/icons";
 import { usePathname, useRouter } from "next/navigation";
@@ -81,7 +81,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           items={[
             {
               key: "1",
-              icon: <DesktopOutlined />,
+              icon: <HomeOutlined />,
               label: "Dashboard",
               onClick: () => router.push(PAGE_NAME.dashboard),
             },
@@ -133,7 +133,8 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         <Content
           style={{
             backgroundColor: COLORS.white,
-            minHeight: "calc(100vh - 64px)",
+            height: "calc(100vh - 64px)",
+            overflowY: "auto",
             // padding: 24,
           }}
         >
