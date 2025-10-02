@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@rtrw-monitoring-system/*": ["./src/*"]
+      "@rtrw-monitoring-system/*": ["./src/*"],
+      "@rtrw-monitoring-system/public/assets/*": ["./public/assets/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
