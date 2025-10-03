@@ -70,7 +70,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           />
         </div>
 
-        <div className="text-[16px] font-semibold leading-tight text-black px-4 py-5">
+        <div className="text-[14px] font-semibold leading-tight text-black px-4 py-5">
           RT RW NET Monitoring System
         </div>
 
@@ -112,7 +112,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       >
         <Header
           style={{
-            backgroundColor: "#c41230",
+            backgroundColor: COLORS.red80,
             color: "#fff",
             display: "flex",
             justifyContent: "flex-end",

@@ -51,7 +51,7 @@ const dataRevenue = [
 const LaporanContainer = () => {
   return (
     <LayoutContentPage>
-      <TitlePage title="Daftar Laporan" />
+      <TitlePage title="Laporan Tiket" />
       <Form layout="vertical">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           <Form.Item label="Status">
