@@ -20,7 +20,10 @@
     ],
     "paths": {
       "@rtrw-monitoring-system/*": ["./src/*"],
-      "@rtrw-monitoring-system/public/assets/*": ["./public/assets/*"]
+      "@rtrw-monitoring-system/public/assets/*": ["./public/assets/*"],
+      "@rtrw-monitoring-system/hooks": ["libs/hooks/src/index.ts"],
+      "@rtrw-monitoring-system/network": ["libs/network/src/index.ts"],
+      "@rtrw-monitoring-system/utils": ["libs/utils/src/index.ts"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

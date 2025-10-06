@@ -5,14 +5,14 @@ import Image from "next/image";
 import * as React from "react";
 import {
   FileTextOutlined,
-  DesktopOutlined,
   FileSearchOutlined,
   LogoutOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
 import ICONS from "@rtrw-monitoring-system/public/assets/icons";
 import { usePathname, useRouter } from "next/navigation";
 import PAGE_NAME from "../constants/page_name";
-import { COLORS } from "../../../libs/utils/src";
+import { COLORS, localStorageExt } from "../../../libs/utils/src";
 
 const { Sider, Header, Content } = Layout;
 
@@ -70,7 +70,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           />
         </div>
 
-        <div className="text-[16px] font-semibold leading-tight text-black px-4 py-5">
+        <div className="text-[14px] font-semibold leading-tight text-black px-4 py-5">
           RT RW NET Monitoring System
         </div>
 
@@ -81,7 +81,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           items={[
             {
               key: "1",
-              icon: <DesktopOutlined />,
+              icon: <HomeOutlined />,
               label: "Dashboard",
               onClick: () => router.push(PAGE_NAME.dashboard),
             },
@@ -101,7 +101,10 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               key: "4",
               icon: <LogoutOutlined />,
               label: "Logout",
-              onClick: () => router.push(PAGE_NAME.login),
+              onClick: () => {
+                localStorageExt.clearLocalStorage();
+                router.replace(PAGE_NAME.login)
+              },
             },
           ]}
         />
@@ -112,7 +115,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       >
         <Header
           style={{
-            backgroundColor: "#c41230",
+            backgroundColor: COLORS.red80,
             color: "#fff",
             display: "flex",
             justifyContent: "flex-end",
@@ -133,7 +136,8 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         <Content
           style={{
             backgroundColor: COLORS.white,
-            minHeight: "calc(100vh - 64px)",
+            height: "calc(100vh - 64px)",
+            overflowY: "auto",
             // padding: 24,
           }}
         >
