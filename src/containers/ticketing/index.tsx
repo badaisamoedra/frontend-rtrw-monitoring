@@ -1,71 +1,35 @@
 "use client";
 
+import { PARAMS } from "@rtrw-monitoring-system/app/constants";
+import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import {
   LayoutContentPage,
   ModalTicket,
   TitlePage,
 } from "@rtrw-monitoring-system/components";
+import { useDataTable } from "@rtrw-monitoring-system/hooks";
+import { printDashIfNull } from "@rtrw-monitoring-system/utils";
 import { Button, DatePicker, Form, Select, Space, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 import * as React from "react";
-
-interface Ticket {
-  key: string;
-  ticketId: string;
-  longitude: number;
-  latitude: number;
-  desa: string;
-  kecamatan: string;
-  kabupaten: string;
-  date: string;
-  status: string;
-  potential: number;
-}
-
-const data: Ticket[] = [
-  {
-    key: "1",
-    ticketId: "14337210129",
-    longitude: 112.64653,
-    latitude: -7.9282192,
-    desa: "Tulusrejo",
-    kecamatan: "Lowokwaru",
-    kabupaten: "Kota Malang",
-    date: "25-09-2025",
-    status: "New",
-    potential: 143,
-  },
-  {
-    key: "2",
-    ticketId: "14337210188",
-    longitude: 114.11253,
-    latitude: -7.729212,
-    desa: "Tulusrejo",
-    kecamatan: "Lowokwaru",
-    kabupaten: "Kota Malang",
-    date: "24-09-2025",
-    status: "Followed Up",
-    potential: 57,
-  },
-  {
-    key: "3",
-    ticketId: "14337210117",
-    longitude: 115.66789,
-    latitude: -7.8829381,
-    desa: "Tulusrejo",
-    kecamatan: "Lowokwaru",
-    kabupaten: "Kota Malang",
-    date: "22-09-2025",
-    status: "Followed Up",
-    potential: 62,
-  },
-];
 
 const TicketingContainer = () => {
   const [openModal, setOpenModal] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<any>(null);
 
-  const columns: ColumnsType<Ticket> = [
+  const {
+    queryResult: { data: listTicket },
+    config,
+    setFilterItem,
+    filterItem,
+  } = useDataTable<TicketingResponse, ListTicketParam>(
+    { url: TICKET_SERVICE.ticket_list },
+    [TICKET_SERVICE.ticket_list],
+    PARAMS.ticketingListParam
+  );
+
+  const columns: ColumnsType<TicketingList> = [
     {
       title: "Action",
       key: "action",
@@ -83,15 +47,28 @@ const TicketingContainer = () => {
         </Button>
       ),
     },
-    { title: "Ticket ID", dataIndex: "ticketId", key: "ticketId" },
+    { title: "Ticket ID", dataIndex: "id", key: "id" },
     { title: "Longitude", dataIndex: "longitude", key: "longitude" },
     { title: "Latitude", dataIndex: "latitude", key: "latitude" },
-    { title: "Desa", dataIndex: "desa", key: "desa" },
-    { title: "Kecamatan", dataIndex: "kecamatan", key: "kecamatan" },
-    { title: "Kabupaten", dataIndex: "kabupaten", key: "kabupaten" },
-    { title: "Ticket Date", dataIndex: "date", key: "date" },
+    { title: "Desa", dataIndex: "subDistrict", key: "subDistrict" },
+    { title: "Kecamatan", dataIndex: "district", key: "district" },
+    { title: "Kabupaten", dataIndex: "district", key: "district" },
+    {
+      title: "Ticket Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (_, record) =>
+        record.details?.[0].createdAt
+          ? dayjs(record.details?.[0].createdAt).format("DD/MM/YYYY HH:mm")
+          : printDashIfNull(undefined),
+    },
     { title: "Status", dataIndex: "status", key: "status" },
-    { title: "Total Potential", dataIndex: "potential", key: "potential" },
+    {
+      title: "Total Potential",
+      dataIndex: "potentialHigh",
+      key: "potentialHigh",
+      render: (_, record) => record.details[0].potentialHigh ?? "-",
+    },
   ];
   return (
     <LayoutContentPage>
@@ -140,7 +117,11 @@ const TicketingContainer = () => {
           <Button>Reset</Button>
         </Space>
       </Form>
-      <Table columns={columns} dataSource={data} bordered />
+      <Table
+        columns={columns}
+        dataSource={listTicket?.data?.list ?? []}
+        bordered
+      />
       <ModalTicket
         open={openModal}
         onClose={() => setOpenModal(false)}

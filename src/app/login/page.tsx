@@ -6,16 +6,47 @@ import Image from "next/image";
 import * as React from "react";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import PAGE_NAME from "../constants/page_name";
+import { useAuthRepository } from "@rtrw-monitoring-system/services/auth";
+import { localStorageExt } from "../../../libs/utils/src/local-storage";
+import { LOCAL_STORAGE_KEYS } from "@rtrw-monitoring-system/utils";
+import { toast } from "react-toastify";
+import { ToastContent } from "@rtrw-monitoring-system/components";
+import { PAGE_NAME } from "../constants";
 
 const LoginPage = () => {
   const [form] = Form.useForm();
   const router = useRouter();
+  const { login: loginMutate } = useAuthRepository();
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: LoginPayload) => {
     const { username, password } = values;
-    router.push(PAGE_NAME.dashboard);
-    alert(`Username: ${username}\nPassword: ${password}`);
+
+    loginMutate.mutate(
+      {
+        username: username,
+        password: password,
+      },
+      {
+        onSuccess: (res) => {
+          localStorageExt.setLocalStorage(
+            LOCAL_STORAGE_KEYS.USER_INFO,
+            res?.data?.data ?? ""
+          )
+          toast.success(
+            <ToastContent description="Data user berhasil diperbarui" />
+          );
+          router.push(PAGE_NAME.dashboard);
+        },
+        onError: (err: any) => {
+          toast.error(
+            <ToastContent
+              type="error"
+              description={err.response?.data?.message}
+            />
+          );
+        },
+      }
+    );
   };
   return (
     <div className="flex min-h-screen">

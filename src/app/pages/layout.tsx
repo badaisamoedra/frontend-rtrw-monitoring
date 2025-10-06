@@ -12,7 +12,7 @@ import {
 import ICONS from "@rtrw-monitoring-system/public/assets/icons";
 import { usePathname, useRouter } from "next/navigation";
 import PAGE_NAME from "../constants/page_name";
-import { COLORS } from "../../../libs/utils/src";
+import { COLORS, localStorageExt } from "../../../libs/utils/src";
 
 const { Sider, Header, Content } = Layout;
 
@@ -101,7 +101,10 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               key: "4",
               icon: <LogoutOutlined />,
               label: "Logout",
-              onClick: () => router.push(PAGE_NAME.login),
+              onClick: () => {
+                localStorageExt.clearLocalStorage();
+                router.replace(PAGE_NAME.login)
+              },
             },
           ]}
         />

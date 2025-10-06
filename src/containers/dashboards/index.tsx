@@ -48,6 +48,7 @@ const tickets = [
 
 const DashboardContainer = () => {
   const { isLoaded } = useJsApiLoader({
+    // googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyA8-NTYxr7JgJFO2w4Sbgz6DCX_x5pVP3A",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   });
 

@@ -5,11 +5,6 @@ import axios, {
 } from "axios";
 import { localStorageExt } from "../../utils/src/local-storage";
 import { LOCAL_STORAGE_KEYS } from "../../utils/src";
-// import {
-//   localStorageExt,
-//   LOCAL_STORAGE_KEYS,
-//   datadogUserProperty,
-// } from "@broom-web-backoffice/utils";
 
 // const baseUrl = "http://108.136.232.41:3333"
 //
@@ -42,7 +37,7 @@ const interceptorOnFulfilledRequest = (
 ) => {
   const token = localStorageExt.getLocalStorage(
     LOCAL_STORAGE_KEYS.USER_INFO as string
-  )?.access_token;
+  )?.accessToken;
 
   if (token) {
     if (config.headers) {
