@@ -309,3 +309,16 @@ export const calculateAmountByPercentage = (
   // Calculate the result
   return amount / decimalPercentage - amount;
 };
+
+export const translateStatusTicket = (value: string) => {
+  switch (value) {
+    case "OPEN":
+      return "Open";
+    case "FOLLOWED_UP":
+      return "Followed Up";
+    case "NO_RESPONSE":
+      return "No Response";
+    default:
+      return "Unknown Status";
+  }
+};

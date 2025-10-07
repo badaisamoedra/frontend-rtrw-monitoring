@@ -19,36 +19,63 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import * as React from "react";
+import { useData } from "@rtrw-monitoring-system/hooks";
+import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
+import { translateStatusTicket } from "@rtrw-monitoring-system/utils";
 
 const COLORS = ["#DDE5F9", "#A9BDEF", "#7091E5"];
 
-const dataStatus = [
-  { name: "New", value: 10 },
-  { name: "Followed Up", value: 20 },
-  { name: "No Response", value: 30 },
-];
-
-const dataKecamatan = [
-  { name: "Kecamatan 1", value: 37 },
-  { name: "Kecamatan 2", value: 53 },
-  { name: "Kecamatan 3", value: 10 },
-];
-
-const dataStatusKecamatan = [
-  { kecamatan: "Kecamatan 1", NEW: 10, FOLLOWED: 15, NO_RESPONSE: 12 },
-  { kecamatan: "Kecamatan 2", NEW: 7, FOLLOWED: 10, NO_RESPONSE: 8 },
-  { kecamatan: "Kecamatan 3", NEW: 9, FOLLOWED: 7, NO_RESPONSE: 10 },
-  { kecamatan: "Kecamatan 4", NEW: 15, FOLLOWED: 20, NO_RESPONSE: 12 },
-];
-
-const dataRevenue = [
-  { kecamatan: "Kecamatan 1", "<5jt": 20, "5-10jt": 15, ">10jt": 5 },
-  { kecamatan: "Kecamatan 2", "<5jt": 10, "5-10jt": 10, ">10jt": 10 },
-  { kecamatan: "Kecamatan 3", "<5jt": 5, "5-10jt": 20, ">10jt": 8 },
-  { kecamatan: "Kecamatan 4", "<5jt": 8, "5-10jt": 12, ">10jt": 25 },
-];
-
 const LaporanContainer = () => {
+  const {
+    queryResult: { data: reportData },
+  } = useData<ReportResponse>(
+    { url: TICKET_SERVICE.ticket_report },
+    [TICKET_SERVICE.ticket_report],
+    null,
+    { enabled: true }
+  );
+
+  const report = reportData?.data;
+  const reportByStatus = report?.reportByStatus.map((item) => ({
+    name: translateStatusTicket(item.status),
+    value: item.count,
+  }));
+  const reportByDistrict = report?.reportByDistrict.map((item) => ({
+    name: item.district,
+    value: item.count,
+  }));
+  const reportByDistrictStatus = React.useMemo(() => {
+    if (!report?.reportByDistrictStatus) return [];
+    return Object.entries(report.reportByDistrictStatus).map(
+      ([district, arr]) => {
+        const obj: any = { district, OPEN: 0, FOLLOWED_UP: 0, NO_RESPONSE: 0 };
+        arr.forEach((item: any) => {
+          obj[item.status] = item.count;
+        });
+        return obj;
+      }
+    );
+  }, [report]);
+
+  const reportByDistrictRevenue = React.useMemo(() => {
+    if (!report?.reportByDistrictRevenue) return [];
+
+    return Object.entries(report?.reportByDistrictRevenue).map(
+      ([district, arr]) => {
+        const obj: any = { district, "<5jt": 0, "5-10jt": 0, ">10jt": 0 };
+
+        arr.forEach((item: any) => {
+          if (item.category.includes("<5")) obj["<5jt"] = item.count;
+          else if (item.category.includes("5.000.001"))
+            obj["5-10jt"] = item.count;
+          else if (item.category.includes(">")) obj[">10jt"] = item.count;
+        });
+
+        return obj;
+      }
+    );
+  }, [report]);
+
   return (
     <LayoutContentPage>
       <TitlePage title="Laporan Tiket" />
@@ -97,7 +124,6 @@ const LaporanContainer = () => {
       </Form>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Pie Chart Status */}
         <div className="p-4">
           <h2 className="font-semibold mb-4 text-center">
             Laporan Tiket per Status
@@ -105,14 +131,14 @@ const LaporanContainer = () => {
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
-                data={dataStatus}
+                data={reportByStatus}
                 dataKey="value"
                 nameKey="name"
                 outerRadius={80}
                 fill="#8884d8"
                 label
               >
-                {dataStatus.map((_, index) => (
+                {reportByStatus?.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
@@ -125,7 +151,6 @@ const LaporanContainer = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Donut Chart Kecamatan */}
         <div className="p-4">
           <h2 className="font-semibold mb-4 text-center">
             Laporan Tiket per Kecamatan
@@ -133,14 +158,14 @@ const LaporanContainer = () => {
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
-                data={dataKecamatan}
+                data={reportByDistrict}
                 dataKey="value"
                 nameKey="name"
                 innerRadius={40}
                 outerRadius={80}
                 label
               >
-                {dataKecamatan.map((_, index) => (
+                {reportByDistrict?.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
@@ -153,38 +178,36 @@ const LaporanContainer = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Bar Chart Status & Kecamatan */}
         <div className="p-4">
           <h2 className="font-semibold mb-4 text-center">
             Laporan Tiket per Status & Kecamatan
           </h2>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={dataStatusKecamatan}>
+            <BarChart data={reportByDistrictStatus}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="kecamatan" />
+              <XAxis dataKey="district" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="NEW" stackId="a" fill="#DDE5F9" />
+              <Bar dataKey="OPEN" stackId="a" fill="#DDE5F9" />
               <Bar dataKey="FOLLOWED" stackId="a" fill="#A9BDEF" />
               <Bar dataKey="NO_RESPONSE" stackId="a" fill="#7091E5" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Horizontal Bar Revenue */}
         <div className="p-4">
           <h2 className="font-semibold mb-4 text-center">
             Rataan Potential Revenue per Kecamatan
           </h2>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={dataRevenue} layout="vertical">
+            <BarChart data={reportByDistrictRevenue} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis
                 type="category"
-                dataKey="kecamatan"
-                width={120} 
+                dataKey="district"
+                width={120}
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}

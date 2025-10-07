@@ -11,12 +11,13 @@ import { useDataTable } from "@rtrw-monitoring-system/hooks";
 import { printDashIfNull } from "@rtrw-monitoring-system/utils";
 import { Button, DatePicker, Form, Select, Space, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
+import { TablePaginationConfig } from "antd/lib";
 import dayjs from "dayjs";
 import * as React from "react";
 
 const TicketingContainer = () => {
   const [openModal, setOpenModal] = React.useState(false);
-  const [selectedTicket, setSelectedTicket] = React.useState<any>(null);
+  const [selectedTicket, setSelectedTicket] = React.useState<TicketingList>();
 
   const {
     queryResult: { data: listTicket },
@@ -47,7 +48,7 @@ const TicketingContainer = () => {
         </Button>
       ),
     },
-    { title: "Ticket ID", dataIndex: "id", key: "id" },
+    { title: "Ticket ID", dataIndex: "ticketNumber", key: "ticketNumber" },
     { title: "Longitude", dataIndex: "longitude", key: "longitude" },
     { title: "Latitude", dataIndex: "latitude", key: "latitude" },
     { title: "Desa", dataIndex: "subDistrict", key: "subDistrict" },
@@ -67,7 +68,13 @@ const TicketingContainer = () => {
       title: "Total Potential",
       dataIndex: "potentialHigh",
       key: "potentialHigh",
-      render: (_, record) => record.details[0].potentialHigh ?? "-",
+      render: (_, record) => {
+        const high = record.details?.[0]?.potentialHigh ?? 0;
+        const low = record.details?.[0]?.potentialLow ?? 0;
+        const total = high + low;
+
+        return total ? total : "-";
+      },
     },
   ];
   return (
@@ -121,6 +128,17 @@ const TicketingContainer = () => {
         columns={columns}
         dataSource={listTicket?.data?.list ?? []}
         bordered
+        pagination={{
+          pageSize: filterItem.limit,
+          current: filterItem.page,
+          total: listTicket?.data?.total,
+        }}
+        onChange={(pagination: TablePaginationConfig) => {
+          setFilterItem({
+            ...filterItem,
+            page: pagination.current,
+          });
+        }}
       />
       <ModalTicket
         open={openModal}

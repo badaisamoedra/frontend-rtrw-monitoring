@@ -24,10 +24,13 @@ interface BaseResponseItem<T> {
 }
 
 interface BaseMeta {
-  totalData: number;
-  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextPage: number;
+  page: number;
+  prevPage: number;
+  total: number;
   totalPages: number;
-  currentPage: number;
 }
 
 interface BaseFilter {

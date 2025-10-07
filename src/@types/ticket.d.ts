@@ -1,5 +1,12 @@
 interface TicketingResponseData {
   list: TicketingList[];
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextPage: number;
+  page: number;
+  prevPage: number;
+  total: number;
+  totalPages: number;
 }
 
 interface TicketingList {
@@ -33,6 +40,6 @@ type ListTicketParam =
 type ListTicketFilter =
   import("use-query-params").DecodedValueMap<ListTicketParam>;
 
-type ListTicketFilterPayload = Omit<ListTicketFilter, "limit" | "direction">;
+type ListTicketFilterPayload = Omit<ListTicketFilter, "page" | "limit">;
 
 type TicketingResponse = BaseResponse<TicketingResponseData>;

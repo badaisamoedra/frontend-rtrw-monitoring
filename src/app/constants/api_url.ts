@@ -9,6 +9,7 @@ const AUTH_SERVICE = {
 
 const TICKET_SERVICE = {
   ticket_list: `${BASE_URL_TICKET_V1}/paginate`,
+  ticket_report: `${BASE_URL_TICKET_V1}/report`,
 };
 
 export { AUTH_SERVICE, TICKET_SERVICE };
