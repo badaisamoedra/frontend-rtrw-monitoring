@@ -13,6 +13,7 @@ import { ModalTicket } from "@rtrw-monitoring-system/components";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import { useTicketRepository } from "@rtrw-monitoring-system/services/ticket";
+import ModalStreetView from "@rtrw-monitoring-system/components/modal/modal-street-view";
 
 const containerStyle = {
   width: "100%",
@@ -33,6 +34,8 @@ const tickets = [
     lng: 139.67214,
     status: "New",
     date: "25-Sep-2025",
+    street_view:
+      "https://dev-broom-bucket.s3.ap-southeast-3.amazonaws.com/TASK_MANAGER/ENGINE-PHOTO/e7eff5b9-44b0-4a9a-94cc-02391355e1e5/0509a67a-7f22-4c96-bf80-f06c3e579851-1757591503017.jpg",
   },
   {
     id: "14337210129",
@@ -40,6 +43,8 @@ const tickets = [
     lng: 139.6733636,
     status: "Followed Up",
     date: "24-Sep-2025",
+    street_view:
+      "https://dev-broom-bucket.s3.ap-southeast-3.amazonaws.com/TASK_MANAGER/ENGINE-PHOTO/e7eff5b9-44b0-4a9a-94cc-02391355e1e5/0509a67a-7f22-4c96-bf80-f06c3e579851-1757591503017.jpg",
   },
   {
     id: "14337210326",
@@ -47,8 +52,17 @@ const tickets = [
     lng: 139.6733636,
     status: "No Response",
     date: "22-Sep-2025",
+    street_view:
+      "https://dev-broom-bucket.s3.ap-southeast-3.amazonaws.com/TASK_MANAGER/ENGINE-PHOTO/e7eff5b9-44b0-4a9a-94cc-02391355e1e5/0509a67a-7f22-4c96-bf80-f06c3e579851-1757591503017.jpg",
   },
 ];
+
+type ModalProps = {
+  modalOpen: "EDIT" | "STREET" | "";
+  id?: string;
+  ticket_number?: string;
+  image?: string;
+};
 
 const DashboardContainer = () => {
   const { isLoaded } = useJsApiLoader({
@@ -60,7 +74,9 @@ const DashboardContainer = () => {
   const [search, setSearch] = React.useState("");
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const [showLegend, setShowLegend] = React.useState(false);
-  const [showModalEdit, setShowModalEdit] = React.useState(false);
+  const [showModal, setShowModal] = React.useState<ModalProps>({
+    modalOpen: "",
+  });
   const { updateTicket } = useTicketRepository();
 
   const {
@@ -123,6 +139,7 @@ const DashboardContainer = () => {
   const dotStatus = (value: string) => {
     switch (value) {
       case "New":
+      case "OPEN":
         return (
           <span className="inline-block w-4 h-4 rounded-full bg-green-600"></span>
         );
@@ -256,7 +273,17 @@ const DashboardContainer = () => {
                   Edit
                 </Button>
                 <Button size="small">Get Direction</Button>
-                <Button type="dashed" size="small">
+                <Button
+                  onClick={() =>
+                    setShowModal({
+                      modalOpen: "STREET",
+                      image: selected.street_view,
+                      ticket_number: selected.id,
+                    })
+                  }
+                  type="dashed"
+                  size="small"
+                >
                   Street View
                 </Button>
               </div>
@@ -264,6 +291,12 @@ const DashboardContainer = () => {
           </InfoWindow>
         )}
       </GoogleMap>
+      <ModalStreetView
+        open={showModal.modalOpen === "STREET"}
+        image={showModal.image ?? ""}
+        ticketNumber={showModal.ticket_number ?? ""}
+        onClose={() => setShowModal({ modalOpen: "" })}
+      />
       {/* <ModalTicket
         open={showModalEdit}
         onClose={() => setShowModalEdit(false)}
