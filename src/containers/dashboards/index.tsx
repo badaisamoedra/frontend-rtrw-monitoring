@@ -21,11 +21,6 @@ const containerStyle = {
   height: "calc(100vh - 64px)",
 };
 
-const center = {
-  lat: -6.2,
-  lng: 106.816666,
-};
-
 const DEFAULT = {
   lat: -6.273429747830478,
   lng: 106.822463982675,
@@ -130,12 +125,12 @@ const DashboardContainer = () => {
         if (mapRef.current) fitAllMarkers(mapRef.current, tickets);
         return;
       }
-      const foundTicket = tickets.find((t) => t.id.includes(value));
+      const foundTicket = tickets.find((t) => t.ticketNumber.includes(value));
       if (foundTicket && mapRef.current) {
         mapRef.current.panTo({ lat: foundTicket.lat, lng: foundTicket.lng });
         mapRef.current.setZoom(18);
         setSelected(foundTicket);
-        setHighlighted(foundTicket.id);
+        setHighlighted(foundTicket.ticketNumber);
       } else {
         setHighlighted(null);
       }
@@ -239,7 +234,7 @@ const DashboardContainer = () => {
               onClick={() => setSelected(ticket)}
               icon={{
                 url:
-                  highlighted === ticket.id
+                  highlighted === ticket.ticketNumber
                     ? "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
                     : ticket.status === "NEW"
                     ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
@@ -247,7 +242,7 @@ const DashboardContainer = () => {
                     ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
                     : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
                 scaledSize:
-                  highlighted === ticket.id
+                  highlighted === ticket.ticketNumber
                     ? new google.maps.Size(50, 50)
                     : new google.maps.Size(32, 32),
               }}
