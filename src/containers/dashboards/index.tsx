@@ -2,9 +2,9 @@
 
 import {
   GoogleMap,
-  InfoWindow,
   Marker,
-  useJsApiLoader,
+  InfoWindow,
+  LoadScript,
 } from "@react-google-maps/api";
 import { Button, Card, Input } from "antd";
 import * as React from "react";
@@ -14,48 +14,22 @@ import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import { useTicketRepository } from "@rtrw-monitoring-system/services/ticket";
 import ModalStreetView from "@rtrw-monitoring-system/components/modal/modal-street-view";
+import { useGeolocated } from "react-geolocated";
 
 const containerStyle = {
   width: "100%",
   height: "calc(100vh - 64px)",
 };
 
-// center default
 const center = {
-  lat: 35.6668952,
-  lng: 139.6720165,
+  lat: -6.2,
+  lng: 106.816666,
 };
 
-// mock data tiket (nanti dari backend)
-const tickets = [
-  {
-    id: "14337210188",
-    lat: 35.666952,
-    lng: 139.67214,
-    status: "New",
-    date: "25-Sep-2025",
-    street_view:
-      "https://dev-broom-bucket.s3.ap-southeast-3.amazonaws.com/TASK_MANAGER/ENGINE-PHOTO/e7eff5b9-44b0-4a9a-94cc-02391355e1e5/0509a67a-7f22-4c96-bf80-f06c3e579851-1757591503017.jpg",
-  },
-  {
-    id: "14337210129",
-    lat: 35.666972,
-    lng: 139.6733636,
-    status: "Followed Up",
-    date: "24-Sep-2025",
-    street_view:
-      "https://dev-broom-bucket.s3.ap-southeast-3.amazonaws.com/TASK_MANAGER/ENGINE-PHOTO/e7eff5b9-44b0-4a9a-94cc-02391355e1e5/0509a67a-7f22-4c96-bf80-f06c3e579851-1757591503017.jpg",
-  },
-  {
-    id: "14337210326",
-    lat: 35.666972,
-    lng: 139.6733636,
-    status: "No Response",
-    date: "22-Sep-2025",
-    street_view:
-      "https://dev-broom-bucket.s3.ap-southeast-3.amazonaws.com/TASK_MANAGER/ENGINE-PHOTO/e7eff5b9-44b0-4a9a-94cc-02391355e1e5/0509a67a-7f22-4c96-bf80-f06c3e579851-1757591503017.jpg",
-  },
-];
+const DEFAULT = {
+  lat: -6.273429747830478,
+  lng: 106.822463982675,
+};
 
 type ModalProps = {
   modalOpen: "EDIT" | "STREET" | "";
@@ -65,10 +39,6 @@ type ModalProps = {
 };
 
 const DashboardContainer = () => {
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-  });
-
   const mapRef = React.useRef<any>(null);
   const [selected, setSelected] = React.useState<any>(null);
   const [search, setSearch] = React.useState("");
@@ -78,6 +48,24 @@ const DashboardContainer = () => {
     modalOpen: "",
   });
   const { updateTicket } = useTicketRepository();
+  const { coords, isGeolocationEnabled } = useGeolocated({
+    positionOptions: {
+      enableHighAccuracy: true,
+    },
+    watchLocationPermissionChange: true,
+    userDecisionTimeout: 5000,
+  });
+
+  const [position, setPosition] = React.useState<Position>({
+    lat: DEFAULT.lat,
+    lng: DEFAULT.lng,
+  });
+
+  React.useEffect(() => {
+    if (isGeolocationEnabled) {
+      setPosition({ lat: coords?.latitude ?? 0, lng: coords?.longitude ?? 0 });
+    }
+  }, [coords]);
 
   const {
     queryResult: { data: dataTicket },
@@ -87,32 +75,61 @@ const DashboardContainer = () => {
     null
   );
 
-  const fitAllMarkers = React.useCallback((map: any, list = tickets) => {
-    if (list.length > 0) {
-      const bounds = new google.maps.LatLngBounds();
-      list.forEach((t) => bounds.extend({ lat: t.lat, lng: t.lng }));
-      map.fitBounds(bounds);
-    }
-  }, []);
+  const tickets = React.useMemo(() => {
+    if (!dataTicket?.data) return [];
+    return dataTicket.data
+      .filter((t) => {
+        const lat = parseFloat(t.latitude);
+        const lng = parseFloat(t.longitude);
+        return !isNaN(lat) && !isNaN(lng);
+      })
+      .map((t) => ({
+        id: t.id,
+        ticketNumber: t.ticketNumber,
+        lat: parseFloat(t.latitude),
+        lng: parseFloat(t.longitude),
+        status: t.status,
+        district: t.district,
+        subDistrict: t.subDistrict,
+        potentialHigh: t.details?.[0]?.potentialHigh ?? 0,
+        potentialLow: t.details?.[0]?.potentialLow ?? 0,
+        potentialRevenue: t.details?.[0]?.potentialRevenue ?? 0,
+        date: new Date(
+          t.details?.[0]?.createdAt ?? t.details?.[0]?.createdAt
+        ).toLocaleString(),
+        street_view:
+          "https://dev-broom-bucket.s3.ap-southeast-3.amazonaws.com/TASK_MANAGER/ENGINE-PHOTO/e7eff5b9-44b0-4a9a-94cc-02391355e1e5/0509a67a-7f22-4c96-bf80-f06c3e579851-1757591503017.jpg",
+      }));
+  }, [dataTicket]);
+
+  const fitAllMarkers = React.useCallback(
+    (map: any, list = tickets) => {
+      if (list.length > 0) {
+        const bounds = new google.maps.LatLngBounds();
+        list.forEach((t) => bounds.extend({ lat: t.lat, lng: t.lng }));
+        map.fitBounds(bounds);
+      }
+    },
+    [tickets]
+  );
 
   const onLoad = React.useCallback(
     (map: any) => {
       mapRef.current = map;
-      fitAllMarkers(map, tickets);
+      map.setMapTypeId("roadmap");
+      if (tickets.length > 0) fitAllMarkers(map, tickets);
     },
-    [fitAllMarkers]
+    [fitAllMarkers, tickets]
   );
 
   const handleSearch = React.useCallback(
     (value: string) => {
       setSearch(value);
-
       if (!value) {
         setHighlighted(null);
         if (mapRef.current) fitAllMarkers(mapRef.current, tickets);
         return;
       }
-
       const foundTicket = tickets.find((t) => t.id.includes(value));
       if (foundTicket && mapRef.current) {
         mapRef.current.panTo({ lat: foundTicket.lat, lng: foundTicket.lng });
@@ -123,18 +140,12 @@ const DashboardContainer = () => {
         setHighlighted(null);
       }
     },
-    [fitAllMarkers]
+    [fitAllMarkers, tickets]
   );
 
   const filteredTickets = search
-    ? tickets.filter((t) => t.id.includes(search))
+    ? tickets.filter((t) => t.ticketNumber.includes(search))
     : tickets;
-
-  React.useEffect(() => {
-    if (mapRef.current && filteredTickets.length > 0) {
-      fitAllMarkers(mapRef.current, filteredTickets);
-    }
-  }, [filteredTickets, fitAllMarkers]);
 
   const dotStatus = (value: string) => {
     switch (value) {
@@ -143,24 +154,21 @@ const DashboardContainer = () => {
         return (
           <span className="inline-block w-4 h-4 rounded-full bg-green-600"></span>
         );
-      case "Followed Up":
+      case "FOLLOWED_UP":
         return (
           <span className="inline-block w-4 h-4 rounded-full bg-blue-600"></span>
         );
-      case "No Response":
+      case "NO_RESPONSE":
         return (
           <span className="inline-block w-4 h-4 rounded-full bg-red-600"></span>
         );
       default:
-        break;
+        return null;
     }
   };
 
-  if (!isLoaded) return <div className="p-4">Loading Maps...</div>;
-
   return (
     <div className="flex flex-col h-full w-full">
-      {/* Search + Reset View */}
       <div className="absolute top-[80px] left-2/10 z-50 w-[400px] flex gap-2">
         <Input.Search
           placeholder="Search Ticket No."
@@ -168,9 +176,7 @@ const DashboardContainer = () => {
           enterButton
           onSearch={handleSearch}
           onChange={(e) => {
-            if (!e.target.value) {
-              handleSearch("");
-            }
+            if (!e.target.value) handleSearch("");
           }}
         />
         <Button
@@ -184,7 +190,6 @@ const DashboardContainer = () => {
         </Button>
       </div>
 
-      {/* Legend Toggle Button */}
       <div className="absolute top-[80px] right-6 z-50">
         <Button
           icon={<InfoCircleOutlined />}
@@ -194,7 +199,6 @@ const DashboardContainer = () => {
         </Button>
       </div>
 
-      {/* Legend Popup */}
       {showLegend && (
         <div className="absolute top-[130px] right-6 bg-white shadow-md rounded p-3 text-sm space-y-1 z-50 w-[200px]">
           <h4 className="font-semibold mb-2">Legend Information</h4>
@@ -217,92 +221,91 @@ const DashboardContainer = () => {
         </div>
       )}
 
-      {/* Google Map */}
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={17}
-        onLoad={onLoad}
-        options={{ disableDefaultUI: true }}
+      <LoadScript
+        googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
       >
-        {filteredTickets.map((ticket) => (
-          <Marker
-            key={ticket.id}
-            position={{ lat: ticket.lat, lng: ticket.lng }}
-            onClick={() => setSelected(ticket)}
-            icon={{
-              url:
-                highlighted === ticket.id
-                  ? "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
-                  : ticket.status === "New"
-                  ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-                  : ticket.status === "Followed Up"
-                  ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                  : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-              scaledSize:
-                highlighted === ticket.id
-                  ? new google.maps.Size(50, 50)
-                  : new google.maps.Size(32, 32),
-            }}
-          />
-        ))}
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={position}
+          zoom={17}
+          onLoad={onLoad}
+          mapTypeId="roadmap"
+          options={{ disableDefaultUI: true }}
+        >
+          {filteredTickets.map((ticket) => (
+            <Marker
+              key={ticket.id}
+              position={{ lat: ticket.lat, lng: ticket.lng }}
+              onClick={() => setSelected(ticket)}
+              icon={{
+                url:
+                  highlighted === ticket.id
+                    ? "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+                    : ticket.status === "NEW"
+                    ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                    : ticket.status === "FOLLOWED_UP"
+                    ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                    : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                scaledSize:
+                  highlighted === ticket.id
+                    ? new google.maps.Size(50, 50)
+                    : new google.maps.Size(32, 32),
+              }}
+            />
+          ))}
 
-        {selected && (
-          <InfoWindow
-            position={{ lat: selected.lat, lng: selected.lng }}
-            onCloseClick={() => setSelected(null)}
-          >
-            <Card size="small" className="w-74">
-              <div className="flex flex-row items-center gap-2 mb-2">
-                {dotStatus(selected.status)}
-                <h1 className="font-bold text-black">{`#${selected.id}`}</h1>
-              </div>
-              <div className="gap-6">
-                <p>
-                  <b>Longitude:</b> {selected.lng}
-                </p>
-                <p>
-                  <b>Latitude:</b> {selected.lat}
-                </p>
-                <p>
-                  <b>Ticket Date:</b> {selected.date}
-                </p>
-              </div>
-              <div className="flex gap-2 mt-2">
-                <Button type="primary" danger size="small">
-                  Edit
-                </Button>
-                <Button size="small">Get Direction</Button>
-                <Button
-                  onClick={() =>
-                    setShowModal({
-                      modalOpen: "STREET",
-                      image: selected.street_view,
-                      ticket_number: selected.id,
-                    })
-                  }
-                  type="dashed"
-                  size="small"
-                >
-                  Street View
-                </Button>
-              </div>
-            </Card>
-          </InfoWindow>
-        )}
-      </GoogleMap>
+          {selected && (
+            <InfoWindow
+              position={{ lat: selected.lat, lng: selected.lng }}
+              onCloseClick={() => setSelected(null)}
+            >
+              <Card size="small" className="w-74">
+                <div className="flex flex-row items-center gap-2 mb-2">
+                  {dotStatus(selected.status)}
+                  <h1 className="font-bold text-black">{`#${selected.ticketNumber}`}</h1>
+                </div>
+                <div className="gap-6">
+                  <p>
+                    <b>Longitude:</b> {selected.lng}
+                  </p>
+                  <p>
+                    <b>Latitude:</b> {selected.lat}
+                  </p>
+                  <p>
+                    <b>Ticket Date:</b> {selected.date}
+                  </p>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Button type="primary" danger size="small">
+                    Edit
+                  </Button>
+                  <Button size="small">Get Direction</Button>
+                  <Button
+                    onClick={() =>
+                      setShowModal({
+                        modalOpen: "STREET",
+                        image: selected.street_view,
+                        ticket_number: selected.id,
+                      })
+                    }
+                    type="dashed"
+                    size="small"
+                  >
+                    Street View
+                  </Button>
+                </div>
+              </Card>
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      </LoadScript>
+
       <ModalStreetView
         open={showModal.modalOpen === "STREET"}
         image={showModal.image ?? ""}
         ticketNumber={showModal.ticket_number ?? ""}
         onClose={() => setShowModal({ modalOpen: "" })}
       />
-      {/* <ModalTicket
-        open={showModalEdit}
-        onClose={() => setShowModalEdit(false)}
-        ticket={selectedTicket}
-        section="EDIT"
-      /> */}
     </div>
   );
 };

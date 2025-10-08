@@ -37,3 +37,12 @@ interface BaseFilter {
   page: number;
   limit: number;
 }
+
+interface Position {
+  lat: number;
+  lng: number;
+  description?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+}
