@@ -43,3 +43,4 @@ type ListTicketFilter =
 type ListTicketFilterPayload = Omit<ListTicketFilter, "page" | "limit">;
 
 type TicketingResponse = BaseResponse<TicketingResponseData>;
+type TicketingAllResponse = BaseResponse<TicketingList[]>;

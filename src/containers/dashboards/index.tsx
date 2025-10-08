@@ -9,6 +9,9 @@ import {
 import { Button, Card, Input } from "antd";
 import * as React from "react";
 import { InfoCircleOutlined } from "@ant-design/icons";
+import { ModalTicket } from "@rtrw-monitoring-system/components";
+import { useData } from "@rtrw-monitoring-system/hooks";
+import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 
 const containerStyle = {
   width: "100%",
@@ -48,7 +51,6 @@ const tickets = [
 
 const DashboardContainer = () => {
   const { isLoaded } = useJsApiLoader({
-    // googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyA8-NTYxr7JgJFO2w4Sbgz6DCX_x5pVP3A",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   });
 
@@ -57,6 +59,17 @@ const DashboardContainer = () => {
   const [search, setSearch] = React.useState("");
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const [showLegend, setShowLegend] = React.useState(false);
+  const [showModalEdit, setShowModalEdit] = React.useState(false);
+
+  const {
+    queryResult: { data: dataTicket },
+  } = useData<TicketingAllResponse>(
+    { url: TICKET_SERVICE.ticket_all },
+    [TICKET_SERVICE.ticket_all],
+    null
+  );
+
+  console.log("DATA TICKET: ", dataTicket?.data);
 
   const fitAllMarkers = React.useCallback((map: any, list = tickets) => {
     if (list.length > 0) {
@@ -106,6 +119,25 @@ const DashboardContainer = () => {
       fitAllMarkers(mapRef.current, filteredTickets);
     }
   }, [filteredTickets, fitAllMarkers]);
+
+  const dotStatus = (value: string) => {
+    switch (value) {
+      case "New":
+        return (
+          <span className="inline-block w-4 h-4 rounded-full bg-green-600"></span>
+        );
+      case "Followed Up":
+        return (
+          <span className="inline-block w-4 h-4 rounded-full bg-blue-600"></span>
+        );
+      case "No Response":
+        return (
+          <span className="inline-block w-4 h-4 rounded-full bg-red-600"></span>
+        );
+      default:
+        break;
+    }
+  };
 
   if (!isLoaded) return <div className="p-4">Loading Maps...</div>;
 
@@ -203,13 +235,22 @@ const DashboardContainer = () => {
             position={{ lat: selected.lat, lng: selected.lng }}
             onCloseClick={() => setSelected(null)}
           >
-            <Card title={`#${selected.id}`} size="small" className="w-74">
-              <p>
-                <b>Status:</b> {selected.status}
-              </p>
-              <p>
-                <b>Date:</b> {selected.date}
-              </p>
+            <Card size="small" className="w-74">
+              <div className="flex flex-row items-center gap-2 mb-2">
+                {dotStatus(selected.status)}
+                <h1 className="font-bold text-black">{`#${selected.id}`}</h1>
+              </div>
+              <div className="gap-6">
+                <p>
+                  <b>Longitude:</b> {selected.lng}
+                </p>
+                <p>
+                  <b>Latitude:</b> {selected.lat}
+                </p>
+                <p>
+                  <b>Ticket Date:</b> {selected.date}
+                </p>
+              </div>
               <div className="flex gap-2 mt-2">
                 <Button type="primary" danger size="small">
                   Edit
@@ -223,6 +264,12 @@ const DashboardContainer = () => {
           </InfoWindow>
         )}
       </GoogleMap>
+      {/* <ModalTicket
+        open={showModalEdit}
+        onClose={() => setShowModalEdit(false)}
+        ticket={selectedTicket}
+        section="EDIT"
+      /> */}
     </div>
   );
 };

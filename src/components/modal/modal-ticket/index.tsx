@@ -10,9 +10,10 @@ interface ModalTicketProps {
   open: boolean;
   onClose: () => void;
   ticket: TicketingList;
+  section: "TICKET" | "EDIT";
 }
 
-const LabelInputRow = ({ label, value }: { label: string; value?: any }) => (
+const LabelInputRow = ({ label, value }: { label: string; value?: string }) => (
   <Row className="mb-3">
     <Col span={8}>
       <Text strong>{label}</Text>
@@ -23,10 +24,15 @@ const LabelInputRow = ({ label, value }: { label: string; value?: any }) => (
   </Row>
 );
 
-const ModalTicket: React.FC<ModalTicketProps> = ({ open, onClose, ticket }) => {
+const ModalTicket: React.FC<ModalTicketProps> = ({
+  open,
+  onClose,
+  ticket,
+  section,
+}) => {
   return (
     <Modal
-      title="View Ticket"
+      title={section ? "Edit Ticket" : "View Ticket"}
       open={open}
       onCancel={onClose}
       footer={null}
