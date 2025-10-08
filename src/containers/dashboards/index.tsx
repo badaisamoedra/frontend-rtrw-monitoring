@@ -12,6 +12,7 @@ import { InfoCircleOutlined } from "@ant-design/icons";
 import { ModalTicket } from "@rtrw-monitoring-system/components";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
+import { useTicketRepository } from "@rtrw-monitoring-system/services/ticket";
 
 const containerStyle = {
   width: "100%",
@@ -60,6 +61,7 @@ const DashboardContainer = () => {
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const [showLegend, setShowLegend] = React.useState(false);
   const [showModalEdit, setShowModalEdit] = React.useState(false);
+  const { updateTicket } = useTicketRepository();
 
   const {
     queryResult: { data: dataTicket },
@@ -68,8 +70,6 @@ const DashboardContainer = () => {
     [TICKET_SERVICE.ticket_all],
     null
   );
-
-  console.log("DATA TICKET: ", dataTicket?.data);
 
   const fitAllMarkers = React.useCallback((map: any, list = tickets) => {
     if (list.length > 0) {

@@ -34,6 +34,8 @@ interface TickectingDetail {
   updatedAt: Date;
 }
 
+interface UpdateTicketPayload extends TicketingList {}
+
 type ListTicketParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.ticketingListParam;
 
