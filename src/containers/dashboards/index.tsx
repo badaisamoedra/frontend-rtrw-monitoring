@@ -236,7 +236,7 @@ const DashboardContainer = () => {
                 url:
                   highlighted === ticket.ticketNumber
                     ? "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
-                    : ticket.status === "NEW"
+                    : ticket.status === "OPEN"
                     ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
                     : ticket.status === "FOLLOWED_UP"
                     ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
