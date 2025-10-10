@@ -144,7 +144,7 @@ const TicketingContainer = () => {
         open={openModal}
         onClose={() => setOpenModal(false)}
         ticket={selectedTicket}
-        section="TICKET"
+        section="VIEW"
       />
     </LayoutContentPage>
   );

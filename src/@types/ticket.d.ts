@@ -20,6 +20,8 @@ interface TicketingList {
   latitude: string;
   status: string;
   details: TickectingDetail[];
+  lng?: string;
+  lat?: string;
 }
 
 interface TickectingDetail {
@@ -34,7 +36,15 @@ interface TickectingDetail {
   updatedAt: Date;
 }
 
-interface UpdateTicketPayload extends TicketingList {}
+interface UpdateTicketPayload
+  extends Omit<TicketingList, "userId" | "details"> {
+  details: Array<
+    Omit<
+      TicketingList["details"][number],
+      "ticketId" | "createdAt" | "updatedAt"
+    >
+  >;
+}
 
 type ListTicketParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.ticketingListParam;
