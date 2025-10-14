@@ -12,6 +12,10 @@ const TICKET_SERVICE = {
   ticket_report: `${BASE_URL_TICKET_V1}/report`,
   ticket_all: `${BASE_URL_TICKET_V1}`,
   update_ticket: (id: string) => `${BASE_URL_TICKET_V1}/${id}`,
+  district: `${BASE_URL_TICKET_V1}/dropdown/districts`,
+  sub_district: `${BASE_URL_TICKET_V1}/dropdown/subdistricts`,
+  villages: `${BASE_URL_TICKET_V1}/dropdown/villages`,
+  status: `${BASE_URL_TICKET_V1}/dropdown/statuses`,
 };
 
 export { AUTH_SERVICE, TICKET_SERVICE };

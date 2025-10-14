@@ -21,19 +21,120 @@ import {
 import * as React from "react";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
-import { translateStatusTicket } from "@rtrw-monitoring-system/utils";
+import {
+  cleanParams,
+  translateStatusTicket,
+} from "@rtrw-monitoring-system/utils";
+import { useQuery } from "react-query";
+import api from "../../../libs/network/src/api";
 
 const COLORS = ["#DDE5F9", "#A9BDEF", "#7091E5"];
 
 const LaporanContainer = () => {
-  const {
-    queryResult: { data: reportData },
-  } = useData<ReportResponse>(
-    { url: TICKET_SERVICE.ticket_report },
-    [TICKET_SERVICE.ticket_report],
-    null,
-    { enabled: true }
+  const [listDistrict, setListDistrict] = React.useState<BaseSelection[]>([]);
+  const [listSubDistrict, setListSubDistrict] = React.useState<BaseSelection[]>(
+    []
   );
+  const [listVillage, setListVillage] = React.useState<BaseSelection[]>([]);
+  const [listStatus, setListStatus] = React.useState<BaseSelection[]>([]);
+  const [filterParams, setFilterParams] = React.useState({
+    status: null,
+    district: null,
+    subDistrict: null,
+    village: null,
+    startDate: null,
+    endDate: null,
+  });
+  const [form] = Form.useForm();
+
+  useData<BaseResponse<Array<string>>>(
+    { url: TICKET_SERVICE.district },
+    [TICKET_SERVICE.district],
+    null,
+    {
+      onSuccess: (res) => {
+        const item: BaseSelection[] =
+          res.data?.map((item: string) => {
+            return {
+              label: item,
+              value: item,
+            };
+          }) ?? [];
+        setListDistrict(item);
+      },
+    }
+  );
+
+  useData<BaseResponse<Array<string>>>(
+    { url: TICKET_SERVICE.sub_district },
+    [TICKET_SERVICE.sub_district],
+    null,
+    {
+      onSuccess: (res) => {
+        const item: BaseSelection[] =
+          res.data?.map((item: string) => {
+            return {
+              label: item,
+              value: item,
+            };
+          }) ?? [];
+        setListSubDistrict(item);
+      },
+    }
+  );
+
+  useData<BaseResponse<Array<string>>>(
+    { url: TICKET_SERVICE.villages },
+    [TICKET_SERVICE.villages],
+    null,
+    {
+      onSuccess: (res) => {
+        const item: BaseSelection[] =
+          res.data?.map((item: string) => {
+            return {
+              label: item,
+              value: item,
+            };
+          }) ?? [];
+        setListVillage(item);
+      },
+    }
+  );
+
+  useData<BaseResponse<Array<string>>>(
+    { url: TICKET_SERVICE.status },
+    [TICKET_SERVICE.status],
+    null,
+    {
+      onSuccess: (res) => {
+        const item: BaseSelection[] =
+          res.data?.map((item: string) => {
+            return {
+              label: item,
+              value: item,
+            };
+          }) ?? [];
+        setListStatus(item);
+      },
+    }
+  );
+
+  const {
+    data: reportData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: [TICKET_SERVICE.ticket_report, filterParams],
+    queryFn: async () => {
+      const res = await api.get(TICKET_SERVICE.ticket_report, {
+        params: filterParams,
+      });
+      return res.data as ReportResponse;
+    },
+    keepPreviousData: true,
+    refetchOnWindowFocus: false,
+    enabled: true,
+  });
 
   const report = reportData?.data;
   const reportByStatus = report?.reportByStatus.map((item) => ({
@@ -79,47 +180,82 @@ const LaporanContainer = () => {
   return (
     <LayoutContentPage>
       <TitlePage title="Laporan Tiket" />
-      <Form layout="vertical">
+
+      <Form
+        layout="vertical"
+        form={form}
+        onFinish={(values) => {
+          setFilterParams({
+            status: values.status,
+            district: values.district,
+            subDistrict: values.subDistrict,
+            village: values.village,
+            startDate: values.startDate?.format("YYYY-MM-DD"),
+            endDate: values.endDate?.format("YYYY-MM-DD"),
+          });
+        }}
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          <Form.Item label="Status">
-            <Select placeholder="-- Pilih Status Tiket --">
-              <Select.Option value="new">New</Select.Option>
-              <Select.Option value="followed">Followed Up</Select.Option>
-            </Select>
+          <Form.Item name="status" label="Status">
+            <Select
+              placeholder="-- Pilih Status Tiket --"
+              options={listStatus}
+              allowClear
+            />
           </Form.Item>
 
-          <Form.Item label="Kecamatan">
-            <Select placeholder="-- Pilih Kecamatan --">
-              <Select.Option value="lowokwaru">Lowokwaru</Select.Option>
-            </Select>
+          <Form.Item name="subDistrict" label="Kecamatan">
+            <Select
+              placeholder="-- Pilih Kecamatan --"
+              options={listSubDistrict}
+              allowClear
+            />
           </Form.Item>
 
-          <Form.Item label="Kabupaten">
-            <Select placeholder="-- Pilih Kabupaten --">
-              <Select.Option value="malang">Kota Malang</Select.Option>
-            </Select>
+          <Form.Item name="district" label="Kabupaten">
+            <Select
+              placeholder="-- Pilih Kabupaten --"
+              options={listDistrict}
+              allowClear
+            />
           </Form.Item>
 
-          <Form.Item label="Tanggal Tiket">
-            <DatePicker className="w-full" />
+          <Form.Item name="startDate" label="Tanggal Awal">
+            <DatePicker className="w-full" format="YYYY-MM-DD" />
           </Form.Item>
 
-          <Form.Item label="Desa">
-            <Select placeholder="-- Pilih Desa --">
-              <Select.Option value="tulusrejo">Tulusrejo</Select.Option>
-            </Select>
+          <Form.Item name="village" label="Desa">
+            <Select
+              placeholder="-- Pilih Desa --"
+              options={listVillage}
+              allowClear
+            />
           </Form.Item>
 
-          <Form.Item label="Sampai">
-            <DatePicker className="w-full" />
+          <Form.Item name="endDate" label="Tanggal Akhir">
+            <DatePicker className="w-full" format="YYYY-MM-DD" />
           </Form.Item>
         </div>
 
         <Space className="mb-6">
-          <Button type="primary" danger>
+          <Button type="primary" danger htmlType="submit">
             Search
           </Button>
-          <Button>Reset</Button>
+          <Button
+            onClick={() => {
+              form.resetFields();
+              setFilterParams({
+                status: null,
+                district: null,
+                subDistrict: null,
+                village: null,
+                startDate: null,
+                endDate: null,
+              });
+            }}
+          >
+            Reset
+          </Button>
         </Space>
       </Form>
 

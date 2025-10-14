@@ -15,7 +15,7 @@ interface ModalTicketProps {
   open: boolean;
   onClose: () => void;
   onSave?: (updatedTicket: TicketingList) => void;
-  ticket: TicketingList;
+  ticket?: TicketingList;
   section: "VIEW" | "EDIT";
 }
 

@@ -46,3 +46,9 @@ interface Position {
   city?: string;
   district?: string;
 }
+
+interface BaseSelection<T = unknown> {
+  value?: any;
+  label?: string;
+  data?: T;
+}

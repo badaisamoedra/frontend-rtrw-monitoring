@@ -31,5 +31,10 @@ export const inventoryVerificationListParam = {
 
 export const ticketingListParam = {
   ...defaultParam,
-  sortDir: StringParam,
+  status: StringParam,
+  village: StringParam,
+  district: StringParam,
+  subDistrict: StringParam,
+  startDate: StringParam,
+  endDate: StringParam,
 };

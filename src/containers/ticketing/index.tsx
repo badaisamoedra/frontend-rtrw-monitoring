@@ -7,7 +7,7 @@ import {
   ModalTicket,
   TitlePage,
 } from "@rtrw-monitoring-system/components";
-import { useDataTable } from "@rtrw-monitoring-system/hooks";
+import { useData, useDataTable } from "@rtrw-monitoring-system/hooks";
 import { printDashIfNull } from "@rtrw-monitoring-system/utils";
 import { Button, DatePicker, Form, Select, Space, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -18,6 +18,12 @@ import * as React from "react";
 const TicketingContainer = () => {
   const [openModal, setOpenModal] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<TicketingList>();
+  const [listDistrict, setListDistrict] = React.useState<BaseSelection[]>([]);
+  const [listSubDistrict, setListSubDistrict] = React.useState<BaseSelection[]>(
+    []
+  );
+  const [listVillage, setListVillage] = React.useState<BaseSelection[]>([]);
+  const [listStatus, setListStatus] = React.useState<BaseSelection[]>([]);
 
   const {
     queryResult: { data: listTicket },
@@ -28,6 +34,78 @@ const TicketingContainer = () => {
     { url: TICKET_SERVICE.ticket_list },
     [TICKET_SERVICE.ticket_list],
     PARAMS.ticketingListParam
+  );
+
+  useData<BaseResponse<Array<string>>>(
+    { url: TICKET_SERVICE.district },
+    [TICKET_SERVICE.district],
+    null,
+    {
+      onSuccess: (res) => {
+        const item: BaseSelection[] =
+          res.data?.map((item: string) => {
+            return {
+              label: item,
+              value: item,
+            };
+          }) ?? [];
+        setListDistrict(item);
+      },
+    }
+  );
+
+  useData<BaseResponse<Array<string>>>(
+    { url: TICKET_SERVICE.sub_district },
+    [TICKET_SERVICE.sub_district],
+    null,
+    {
+      onSuccess: (res) => {
+        const item: BaseSelection[] =
+          res.data?.map((item: string) => {
+            return {
+              label: item,
+              value: item,
+            };
+          }) ?? [];
+        setListSubDistrict(item);
+      },
+    }
+  );
+
+  useData<BaseResponse<Array<string>>>(
+    { url: TICKET_SERVICE.villages },
+    [TICKET_SERVICE.villages],
+    null,
+    {
+      onSuccess: (res) => {
+        const item: BaseSelection[] =
+          res.data?.map((item: string) => {
+            return {
+              label: item,
+              value: item,
+            };
+          }) ?? [];
+        setListVillage(item);
+      },
+    }
+  );
+
+  useData<BaseResponse<Array<string>>>(
+    { url: TICKET_SERVICE.status },
+    [TICKET_SERVICE.status],
+    null,
+    {
+      onSuccess: (res) => {
+        const item: BaseSelection[] =
+          res.data?.map((item: string) => {
+            return {
+              label: item,
+              value: item,
+            };
+          }) ?? [];
+        setListStatus(item);
+      },
+    }
   );
 
   const columns: ColumnsType<TicketingList> = [
@@ -81,47 +159,78 @@ const TicketingContainer = () => {
     <LayoutContentPage>
       <TitlePage title="Daftar Tiket" />
 
-      <Form layout="vertical">
+      <Form
+        layout="vertical"
+        onFinish={(values) => {
+          setFilterItem({
+            ...filterItem,
+            page: 1,
+            status: values.status,
+            subDistrict: values.subDistrict,
+            district: values.district,
+            startDate: values.startDate?.format("YYYY-MM-DD"),
+            endDate: values.endDate?.format("YYYY-MM-DD"),
+          });
+        }}
+        onReset={() => {
+          setFilterItem({
+            page: 1,
+            limit: 10,
+            status: null,
+            subDistrict: null,
+            district: null,
+            startDate: null,
+            endDate: null,
+          });
+        }}
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          <Form.Item label="Status">
-            <Select placeholder="-- Pilih Status Tiket --">
-              <Select.Option value="new">New</Select.Option>
-              <Select.Option value="followed">Followed Up</Select.Option>
-            </Select>
+          <Form.Item name="status" label="Status">
+            <Select
+              placeholder="-- Pilih Status Tiket --"
+              options={listStatus}
+              allowClear
+            />
           </Form.Item>
 
-          <Form.Item label="Kecamatan">
-            <Select placeholder="-- Pilih Kecamatan --">
-              <Select.Option value="lowokwaru">Lowokwaru</Select.Option>
-            </Select>
+          <Form.Item name="subDistrict" label="Kecamatan">
+            <Select
+              placeholder="-- Pilih Kecamatan --"
+              options={listSubDistrict}
+              allowClear
+            />
           </Form.Item>
 
-          <Form.Item label="Kabupaten">
-            <Select placeholder="-- Pilih Kabupaten --">
-              <Select.Option value="malang">Kota Malang</Select.Option>
-            </Select>
+          <Form.Item name="district" label="Kabupaten">
+            <Select
+              placeholder="-- Pilih Kabupaten --"
+              options={listDistrict}
+              allowClear
+            />
           </Form.Item>
 
-          <Form.Item label="Tanggal Tiket">
-            <DatePicker className="w-full" />
+          <Form.Item name="startDate" label="Tanggal Tiket">
+            <DatePicker className="w-full" format="YYYY-MM-DD" />
           </Form.Item>
 
-          <Form.Item label="Desa">
-            <Select placeholder="-- Pilih Desa --">
-              <Select.Option value="tulusrejo">Tulusrejo</Select.Option>
-            </Select>
+          <Form.Item name="village" label="Desa">
+            <Select
+              placeholder="-- Pilih Desa --"
+              options={listVillage}
+              allowClear
+            />
           </Form.Item>
 
-          <Form.Item label="Sampai">
-            <DatePicker className="w-full" />
+          <Form.Item name="endDate" label="Sampai">
+            <DatePicker className="w-full" format="YYYY-MM-DD" />
           </Form.Item>
         </div>
 
         <Space className="mb-6">
-          <Button type="primary" danger>
+          <Button type="primary" danger htmlType="submit">
             Search
           </Button>
-          <Button>Reset</Button>
+          <Button htmlType="reset">Reset</Button>
         </Space>
       </Form>
       <Table

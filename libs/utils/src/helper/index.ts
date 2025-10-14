@@ -322,3 +322,13 @@ export const translateStatusTicket = (value: string) => {
       return "Unknown Status";
   }
 };
+
+export const cleanParams = (obj: Record<string, any>) => {
+  const cleaned: Record<string, any> = {};
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      cleaned[key] = value;
+    }
+  });
+  return cleaned;
+};
