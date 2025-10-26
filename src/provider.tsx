@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 
 import { ToastContainer } from "react-toastify";
 import { QueryParamProvider } from "use-query-params";
@@ -21,17 +22,20 @@ const Providers: React.FC<ProviderProps> = (props) => {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <QueryParamProvider adapter={NextAdapterApp}>
-          <ConfigProvider
-            theme={config}
-            form={{
-              validateMessages: VALIDATE_MESSAGES,
-              requiredMark: false,
-            }}
-          >
-            {props.children}
-          </ConfigProvider>
-        </QueryParamProvider>
+        {/* QueryParamProvider uses useSearchParams which requires Suspense boundary */}
+        <Suspense fallback={null}>
+          <QueryParamProvider adapter={NextAdapterApp}>
+            <ConfigProvider
+              theme={config}
+              form={{
+                validateMessages: VALIDATE_MESSAGES,
+                requiredMark: false,
+              }}
+            >
+              {props.children}
+            </ConfigProvider>
+          </QueryParamProvider>
+        </Suspense>
       </QueryClientProvider>
       <ToastContainer
         position="top-center"
