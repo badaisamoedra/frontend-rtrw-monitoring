@@ -55,7 +55,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
   }, [ticket]);
 
   const handleChange = (field: string, value: any) => {
-    setEditedTicket((prev) => ({
+    setEditedTicket((prev: any) => ({
       ...prev,
       details: [
         {
@@ -73,7 +73,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
   };
 
   const handleStatusChange = (val: string) => {
-    setEditedTicket((prev) => ({ ...prev, status: val }));
+    setEditedTicket((prev: any) => ({ ...prev, status: val }));
     setErrors((prev) => ({
       ...prev,
       status: val ? "" : "Field ini wajib diisi.",
