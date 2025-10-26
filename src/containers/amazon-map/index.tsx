@@ -63,57 +63,62 @@ const DashboardAmazonContainer = () => {
   }, [ticketData]);
 
   React.useEffect(() => {
-    let map: maplibregl.Map;
-    if (mapContainer.current) {
-      const timer = setTimeout(() => {
-        map = new maplibregl.Map({
-          container: mapContainer.current!,
-          style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
-          center: [106.816666, -6.2],
-          zoom: 11,
-        });
+    if (!mapContainer.current) return;
 
-        map.on("load", () => console.log("✅ Amazon Map Loaded"));
-        map.on("error", (e) => console.error("❌ Map Error:", e));
-      }, 100); // delay 100ms
+    if (mapRef.current) return;
 
-      return () => {
-        clearTimeout(timer);
-        if (map) map.remove();
-      };
-    }
+    const timer = setTimeout(() => {
+      const map = new maplibregl.Map({
+        container: mapContainer.current!,
+        style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
+        center: [106.816666, -6.2],
+        zoom: 11,
+      });
+
+      mapRef.current = map;
+
+      map.on("load", () => console.log("✅ Amazon Map Loaded"));
+      map.on("error", (e) => console.error("❌ Map Error:", e));
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [region, mapName, apiKey]);
 
   // render markers
   React.useEffect(() => {
     if (!mapRef.current || tickets.length === 0) return;
 
-    // clear existing markers
-    document.querySelectorAll(".maplibregl-marker").forEach((m) => m.remove());
+    const timer = setTimeout(() => {
+      document
+        .querySelectorAll(".maplibregl-marker")
+        .forEach((m) => m.remove());
 
-    tickets.forEach((ticket) => {
-      const el = document.createElement("div");
-      el.className = "marker";
-      el.style.width = "24px";
-      el.style.height = "24px";
-      el.style.borderRadius = "50%";
-      el.style.backgroundColor =
-        highlighted === ticket.id
-          ? "yellow"
-          : ticket.status === "NEW"
-          ? "green"
-          : ticket.status === "FOLLOWED_UP"
-          ? "blue"
-          : "red";
-      el.style.border = "2px solid white";
-      el.style.cursor = "pointer";
+      tickets.forEach((ticket) => {
+        const el = document.createElement("div");
+        el.className = "marker";
+        el.style.width = "24px";
+        el.style.height = "24px";
+        el.style.borderRadius = "50%";
+        el.style.backgroundColor =
+          highlighted === ticket.id
+            ? "yellow"
+            : ticket.status === "OPEN"
+            ? "green"
+            : ticket.status === "FOLLOWED_UP"
+            ? "blue"
+            : "red";
+        el.style.border = "2px solid white";
+        el.style.cursor = "pointer";
 
-      el.addEventListener("click", () => setSelected(ticket));
+        el.addEventListener("click", () => setSelected(ticket));
 
-      new maplibregl.Marker(el)
-        .setLngLat([ticket.lng, ticket.lat])
-        .addTo(mapRef.current!);
-    });
+        new maplibregl.Marker(el)
+          .setLngLat([ticket.lng, ticket.lat])
+          .addTo(mapRef.current!);
+      });
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [tickets, highlighted]);
 
   // handle search
@@ -138,7 +143,7 @@ const DashboardAmazonContainer = () => {
   return (
     <div className="flex flex-col h-full w-full relative">
       {/* Search + Reset */}
-      <div className="absolute top-[80px] left-2/10 z-50 w-[400px] flex gap-2">
+      <div className="absolute top-[80px] left-1/10 z-50 w-[400px] flex gap-2">
         <Input.Search
           placeholder="Search Ticket No."
           allowClear
@@ -196,7 +201,11 @@ const DashboardAmazonContainer = () => {
       )}
 
       {/* Map Container */}
-      <div ref={mapContainer} className="w-full h-[calc(100vh-64px)]" />
+      <div
+        key={typeof window !== "undefined" ? window.location.pathname : "map"}
+        ref={mapContainer}
+        className="w-full h-[calc(100vh-64px)]"
+      />
 
       {/* Info Card */}
       {selected && (
