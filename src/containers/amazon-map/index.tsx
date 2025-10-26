@@ -7,11 +7,10 @@ import { InfoCircleOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 
-const region = process.env.NEXT_PUBLIC_AWS_REGION || "";
-const mapName = process.env.NEXT_PUBLIC_AWS_MAP_NAME;
-const apiKey = process.env.NEXT_PUBLIC_AWS_MAPS_API_KEY || "";
-
 const DashboardAmazonContainer = () => {
+  const region = process.env.NEXT_PUBLIC_AWS_REGION || "";
+  const mapName = process.env.NEXT_PUBLIC_AWS_MAP_NAME;
+  const apiKey = process.env.NEXT_PUBLIC_AWS_MAPS_API_KEY || "";
   const mapContainer = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<maplibregl.Map | null>(null);
 
@@ -19,17 +18,6 @@ const DashboardAmazonContainer = () => {
   const [search, setSearch] = React.useState("");
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const [showLegend, setShowLegend] = React.useState(false);
-
-  console.log("CONFIG AWS :", {
-    region: region,
-    mapName: mapName,
-    apiKey: apiKey,
-  });
-
-  console.log(
-    "MAPPS :",
-    `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`
-  );
 
   // fetch data tiket
   const {
@@ -65,23 +53,21 @@ const DashboardAmazonContainer = () => {
   React.useEffect(() => {
     if (!mapContainer.current) return;
 
-    if (mapRef.current) return;
+    const map = new maplibregl.Map({
+      container: mapContainer.current!,
+      style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
+      center: [106.816666, -6.2],
+      zoom: 11,
+    });
 
-    const timer = setTimeout(() => {
-      const map = new maplibregl.Map({
-        container: mapContainer.current!,
-        style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
-        center: [106.816666, -6.2],
-        zoom: 11,
-      });
+    mapRef.current = map; // 🟢 ini penting banget
 
-      mapRef.current = map;
+    map.on("load", () => console.log("✅ Amazon Map Loaded"));
+    map.on("error", (e) => console.error("❌ Map Error:", e));
 
-      map.on("load", () => console.log("✅ Amazon Map Loaded"));
-      map.on("error", (e) => console.error("❌ Map Error:", e));
-    }, 300);
-
-    return () => clearTimeout(timer);
+    return () => {
+      map.remove();
+    };
   }, [region, mapName, apiKey]);
 
   // render markers
@@ -201,11 +187,7 @@ const DashboardAmazonContainer = () => {
       )}
 
       {/* Map Container */}
-      <div
-        key={typeof window !== "undefined" ? window.location.pathname : "map"}
-        ref={mapContainer}
-        className="w-full h-[calc(100vh-64px)]"
-      />
+      <div ref={mapContainer} className="w-full h-[calc(100vh-64px)]" />
 
       {/* Info Card */}
       {selected && (
