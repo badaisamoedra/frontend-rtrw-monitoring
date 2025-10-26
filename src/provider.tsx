@@ -21,17 +21,19 @@ const Providers: React.FC<ProviderProps> = (props) => {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <QueryParamProvider adapter={NextAdapterApp}>
-          <ConfigProvider
-            theme={config}
-            form={{
-              validateMessages: VALIDATE_MESSAGES,
-              requiredMark: false,
-            }}
-          >
-            {props.children}
-          </ConfigProvider>
-        </QueryParamProvider>
+        <React.Suspense fallback={null}>
+          <QueryParamProvider adapter={NextAdapterApp}>
+            <ConfigProvider
+              theme={config}
+              form={{
+                validateMessages: VALIDATE_MESSAGES,
+                requiredMark: false,
+              }}
+            >
+              {props.children}
+            </ConfigProvider>
+          </QueryParamProvider>
+        </React.Suspense>
       </QueryClientProvider>
       <ToastContainer
         position="top-center"
@@ -49,4 +51,4 @@ const Providers: React.FC<ProviderProps> = (props) => {
   );
 };
 
-export default Providers
+export default Providers;
