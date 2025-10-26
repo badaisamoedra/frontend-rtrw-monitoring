@@ -66,7 +66,6 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           <Image
             src={ICONS.TelkomselLogo}
             alt="telkomsel logo"
-            className="sidenav-logo"
           />
         </div>
 

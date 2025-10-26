@@ -1,7 +1,7 @@
-import { DashboardContainer } from "@rtrw-monitoring-system/containers";
+import { DashboardAmazonContainer } from "@rtrw-monitoring-system/containers";
 
 const DashboardPage = () => {
-  return <DashboardContainer/>;
+  return <DashboardAmazonContainer />;
 };
 
 export default DashboardPage;

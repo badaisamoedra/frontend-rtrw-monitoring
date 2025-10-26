@@ -12,6 +12,7 @@ import { LOCAL_STORAGE_KEYS } from "@rtrw-monitoring-system/utils";
 import { toast } from "react-toastify";
 import { ToastContent } from "@rtrw-monitoring-system/components";
 import { PAGE_NAME } from "../constants";
+import IMAGES from "@rtrw-monitoring-system/public/assets/images";
 
 const LoginPage = () => {
   const [form] = Form.useForm();
@@ -31,7 +32,7 @@ const LoginPage = () => {
           localStorageExt.setLocalStorage(
             LOCAL_STORAGE_KEYS.USER_INFO,
             res?.data?.data ?? ""
-          )
+          );
           toast.success(
             <ToastContent description="Data user berhasil diperbarui" />
           );
@@ -51,14 +52,17 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen">
       <div className="w-4/5 flex flex-col bg-[#28497C]">
-        <Image src={ICONS.BannerLogin} alt="Ben Logo" className="h-[100vh]" />
+        <Image
+          src={IMAGES.ThumbnailTelkomsel}
+          alt="Ben Logo"
+          className="h-[100vh]"
+        />
       </div>
 
       <div className="w-2/5 flex flex-col justify-center items-center bg-white p-10">
         <Image
-          src={ICONS.TelkomselLogo}
+          src={ICONS.NewTelkomselLogo}
           alt="icon Telkomsel"
-          className="mb-6"
         />
         <h2 className="text-lg font-semibold mb-4 text-black">
           RT RW NET Monitoring System
