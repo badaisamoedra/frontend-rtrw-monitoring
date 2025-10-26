@@ -137,7 +137,7 @@ const TicketingContainer = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       render: (_, record) =>
-        record.details?.[0].createdAt
+        record.details?.[0]?.createdAt
           ? dayjs(record.details?.[0].createdAt).format("DD/MM/YYYY HH:mm")
           : printDashIfNull(undefined),
     },

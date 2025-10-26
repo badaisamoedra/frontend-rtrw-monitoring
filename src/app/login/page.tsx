@@ -33,10 +33,10 @@ const LoginPage = () => {
             LOCAL_STORAGE_KEYS.USER_INFO,
             res?.data?.data ?? ""
           );
+          router.push(PAGE_NAME.dashboard);
           toast.success(
             <ToastContent description="Data user berhasil diperbarui" />
           );
-          router.push(PAGE_NAME.dashboard);
         },
         onError: (err: any) => {
           toast.error(
