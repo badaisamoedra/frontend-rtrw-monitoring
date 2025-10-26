@@ -309,3 +309,26 @@ export const calculateAmountByPercentage = (
   // Calculate the result
   return amount / decimalPercentage - amount;
 };
+
+export const translateStatusTicket = (value: string) => {
+  switch (value) {
+    case "OPEN":
+      return "Open";
+    case "FOLLOWED_UP":
+      return "Followed Up";
+    case "NO_RESPONSE":
+      return "No Response";
+    default:
+      return "Unknown Status";
+  }
+};
+
+export const cleanParams = (obj: Record<string, any>) => {
+  const cleaned: Record<string, any> = {};
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      cleaned[key] = value;
+    }
+  });
+  return cleaned;
+};

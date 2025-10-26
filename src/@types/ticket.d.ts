@@ -1,5 +1,12 @@
 interface TicketingResponseData {
   list: TicketingList[];
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextPage: number;
+  page: number;
+  prevPage: number;
+  total: number;
+  totalPages: number;
 }
 
 interface TicketingList {
@@ -13,6 +20,8 @@ interface TicketingList {
   latitude: string;
   status: string;
   details: TickectingDetail[];
+  lng?: string;
+  lat?: string;
 }
 
 interface TickectingDetail {
@@ -27,12 +36,23 @@ interface TickectingDetail {
   updatedAt: Date;
 }
 
+interface UpdateTicketPayload
+  extends Omit<TicketingList, "userId" | "details"> {
+  details: Array<
+    Omit<
+      TicketingList["details"][number],
+      "ticketId" | "createdAt" | "updatedAt"
+    >
+  >;
+}
+
 type ListTicketParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.ticketingListParam;
 
 type ListTicketFilter =
   import("use-query-params").DecodedValueMap<ListTicketParam>;
 
-type ListTicketFilterPayload = Omit<ListTicketFilter, "limit" | "direction">;
+type ListTicketFilterPayload = Omit<ListTicketFilter, "page" | "limit">;
 
 type TicketingResponse = BaseResponse<TicketingResponseData>;
+type TicketingAllResponse = BaseResponse<TicketingList[]>;

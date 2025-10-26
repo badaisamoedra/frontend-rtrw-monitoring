@@ -9,7 +9,7 @@ import {
 
 export const defaultParam = {
   limit: withDefault(NumberParam, 10),
-  direction: "forward",
+  page: withDefault(NumberParam, 1),
 };
 
 export const defaultDateParam = {
@@ -31,5 +31,10 @@ export const inventoryVerificationListParam = {
 
 export const ticketingListParam = {
   ...defaultParam,
-  direction: StringParam,
+  status: StringParam,
+  village: StringParam,
+  district: StringParam,
+  subDistrict: StringParam,
+  startDate: StringParam,
+  endDate: StringParam,
 };
