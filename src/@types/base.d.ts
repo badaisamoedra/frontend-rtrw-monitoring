@@ -24,13 +24,31 @@ interface BaseResponseItem<T> {
 }
 
 interface BaseMeta {
-  totalData: number;
-  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextPage: number;
+  page: number;
+  prevPage: number;
+  total: number;
   totalPages: number;
-  currentPage: number;
 }
 
 interface BaseFilter {
   page: number;
   limit: number;
+}
+
+interface Position {
+  lat: number;
+  lng: number;
+  description?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+}
+
+interface BaseSelection<T = unknown> {
+  value?: any;
+  label?: string;
+  data?: T;
 }

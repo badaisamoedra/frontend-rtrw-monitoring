@@ -7,4 +7,4 @@ const EXCLUDE_LINK_BREADCUMB = ["approval-maker"];
 
 const URL_FILE_404 = "/file/404";
 
-export { API_URL, PAGE_NAME, PARAMS };
+export { API_URL, PAGE_NAME, PARAMS, VALIDATE_MESSAGES };
