@@ -19,7 +19,6 @@ const DashboardAmazonContainer = () => {
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const [showLegend, setShowLegend] = React.useState(false);
 
-  // fetch data tiket
   const {
     queryResult: { data: ticketData, isLoading },
   } = useData<TicketingAllResponse>(
@@ -51,26 +50,44 @@ const DashboardAmazonContainer = () => {
   }, [ticketData]);
 
   React.useEffect(() => {
-    if (!mapContainer.current) return;
+    let map: maplibregl.Map | null = null;
+    let retryCount = 0;
+    const maxRetries = 10;
 
-    const map = new maplibregl.Map({
-      container: mapContainer.current!,
-      style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
-      center: [106.816666, -6.2],
-      zoom: 11,
-    });
+    const initMap = () => {
+      if (!mapContainer.current || !region || !mapName || !apiKey) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(initMap, 300);
+        }
+        return;
+      }
 
-    mapRef.current = map; // 🟢 ini penting banget
+      map = new maplibregl.Map({
+        container: mapContainer.current,
+        style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
+        center: [106.816666, -6.2],
+        zoom: 11,
+      });
 
-    map.on("load", () => console.log("✅ Amazon Map Loaded"));
-    map.on("error", (e) => console.error("❌ Map Error:", e));
+      mapRef.current = map;
+
+      map.on("load", () => {
+        console.log("✅ Amazon Map Loaded");
+      });
+
+      map.on("error", (e) => {
+        console.error("❌ Map Error:", e);
+      });
+    };
+
+    initMap();
 
     return () => {
-      map.remove();
+      if (map) map.remove();
     };
   }, [region, mapName, apiKey]);
 
-  // render markers
   React.useEffect(() => {
     if (!mapRef.current || tickets.length === 0) return;
 
@@ -107,7 +124,6 @@ const DashboardAmazonContainer = () => {
     return () => clearTimeout(timer);
   }, [tickets, highlighted]);
 
-  // handle search
   const handleSearch = (value: string) => {
     setSearch(value);
     if (!value || tickets.length === 0) return;
@@ -153,7 +169,6 @@ const DashboardAmazonContainer = () => {
         </Button>
       </div>
 
-      {/* Legend Toggle Button */}
       <div className="absolute top-[80px] right-6 z-50">
         <Button
           icon={<InfoCircleOutlined />}
@@ -163,7 +178,6 @@ const DashboardAmazonContainer = () => {
         </Button>
       </div>
 
-      {/* Legend Popup */}
       {showLegend && (
         <div className="absolute top-[130px] right-6 bg-white shadow-md rounded p-3 text-sm space-y-1 z-50 w-[200px]">
           <h4 className="font-semibold mb-2">Legend Information</h4>
@@ -186,10 +200,8 @@ const DashboardAmazonContainer = () => {
         </div>
       )}
 
-      {/* Map Container */}
       <div ref={mapContainer} className="w-full h-[calc(100vh-64px)]" />
 
-      {/* Info Card */}
       {selected && (
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-lg p-4 w-[320px] z-50">
           <Card title={`#${selected.ticketNumber}`} size="small">
