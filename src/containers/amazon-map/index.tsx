@@ -78,7 +78,11 @@ const DashboardAmazonContainer = () => {
     if (!mapContainer.current || !region || !mapName || !apiKey) return;
 
     if (mapRef.current && typeof mapRef.current.remove === "function") {
-      mapRef.current.remove();
+      try {
+        mapRef.current.remove();
+      } catch (err) {
+        console.warn("⚠️ Failed to clean map instance:", err);
+      }
       mapRef.current = null;
     }
 
