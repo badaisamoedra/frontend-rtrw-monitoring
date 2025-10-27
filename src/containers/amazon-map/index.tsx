@@ -6,6 +6,12 @@ import { Button, Card, Input } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
+import { useGeolocated } from "react-geolocated";
+
+const DEFAULT = {
+  lat: -6.273429747830478,
+  lng: 106.822463982675,
+};
 
 const DashboardAmazonContainer = () => {
   const region = process.env.NEXT_PUBLIC_AWS_REGION || "";
@@ -18,6 +24,25 @@ const DashboardAmazonContainer = () => {
   const [search, setSearch] = React.useState("");
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const [showLegend, setShowLegend] = React.useState(false);
+
+  const { coords, isGeolocationEnabled } = useGeolocated({
+    positionOptions: {
+      enableHighAccuracy: true,
+    },
+    watchLocationPermissionChange: true,
+    userDecisionTimeout: 5000,
+  });
+
+  const [position, setPosition] = React.useState<Position>({
+    lat: DEFAULT.lat,
+    lng: DEFAULT.lng,
+  });
+
+  React.useEffect(() => {
+    if (isGeolocationEnabled) {
+      setPosition({ lat: coords?.latitude ?? 0, lng: coords?.longitude ?? 0 });
+    }
+  }, [coords]);
 
   const {
     queryResult: { data: ticketData, isLoading },
@@ -50,79 +75,81 @@ const DashboardAmazonContainer = () => {
   }, [ticketData]);
 
   React.useEffect(() => {
-    let map: maplibregl.Map | null = null;
-    let retryCount = 0;
-    const maxRetries = 10;
+    if (!mapContainer.current || !region || !mapName || !apiKey) return;
 
-    const initMap = () => {
-      if (!mapContainer.current || !region || !mapName || !apiKey) {
-        if (retryCount < maxRetries) {
-          retryCount++;
-          setTimeout(initMap, 300);
-        }
-        return;
-      }
+    if (mapRef.current && typeof mapRef.current.remove === "function") {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
 
-      map = new maplibregl.Map({
-        container: mapContainer.current,
-        style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
-        center: [106.816666, -6.2],
-        zoom: 11,
-      });
+    const map = new maplibregl.Map({
+      container: mapContainer.current,
+      style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
+      center: position,
+      zoom: 16,
+    });
 
-      mapRef.current = map;
+    mapRef.current = map;
 
-      map.on("load", () => {
-        console.log("✅ Amazon Map Loaded");
-      });
+    map.on("load", () => {
+      const renderMarkers = () => {
+        if (!tickets?.length) return;
 
-      map.on("error", (e) => {
-        console.error("❌ Map Error:", e);
-      });
-    };
+        document
+          .querySelectorAll(".custom-marker")
+          .forEach((el) => el.remove());
 
-    initMap();
+        tickets.forEach((ticket) => {
+          const el = document.createElement("div");
+          el.className = "custom-marker";
+
+          el.style.cssText = `
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.4);
+            background-color: ${
+              ticket.status === "OPEN"
+                ? "#16a34a"
+                : ticket.status === "FOLLOWED_UP"
+                ? "#2563eb"
+                : "#dc2626"
+            };
+          `;
+
+          el.setAttribute("title", `${ticket.ticketNumber} (${ticket.status})`);
+
+          new maplibregl.Marker({ element: el })
+            .setLngLat([Number(ticket.lng), Number(ticket.lat)])
+            .addTo(map);
+        });
+      };
+
+      renderMarkers();
+
+      const observer = new MutationObserver(() => renderMarkers());
+      const interval = setInterval(() => {
+        if (tickets.length > 0) renderMarkers();
+      }, 1000);
+
+      return () => {
+        clearInterval(interval);
+        observer.disconnect();
+        document
+          .querySelectorAll(".custom-marker")
+          .forEach((el) => el.remove());
+      };
+    });
+
+    map.on("error", (e) => {
+      console.error("❌ Map Error:", e);
+    });
 
     return () => {
-      if (map) map.remove();
+      map.remove();
     };
-  }, [region, mapName, apiKey]);
-
-  React.useEffect(() => {
-    if (!mapRef.current || tickets.length === 0) return;
-
-    const timer = setTimeout(() => {
-      document
-        .querySelectorAll(".maplibregl-marker")
-        .forEach((m) => m.remove());
-
-      tickets.forEach((ticket) => {
-        const el = document.createElement("div");
-        el.className = "marker";
-        el.style.width = "24px";
-        el.style.height = "24px";
-        el.style.borderRadius = "50%";
-        el.style.backgroundColor =
-          highlighted === ticket.id
-            ? "yellow"
-            : ticket.status === "OPEN"
-            ? "green"
-            : ticket.status === "FOLLOWED_UP"
-            ? "blue"
-            : "red";
-        el.style.border = "2px solid white";
-        el.style.cursor = "pointer";
-
-        el.addEventListener("click", () => setSelected(ticket));
-
-        new maplibregl.Marker(el)
-          .setLngLat([ticket.lng, ticket.lat])
-          .addTo(mapRef.current!);
-      });
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [tickets, highlighted]);
+  }, [region, mapName, apiKey, tickets]);
 
   const handleSearch = (value: string) => {
     setSearch(value);
