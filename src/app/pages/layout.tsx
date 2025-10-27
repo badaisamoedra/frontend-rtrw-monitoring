@@ -87,13 +87,13 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             {
               key: "2",
               icon: <FileSearchOutlined />,
-              label: "Ticketing",
+              label: "Reseller Management",
               onClick: () => router.push(PAGE_NAME.ticketing),
             },
             {
               key: "3",
               icon: <FileTextOutlined />,
-              label: "Laporan",
+              label: "Activation Order",
               onClick: () => router.push(PAGE_NAME.laporan),
             },
             {
