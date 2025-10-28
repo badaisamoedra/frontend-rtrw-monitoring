@@ -2,47 +2,40 @@
 
 import * as React from "react";
 import maplibregl from "maplibre-gl";
-import { Button, Card, Input } from "antd";
+import { Button, Input } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import { useGeolocated } from "react-geolocated";
 
-const DEFAULT = {
-  lat: -6.273429747830478,
-  lng: 106.822463982675,
-};
+const DEFAULT = { lat: -6.273429747830478, lng: 106.822463982675 };
 
 const DashboardAmazonContainer = () => {
-  const region = process.env.NEXT_PUBLIC_AWS_REGION || "";
-  const mapName = process.env.NEXT_PUBLIC_AWS_MAP_NAME;
+  const region = process.env.NEXT_PUBLIC_AWS_REGION || "ap-southeast-1";
+  const mapName = process.env.NEXT_PUBLIC_AWS_MAP_NAME || "brainet_map";
   const apiKey = process.env.NEXT_PUBLIC_AWS_MAPS_API_KEY || "";
+
   const mapContainer = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<maplibregl.Map | null>(null);
+  const markersRef = React.useRef<maplibregl.Marker[]>([]);
 
   const [selected, setSelected] = React.useState<any>(null);
   const [search, setSearch] = React.useState("");
-  const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const [showLegend, setShowLegend] = React.useState(false);
+  const [isMapReady, setIsMapReady] = React.useState(false);
 
   const { coords, isGeolocationEnabled } = useGeolocated({
-    positionOptions: {
-      enableHighAccuracy: true,
-    },
-    watchLocationPermissionChange: true,
+    positionOptions: { enableHighAccuracy: true },
     userDecisionTimeout: 5000,
   });
 
-  const [position, setPosition] = React.useState<Position>({
-    lat: DEFAULT.lat,
-    lng: DEFAULT.lng,
-  });
+  const [position, setPosition] = React.useState(DEFAULT);
 
   React.useEffect(() => {
-    if (isGeolocationEnabled) {
-      setPosition({ lat: coords?.latitude ?? 0, lng: coords?.longitude ?? 0 });
+    if (isGeolocationEnabled && coords) {
+      setPosition({ lat: coords.latitude, lng: coords.longitude });
     }
-  }, [coords]);
+  }, [coords, isGeolocationEnabled]);
 
   const {
     queryResult: { data: ticketData, isLoading },
@@ -67,133 +60,156 @@ const DashboardAmazonContainer = () => {
         status: t.status,
         district: t.district,
         subDistrict: t.subDistrict,
-        potentialHigh: t.details?.[0]?.potentialHigh ?? 0,
-        potentialLow: t.details?.[0]?.potentialLow ?? 0,
         potentialRevenue: t.details?.[0]?.potentialRevenue ?? 0,
-        date: new Date(t.details?.[0]?.createdAt ?? "").toLocaleString(),
+        date: new Date(t.details?.[0]?.createdAt ?? "").toLocaleDateString(),
       }));
   }, [ticketData]);
 
-  React.useEffect(() => {
+  // ✅ FIXED MAP INIT (stable on Next.js 15)
+  const initializeMap = React.useCallback(() => {
     if (!mapContainer.current || !region || !mapName || !apiKey) return;
 
-    if (mapRef.current && typeof mapRef.current.remove === "function") {
-      try {
-        mapRef.current.remove();
-      } catch (err) {
-        console.warn("⚠️ Failed to clean map instance:", err);
-      }
-      mapRef.current = null;
-    }
+    if (mapRef.current) return;
 
     const map = new maplibregl.Map({
-      container: mapContainer.current,
+      container: mapContainer.current!,
       style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
-      center: position,
-      zoom: 16,
+      center: [position.lng, position.lat],
+      zoom: 13,
     });
 
     mapRef.current = map;
 
     map.on("load", () => {
-      const renderMarkers = () => {
-        if (!tickets?.length) return;
-
-        document
-          .querySelectorAll(".custom-marker")
-          .forEach((el) => el.remove());
-
-        tickets.forEach((ticket) => {
-          const el = document.createElement("div");
-          el.className = "custom-marker";
-
-          el.style.cssText = `
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 0 4px rgba(0,0,0,0.4);
-            background-color: ${
-              ticket.status === "OPEN"
-                ? "#16a34a"
-                : ticket.status === "FOLLOWED_UP"
-                ? "#2563eb"
-                : "#dc2626"
-            };
-          `;
-
-          el.setAttribute("title", `${ticket.ticketNumber} (${ticket.status})`);
-
-          new maplibregl.Marker({ element: el })
-            .setLngLat([Number(ticket.lng), Number(ticket.lat)])
-            .addTo(map);
-        });
-      };
-
-      renderMarkers();
-
-      const observer = new MutationObserver(() => renderMarkers());
-      const interval = setInterval(() => {
-        if (tickets.length > 0) renderMarkers();
-      }, 1000);
-
-      return () => {
-        clearInterval(interval);
-        observer.disconnect();
-        document
-          .querySelectorAll(".custom-marker")
-          .forEach((el) => el.remove());
-      };
+      console.log("✅ Amazon map loaded successfully");
+      setIsMapReady(true);
+      renderMarkers(map);
     });
 
     map.on("error", (e) => {
-      console.error("❌ Map Error:", e);
+      console.error("❌ Map initialization error:", e);
+    });
+  }, [region, mapName, apiKey, position]);
+
+  React.useLayoutEffect(() => {
+    const timer = setTimeout(() => {
+      initializeMap();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [initializeMap]);
+
+  React.useEffect(() => {
+    if (!mapRef.current && mapContainer.current) {
+      initializeMap();
+    }
+  }, [initializeMap]);
+
+  // ✅ Render markers setelah map siap
+  React.useEffect(() => {
+    if (isMapReady && mapRef.current) {
+      renderMarkers(mapRef.current);
+    }
+  }, [isMapReady, tickets]);
+
+  const renderMarkers = (map: maplibregl.Map) => {
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+
+    if (!tickets.length) return;
+
+    const bounds = new maplibregl.LngLatBounds();
+
+    tickets.forEach((ticket) => {
+      const el = document.createElement("div");
+      el.className = "custom-marker";
+      el.style.cssText = `
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 6px rgba(0,0,0,0.4);
+        background-color: ${
+          ticket.status === "OPEN"
+            ? "#22c55e"
+            : ticket.status === "FOLLOWED_UP"
+            ? "#2563eb"
+            : "#dc2626"
+        };
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      `;
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([ticket.lng, ticket.lat])
+        .addTo(map);
+
+      markersRef.current.push(marker);
+      bounds.extend([ticket.lng, ticket.lat]);
+
+      el.addEventListener("click", () => {
+        setSelected(ticket);
+        map.flyTo({
+          center: [ticket.lng, ticket.lat],
+          zoom: 15,
+          duration: 800,
+        });
+        scrollToCard(ticket.id);
+      });
     });
 
-    return () => {
-      map.remove();
-    };
-  }, [region, mapName, apiKey, tickets]);
+    if (!bounds.isEmpty()) {
+      map.fitBounds(bounds, { padding: 80, maxZoom: 14, duration: 1000 });
+    }
+  };
+
+  const scrollToCard = (ticketId: string | number) => {
+    const el = document.getElementById(`card-${ticketId}`);
+    const container = document.getElementById("ticket-card-scroll");
+    if (el && container) {
+      el.scrollIntoView({ behavior: "smooth", inline: "center" });
+    }
+  };
+
+  const handleCardClick = (ticket: any) => {
+    setSelected(ticket);
+    mapRef.current?.flyTo({
+      center: [ticket.lng, ticket.lat],
+      zoom: 15,
+      duration: 800,
+    });
+  };
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    if (!value || tickets.length === 0) return;
-
-    const found = tickets.find((t) => t.ticketNumber.includes(value));
-    if (found && mapRef.current) {
-      mapRef.current.flyTo({
-        center: [found.lng, found.lat],
-        zoom: 16,
-        speed: 0.8,
-      });
-      setHighlighted(found.id);
-      setSelected(found);
+    const found = tickets.find((t) =>
+      t.ticketNumber.toLowerCase().includes(value.toLowerCase())
+    );
+    if (found) {
+      handleCardClick(found);
+      scrollToCard(found.id);
     }
   };
 
   if (isLoading) return <div className="p-4">Loading tickets...</div>;
 
   return (
-    <div className="flex flex-col h-full w-full relative">
-      {/* Search + Reset */}
+    <div className="relative w-full h-[calc(100vh-64px)] overflow-hidden">
       <div className="absolute top-[80px] left-1/10 z-50 w-[400px] flex gap-2">
         <Input.Search
           placeholder="Search Ticket No."
           allowClear
           enterButton
           onSearch={handleSearch}
-          onChange={(e) => {
-            if (!e.target.value) {
-              setHighlighted(null);
-              setSearch("");
-            }
-          }}
         />
         <Button
           onClick={() => {
             setSearch("");
-            setHighlighted(null);
-            mapRef.current?.flyTo({ center: [106.816666, -6.2], zoom: 11 });
+            setSelected(null);
+            mapRef.current?.flyTo({
+              center: [DEFAULT.lng, DEFAULT.lat],
+              zoom: 11,
+            });
           }}
         >
           Reset View
@@ -214,7 +230,7 @@ const DashboardAmazonContainer = () => {
           <h4 className="font-semibold mb-2">Legend Information</h4>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-green-600"></span>
-            <span>New</span>
+            <span>Open</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-blue-600"></span>
@@ -222,43 +238,68 @@ const DashboardAmazonContainer = () => {
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-red-600"></span>
-            <span>No Response</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-3 h-3 rounded-full bg-yellow-400"></span>
-            <span>Search Result</span>
+            <span>Closed</span>
           </div>
         </div>
       )}
 
-      <div ref={mapContainer} className="w-full h-[calc(100vh-64px)]" />
+      <div
+        ref={mapContainer}
+        className="absolute inset-0"
+        style={{ height: "100%", width: "100%", zIndex: 0 }}
+      />
 
-      {selected && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-lg p-4 w-[320px] z-50">
-          <Card title={`#${selected.ticketNumber}`} size="small">
-            <p>
-              <b>Status:</b> {selected.status}
-            </p>
-            <p>
-              <b>District:</b> {selected.district}
-            </p>
-            <p>
-              <b>Sub-District:</b> {selected.subDistrict}
-            </p>
-            <p>
-              <b>Potential Revenue:</b> Rp {selected.potentialRevenue}
-            </p>
-            <div className="flex gap-2 mt-2">
-              <Button type="primary" danger size="small">
-                Edit
-              </Button>
-              <Button size="small" onClick={() => setSelected(null)}>
-                Close
-              </Button>
+      <div
+        id="ticket-card-scroll"
+        className="absolute bottom-5 left-0 right-0 px-5 py-2 flex gap-4 overflow-x-auto pb-3 scrollbar-hide z-50"
+        style={{ scrollSnapType: "x mandatory" }}
+      >
+        {tickets.map((ticket) => (
+          <div
+            key={ticket.id}
+            id={`card-${ticket.id}`}
+            onClick={() => handleCardClick(ticket)}
+            className={`min-w-[320px] bg-white rounded-2xl shadow-md p-4 flex-shrink-0 cursor-pointer transition-all duration-300 scroll-snap-align-center ${
+              selected?.id === ticket.id ? "ring-4 ring-red-500 scale-105" : ""
+            }`}
+          >
+            <div className="flex items-center mb-2">
+              <div
+                className="w-4 h-4 rounded-full mr-2"
+                style={{
+                  backgroundColor:
+                    ticket.status === "OPEN"
+                      ? "#22c55e"
+                      : ticket.status === "FOLLOWED_UP"
+                      ? "#2563eb"
+                      : "#dc2626",
+                }}
+              />
+              <h3 className="font-semibold text-sm">#{ticket.ticketNumber}</h3>
             </div>
-          </Card>
-        </div>
-      )}
+            <p className="text-xs text-gray-700">
+              <b>Longitude:</b> {ticket.lng}
+            </p>
+            <p className="text-xs text-gray-700">
+              <b>Latitude:</b> {ticket.lat}
+            </p>
+            <p className="text-xs text-gray-700">
+              <b>Ticket Date:</b> {ticket.date}
+            </p>
+            <div className="flex gap-2 mt-3">
+              <button className="bg-red-500 text-white text-xs px-3 py-1 rounded-md">
+                Edit
+              </button>
+              <button className="border border-gray-300 text-xs px-3 py-1 rounded-md">
+                Get Direction
+              </button>
+              <button className="bg-yellow-500 text-white text-xs px-3 py-1 rounded-md">
+                Street View
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
