@@ -137,7 +137,6 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             backgroundColor: COLORS.white,
             height: "calc(100vh - 64px)",
             overflowY: "auto",
-            // padding: 24,
           }}
         >
           {children || (
