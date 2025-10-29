@@ -7,7 +7,7 @@ type LayoutContentPageProps = {
 };
 
 const LayoutContentPage: React.FC<LayoutContentPageProps> = (props) => {
-  return <Layout.Content className={`p-6 ${props.className}`}>{props.children}</Layout.Content>;
+  return <Layout.Content className={`${props.className}`}>{props.children}</Layout.Content>;
 };
 
 export default LayoutContentPage;
