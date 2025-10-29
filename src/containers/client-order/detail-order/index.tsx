@@ -1,8 +1,10 @@
 "use client";
 
 import { LayoutContentPage } from "@rtrw-monitoring-system/components";
-import { Button, Dropdown, Input, Space, Table, Tag } from "antd";
+import { Button, Dropdown, Input, MenuProps, Space, Table, Tag } from "antd";
 import { MoreOutlined, SearchOutlined } from "@ant-design/icons";
+import { useRouter } from "next/navigation";
+import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
 
 interface Customer {
   key: string;
@@ -124,6 +126,8 @@ const data: Customer[] = [
 ];
 
 const OrderDetailContainer = () => {
+  const router = useRouter();
+
   const columns = [
     {
       title: "Order ID",
@@ -207,6 +211,7 @@ const OrderDetailContainer = () => {
           }}
         >
           <Button
+            onClick={() => router.push(PAGE_NAME.activity_order)}
             shape="circle"
             icon={<MoreOutlined style={{ color: "#D93025", fontSize: 18 }} />}
           />
@@ -214,6 +219,24 @@ const OrderDetailContainer = () => {
       ),
     },
   ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Active":
+        return "bg-[#EBFEF3] text-[#008E53]";
+      case "Menunggu Data Pelanggan":
+      case "Menunggu Validasi Data":
+      case "Menunggu Instalasi":
+        return "bg-[#E9F6FF] text-[#0050AE]";
+      case "Failed":
+        return "bg-[#FFF5F6] text-[#B71932]";
+      default:
+        break;
+    }
+  };
+
+  const actionItems: MenuProps["items"] = [{ key: "1", label: "Details" }];
+
   return (
     <LayoutContentPage className="p-6">
       <Space direction="vertical" size={"small"} className="mb-8">
@@ -242,7 +265,7 @@ const OrderDetailContainer = () => {
         />
       </div>
 
-      <Table
+      {/* <Table
         columns={columns}
         dataSource={data}
         pagination={{
@@ -256,7 +279,94 @@ const OrderDetailContainer = () => {
         }}
         bordered={false}
         rowClassName={() => "hover:bg-[#FAFAFA]"}
-      />
+      /> */}
+      <div>
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="bg-[#FF0025] text-white text-left">
+                <th className="py-3 px-4 w-[40px]">Order ID</th>
+                <th className="py-3 px-4">Nama Pelanggan</th>
+                <th className="py-3 px-4">No Handphone</th>
+                <th className="py-3 px-4">Email</th>
+                <th className="py-3 px-4">Tanggal Upload</th>
+                <th className="py-3 px-4">Paket Internet</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((item, i) => (
+                <tr
+                  key={item.key}
+                  className={`${
+                    i % 2 === 0 ? "bg-[#fafafa]" : "bg-white"
+                  } hover:bg-gray-50 transition-all duration-150`}
+                >
+                  <td className="py-3 px-4 text-gray-700">{i + 1}</td>
+                  <td className="py-3 px-4 font-medium text-gray-800">
+                    {item.name}
+                  </td>
+                  <td className="py-3 px-4 text-gray-700">{item.phone}</td>
+                  <td className="py-3 px-4 text-gray-700">{item.email}</td>
+                  <td className="py-3 px-4 text-gray-700">{item.uploadDate}</td>
+                  <td className="py-3 px-4 text-gray-700">{item.package}</td>
+                  <td className="py-3 px-4">
+                    <span
+                      className={`px-3 py-[4px] rounded-full text-xs font-medium ${getStatusColor(
+                        item.status
+                      )}`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <Dropdown
+                      menu={{ items: actionItems }}
+                      placement="bottomRight"
+                      arrow
+                    >
+                      <Button
+                        onClick={() => router.push(PAGE_NAME.activity_order)}
+                        type="text"
+                        icon={<MoreOutlined />}
+                        className="hover:text-red-500 text-gray-600"
+                      />
+                    </Dropdown>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
+          <p>
+            menampilkan <b>10</b> dari <b>800</b> data
+          </p>
+          <div className="flex gap-2 items-center">
+            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
+              {"<"}
+            </button>
+            <button className="px-3 py-1 bg-[#C00000] text-white rounded-4xl">
+              1
+            </button>
+            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
+              2
+            </button>
+            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
+              3
+            </button>
+            <span className="px-3">...</span>
+            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
+              9
+            </button>
+            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
+              {">"}
+            </button>
+          </div>
+        </div>
+      </div>
     </LayoutContentPage>
   );
 };

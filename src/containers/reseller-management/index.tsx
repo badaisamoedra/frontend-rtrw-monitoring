@@ -11,8 +11,7 @@ import {
   Select,
 } from "antd";
 import { SearchOutlined, DownOutlined, MoreOutlined } from "@ant-design/icons";
-import ResellerStatus from "@rtrw-monitoring-system/components/reseller-status";
-import { LayoutContentPage } from "@rtrw-monitoring-system/components";
+import { LayoutContentPage, ResellerStatus } from "@rtrw-monitoring-system/components";
 import { useRouter } from "next/navigation";
 import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
 const { RangePicker } = DatePicker;
@@ -172,7 +171,7 @@ const ResellerManagementContainer = () => {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="bg-[#C00000] text-white text-left">
+              <tr className="bg-[#FF0025] text-white text-left">
                 <th className="py-3 px-4 w-[40px]">No.</th>
                 <th className="py-3 px-4">Nama Reseller</th>
                 <th className="py-3 px-4">Kode SF</th>

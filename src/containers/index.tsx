@@ -5,6 +5,8 @@ import DashboardAmazonContainer from "@rtrw-monitoring-system/containers/amazon-
 import ResellerManagementContainer from "@rtrw-monitoring-system/containers/reseller-management";
 import ListOrderContainer from "@rtrw-monitoring-system/containers/client-order/list-order";
 import OrderDetailContainer from "@rtrw-monitoring-system/containers/client-order/detail-order";
+import ActivityOrderContainer from "@rtrw-monitoring-system/containers/client-order/activity-order";
+import OrderCreationContainer from "@rtrw-monitoring-system/containers/client-order/create-order";
 
 export {
   DashboardContainer,
@@ -14,4 +16,6 @@ export {
   ResellerManagementContainer,
   ListOrderContainer,
   OrderDetailContainer,
+  ActivityOrderContainer,
+  OrderCreationContainer
 };
