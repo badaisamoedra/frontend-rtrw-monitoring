@@ -37,14 +37,42 @@ const ListOrderContainer = () => {
 
   return (
     <LayoutContentPage className="p-6">
-      <Space direction="horizontal" size={"large"} className="mb-4">
+      <div className="mb-4 flex flex-row justify-between">
         <Space direction="vertical" size={"small"}>
           <h1 className="text-2xl font-bold">End-Client Activation Order</h1>
           <p className="text-sm font-normal text-[#4E5764]">
             Tambar order RTRW
           </p>
         </Space>
-      </Space>
+        <Space direction="horizontal" size={"small"} className="gap-4">
+          <Button
+            // onClick={() => router.push(PAGE_NAME.create_order)}
+            type="default"
+            shape="round"
+            danger
+            className="border-[#FF0025] text-[#FF0025] hover:!bg-[#FF0025] hover:!text-white"
+            style={{ borderWidth: 2, fontSize: 14, fontWeight: "600" }}
+          >
+            Download Template
+          </Button>
+          <Button
+            onClick={() => router.push(PAGE_NAME.create_order)}
+            type="default"
+            shape="round"
+            danger
+            className="border-[#FF0025] hover:!bg-white hover:!text-[#FF0025]"
+            style={{
+              borderWidth: 2,
+              fontSize: 14,
+              fontWeight: "600",
+              backgroundColor: "#FF0025",
+              color: "#FFFFFF",
+            }}
+          >
+            Tambah Order
+          </Button>
+        </Space>
+      </div>
       <div className="flex justify-between items-center py-6">
         <Input
           prefix={<SearchOutlined />}
@@ -196,7 +224,6 @@ const ListOrderContainer = () => {
         ))}
       </div>
 
-      {/* Pagination Footer */}
       <div className="flex justify-between items-center text-sm text-gray-500 mt-6">
         <div>
           Menampilkan{" "}

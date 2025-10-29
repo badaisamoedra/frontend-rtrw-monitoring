@@ -7,6 +7,7 @@ enum PAGE_NAME {
   client_order = "/pages/client-order",
   order_detail = "/pages/order-detail",
   create_order = "/pages/create-order",
+  activity_order = "/pages/activity-order",
 }
 
 export default PAGE_NAME;
