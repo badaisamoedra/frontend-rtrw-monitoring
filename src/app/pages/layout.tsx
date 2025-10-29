@@ -26,8 +26,8 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 
   const selectedKey = React.useMemo(() => {
     if (pathname?.includes("/dashboard")) return "1";
-    if (pathname?.includes("/ticketing")) return "2";
-    if (pathname?.includes("/laporan")) return "3";
+    if (pathname?.includes("/reseller-management")) return "2";
+    // if (pathname?.includes("/laporan")) return "3";
     return "";
   }, [pathname]);
 
@@ -63,10 +63,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             textAlign: "center",
           }}
         >
-          <Image
-            src={ICONS.TelkomselLogo}
-            alt="telkomsel logo"
-          />
+          <Image src={ICONS.TelkomselLogo} alt="telkomsel logo" />
         </div>
 
         <div className="text-[14px] font-semibold leading-tight text-black px-4 py-5">
@@ -88,21 +85,21 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               key: "2",
               icon: <FileSearchOutlined />,
               label: "Reseller Management",
-              onClick: () => router.push(PAGE_NAME.ticketing),
+              onClick: () => router.push(PAGE_NAME.reseller_management),
             },
+            // {
+            //   key: "3",
+            //   icon: <FileTextOutlined />,
+            //   label: "Activation Order",
+            //   onClick: () => router.push(PAGE_NAME.laporan),
+            // },
             {
               key: "3",
-              icon: <FileTextOutlined />,
-              label: "Activation Order",
-              onClick: () => router.push(PAGE_NAME.laporan),
-            },
-            {
-              key: "4",
               icon: <LogoutOutlined />,
               label: "Logout",
               onClick: () => {
                 localStorageExt.clearLocalStorage();
-                router.replace(PAGE_NAME.login)
+                router.replace(PAGE_NAME.login);
               },
             },
           ]}

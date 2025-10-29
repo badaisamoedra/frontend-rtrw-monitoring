@@ -65,7 +65,6 @@ const DashboardAmazonContainer = () => {
       }));
   }, [ticketData]);
 
-  // ✅ FIXED MAP INIT (stable on Next.js 15)
   const initializeMap = React.useCallback(() => {
     if (!mapContainer.current || !region || !mapName || !apiKey) return;
 
@@ -105,7 +104,6 @@ const DashboardAmazonContainer = () => {
     }
   }, [initializeMap]);
 
-  // ✅ Render markers setelah map siap
   React.useEffect(() => {
     if (isMapReady && mapRef.current) {
       renderMarkers(mapRef.current);
@@ -195,7 +193,7 @@ const DashboardAmazonContainer = () => {
 
   return (
     <div className="relative w-full h-[calc(100vh-64px)] overflow-hidden">
-      <div className="absolute top-[80px] left-1/10 z-50 w-[400px] flex gap-2">
+      <div className="absolute top-[50px] left-1/14 z-50 w-[400px] flex gap-2">
         <Input.Search
           placeholder="Search Ticket No."
           allowClear
@@ -216,7 +214,7 @@ const DashboardAmazonContainer = () => {
         </Button>
       </div>
 
-      <div className="absolute top-[80px] right-6 z-50">
+      <div className="absolute top-[50px] right-6 z-50">
         <Button
           icon={<InfoCircleOutlined />}
           onClick={() => setShowLegend((prev) => !prev)}
