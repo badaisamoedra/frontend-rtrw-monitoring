@@ -8,7 +8,7 @@ export const COLORS = {
   telkomsel10: "#FEE0D4",
   telkomsel30: "#FBB293",
   telkomsel50: "#F9804C",
-  telkomselMain: "#C41230",
+  telkomselMain: "#FF0025",
   telkomsel70: "#A5441B",
 
   secondary10: "#E3EAEF",

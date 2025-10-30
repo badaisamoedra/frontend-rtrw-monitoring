@@ -1,6 +1,9 @@
 "use client";
 
-import { LayoutContentPage } from "@rtrw-monitoring-system/components";
+import {
+  LayoutContentPage,
+  OrderCard,
+} from "@rtrw-monitoring-system/components";
 import { Button, DatePicker, Input, Select, Space } from "antd";
 import React from "react";
 const { RangePicker } = DatePicker;
@@ -179,48 +182,58 @@ const ListOrderContainer = () => {
           { status: "Active", active: true },
           { status: "Active", active: true },
         ].map((item, idx) => (
-          <div
+          <OrderCard
             key={idx}
-            className={`rounded-xl p-4 border ${
-              item.active
-                ? "border-[#E6F4EA] bg-[#F8FFFA]"
-                : "border-[#FCE8E6] bg-[#FFF7F7]"
-            } flex justify-between items-center`}
-          >
-            <div>
-              <p className="text-xs font-bold text-[#0C1A30]">Order Number</p>
-              <h4 className="font-normal text-[#001A41]">
-                1234567891012{idx}13
-              </h4>
-            </div>
-            <div className="text-center">
-              <p className="text-xs font-bold text-[#0C1A30]">Order Status</p>
-              <span
-                className={`text-sm font-semibold ${
-                  item.active ? "text-[#0F9D58]" : "text-[#D93025]"
-                }`}
-              >
-                ● {item.status}
-              </span>
-            </div>
-            <div className="text-left">
-              <p className="text-xs font-bold text-[#0C1A30]">Period</p>
-              <p className="font-normal text-[#001A41]">November 2024</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-bold text-[#0C1A30]">Invoice Amount</p>
-              <p className="font-normal text-[#001A41]">Rp. 500.000</p>
-            </div>
-            <Button
-              onClick={() => router.push(PAGE_NAME.order_detail)}
-              type="default"
-              shape="round"
-              danger
-              className="border-[#E31C25] text-[#E31C25] hover:!bg-[#E31C25] hover:!text-white"
-            >
-              Order Detail
-            </Button>
-          </div>
+            orderNumber="12345678910121213"
+            status={item.status}
+            period="November 2024"
+            invoiceAmount="Rp. 500.000"
+            onDetail={() => alert("Lihat detail")}
+            onCopy={() => navigator.clipboard.writeText("12345678910121213")}
+          />
+          // <div
+          //   key={idx}
+          //   className={`rounded-xl p-4 border ${
+          //     item.active
+          //       ? "border-[#E6F4EA] bg-[#F8FFFA]"
+          //       : "border-[#FCE8E6] bg-[#FFF7F7]"
+          //   } flex justify-between items-center`}
+          // >
+          //   <div>
+          //     <p className="text-xs font-bold text-[#0C1A30]">Order Number</p>
+          //     <h4 className="font-normal text-[#001A41]">
+          //       1234567891012{idx}13
+          //     </h4>
+          //   </div>
+          //   <div className="text-center">
+          //     <p className="text-xs font-bold text-[#0C1A30]">Order Status</p>
+          //     <span
+          //       className={`text-sm font-semibold ${
+          //         item.active ? "text-[#0F9D58]" : "text-[#D93025]"
+          //       }`}
+          //     >
+          //       ● {item.status}
+          //     </span>
+          //   </div>
+          //   <div className="text-left">
+          //     <p className="text-xs font-bold text-[#0C1A30]">Period</p>
+          //     <p className="font-normal text-[#001A41]">November 2024</p>
+          //   </div>
+          //   <div className="text-left">
+          //     <p className="text-xs font-bold text-[#0C1A30]">Invoice Amount</p>
+          //     <p className="font-normal text-[#001A41]">Rp. 500.000</p>
+          //   </div>
+          //   <Button
+          //     onClick={() => router.push(PAGE_NAME.order_detail)}
+          //     type="default"
+          //     shape="round"
+          //     danger
+          //     className="border-[#FF0025] text-[#FF0025] hover:!bg-[#FF0025] hover:!text-white"
+          //     style={{ borderWidth: 2, fontSize: 14, fontWeight: "600" }}
+          //   >
+          //     Order Detail
+          //   </Button>
+          // </div>
         ))}
       </div>
 

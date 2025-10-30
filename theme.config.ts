@@ -3,7 +3,7 @@ import { COLORS } from "./libs/utils/src";
 
 const config: ThemeConfig = {
   token: {
-    colorPrimary: COLORS.red80,
+    colorPrimary: COLORS.telkomselMain,
     fontFamily: "Montserrat, system-ui",
     colorBgContainer: COLORS.white,
     colorText: COLORS.black,
@@ -11,8 +11,8 @@ const config: ThemeConfig = {
   components: {
     Button: {
       borderRadius: 8,
-      colorBorder: COLORS.red80,
-      colorText: COLORS.red80,
+      colorBorder: COLORS.telkomselMain,
+      colorText: COLORS.telkomselMain,
       colorBgContainerDisabled: COLORS.secondary10,
       colorTextDisabled: COLORS.secondary30,
       borderColorDisabled: COLORS.secondary30,

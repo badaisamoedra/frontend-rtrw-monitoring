@@ -11,7 +11,10 @@ import {
   Select,
 } from "antd";
 import { SearchOutlined, DownOutlined, MoreOutlined } from "@ant-design/icons";
-import { LayoutContentPage, ResellerStatus } from "@rtrw-monitoring-system/components";
+import {
+  LayoutContentPage,
+  ResellerStatus,
+} from "@rtrw-monitoring-system/components";
 import { useRouter } from "next/navigation";
 import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
 const { RangePicker } = DatePicker;
@@ -168,7 +171,7 @@ const ResellerManagementContainer = () => {
         </div>
       </div>
       <div className="p-6">
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+        <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-[#FF0025] text-white text-left">
@@ -229,30 +232,19 @@ const ResellerManagementContainer = () => {
           </table>
         </div>
 
-        <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
-          <p>
-            menampilkan <b>10</b> dari <b>800</b> data
-          </p>
-          <div className="flex gap-2 items-center">
-            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
-              {"<"}
-            </button>
-            <button className="px-3 py-1 bg-[#C00000] text-white rounded-4xl">
-              1
-            </button>
-            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
-              2
-            </button>
-            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
-              3
-            </button>
-            <span className="px-3">...</span>
-            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
-              9
-            </button>
-            <button className="px-3 py-1 border border-gray-300 rounded-4xl text-gray-700">
-              {">"}
-            </button>
+        <div className="flex justify-between items-center text-sm text-gray-500 mt-6">
+          <div>
+            Menampilkan{" "}
+            <select className="border rounded px-1">
+              <option>10</option>
+              <option>20</option>
+            </select>{" "}
+            dari 10 Data
+          </div>
+          <div className="flex gap-3 items-center">
+            <Button size="small">‹</Button>
+            <span>1</span>
+            <Button size="small">›</Button>
           </div>
         </div>
       </div>

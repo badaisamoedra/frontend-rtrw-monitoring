@@ -111,7 +111,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       >
         <Header
           style={{
-            backgroundColor: COLORS.red80,
+            backgroundColor: COLORS.telkomselMain,
             color: "#fff",
             display: "flex",
             justifyContent: "flex-end",
