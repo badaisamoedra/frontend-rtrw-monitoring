@@ -13,6 +13,7 @@ import ICONS from "@rtrw-monitoring-system/public/assets/icons";
 import { usePathname, useRouter } from "next/navigation";
 import PAGE_NAME from "../constants/page_name";
 import { COLORS, localStorageExt } from "../../../libs/utils/src";
+import { AppHeader } from "@rtrw-monitoring-system/components";
 
 const { Sider, Header, Content } = Layout;
 
@@ -93,15 +94,15 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             //   label: "Activation Order",
             //   onClick: () => router.push(PAGE_NAME.laporan),
             // },
-            {
-              key: "3",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: () => {
-                localStorageExt.clearLocalStorage();
-                router.replace(PAGE_NAME.login);
-              },
-            },
+            // {
+            //   key: "3",
+            //   icon: <LogoutOutlined />,
+            //   label: "Logout",
+            //   onClick: () => {
+            //     localStorageExt.clearLocalStorage();
+            //     router.replace(PAGE_NAME.login);
+            //   },
+            // },
           ]}
         />
       </Sider>
@@ -109,7 +110,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       <Layout
         style={{ marginLeft: 280, minHeight: "100vh", backgroundColor: "#fff" }}
       >
-        <Header
+        {/* <Header
           style={{
             backgroundColor: COLORS.telkomselMain,
             color: "#fff",
@@ -127,6 +128,10 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           }}
         >
           Welcome, Varel
+        </Header> */}
+
+        <Header style={{ backgroundColor: "#fff", padding: 0 }}>
+          <AppHeader userName="Varel" />
         </Header>
 
         <Content
