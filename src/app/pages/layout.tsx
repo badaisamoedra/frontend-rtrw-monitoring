@@ -3,16 +3,11 @@
 import { Layout, Menu, Skeleton } from "antd";
 import Image from "next/image";
 import * as React from "react";
-import {
-  FileTextOutlined,
-  FileSearchOutlined,
-  LogoutOutlined,
-  HomeOutlined,
-} from "@ant-design/icons";
+import { FileSearchOutlined, HomeOutlined } from "@ant-design/icons";
 import ICONS from "@rtrw-monitoring-system/public/assets/icons";
 import { usePathname, useRouter } from "next/navigation";
 import PAGE_NAME from "../constants/page_name";
-import { COLORS, localStorageExt } from "../../../libs/utils/src";
+import { COLORS } from "../../../libs/utils/src";
 import { AppHeader } from "@rtrw-monitoring-system/components";
 
 const { Sider, Header, Content } = Layout;
@@ -24,11 +19,11 @@ interface AuthLayoutProps {
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = React.useState(false);
 
   const selectedKey = React.useMemo(() => {
     if (pathname?.includes("/dashboard")) return "1";
     if (pathname?.includes("/reseller-management")) return "2";
-    // if (pathname?.includes("/laporan")) return "3";
     return "";
   }, [pathname]);
 
@@ -43,6 +38,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       suppressHydrationWarning
     >
       <Sider
+        collapsible
+        collapsed={collapsed}
+        trigger={null}
         width={280}
         style={{
           overflow: "auto",
@@ -53,6 +51,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           left: 0,
           top: 0,
           bottom: 0,
+          transition: "all 0.25s ease-in-out",
         }}
       >
         <div
@@ -60,21 +59,40 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             width: "100%",
             backgroundColor: "#fff",
             zIndex: 1000,
-            padding: "16px 0",
+            padding: collapsed ? "20px 0" : "16px 0",
             textAlign: "center",
+            transition: "all 0.3s ease-in-out",
           }}
         >
-          <Image src={ICONS.TelkomselLogo} alt="telkomsel logo" />
+          {collapsed ? (
+            <Image
+              src={ICONS.IconSmallTelkomsel}
+              alt="telkomsel logo"
+              width={30}
+              height={30}
+              style={{
+                transition: "all 0.3s ease-in-out",
+                margin: "0 auto",
+              }}
+            />
+          ) : (
+            <Image src={ICONS.TelkomselLogo} alt="telkomsel logo"  />
+          )}
         </div>
 
-        <div className="text-[14px] font-semibold leading-tight text-black px-4 py-5">
-          RT RW NET Monitoring System
-        </div>
+        {!collapsed && (
+          <div className="text-[14px] font-semibold leading-tight text-black px-4 py-5 text-center">
+            RT RW NET Monitoring System
+          </div>
+        )}
 
         <Menu
           mode="inline"
           selectedKeys={[selectedKey]}
-          style={{ borderRight: 0 }}
+          style={{
+            borderRight: 0,
+            transition: "all 0.3s ease-in-out",
+          }}
           items={[
             {
               key: "1",
@@ -88,50 +106,35 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               label: "Reseller Management",
               onClick: () => router.push(PAGE_NAME.reseller_management),
             },
-            // {
-            //   key: "3",
-            //   icon: <FileTextOutlined />,
-            //   label: "Activation Order",
-            //   onClick: () => router.push(PAGE_NAME.laporan),
-            // },
-            // {
-            //   key: "3",
-            //   icon: <LogoutOutlined />,
-            //   label: "Logout",
-            //   onClick: () => {
-            //     localStorageExt.clearLocalStorage();
-            //     router.replace(PAGE_NAME.login);
-            //   },
-            // },
           ]}
         />
       </Sider>
 
       <Layout
-        style={{ marginLeft: 280, minHeight: "100vh", backgroundColor: "#fff" }}
+        style={{
+          marginLeft: collapsed ? 80 : 280,
+          minHeight: "100vh",
+          backgroundColor: "#fff",
+          transition: "all 0.25s ease-in-out",
+        }}
       >
-        {/* <Header
+        <Header
           style={{
-            backgroundColor: COLORS.telkomselMain,
-            color: "#fff",
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            padding: "0 24px",
-            fontWeight: "500",
+            backgroundColor: "#fff",
+            padding: 0,
             height: 64,
             lineHeight: "64px",
+            borderBottom: "1px solid #f0f0f0",
             position: "sticky",
             top: 0,
             zIndex: 100,
-            fontSize: 16,
           }}
         >
-          Welcome, Varel
-        </Header> */}
-
-        <Header style={{ backgroundColor: "#fff", padding: 0 }}>
-          <AppHeader userName="Varel" />
+          <AppHeader
+            userName="Varel"
+            onToggleSidebar={() => setCollapsed(!collapsed)}
+            collapsed={collapsed}
+          />
         </Header>
 
         <Content
@@ -139,6 +142,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             backgroundColor: COLORS.white,
             height: "calc(100vh - 64px)",
             overflowY: "auto",
+            transition: "all 0.3s ease-in-out",
           }}
         >
           {children || (

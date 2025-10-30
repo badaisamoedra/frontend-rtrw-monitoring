@@ -7,13 +7,16 @@ import {
   BellOutlined,
   DownOutlined,
   UserOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Menu } from "antd";
 import { useRouter } from "next/navigation";
 
-const AppHeader: React.FC<{ userName?: string }> = ({
-  userName = "Varelandito Caesar",
-}) => {
+const AppHeader: React.FC<{
+  userName?: string;
+  onToggleSidebar?: () => void;
+  collapsed?: boolean;
+}> = ({ userName = "Varelandito Caesar", onToggleSidebar, collapsed }) => {
   const router = useRouter();
 
   const handleLogout = () => {
@@ -26,7 +29,11 @@ const AppHeader: React.FC<{ userName?: string }> = ({
       items={[
         {
           key: "1",
-          label: "Logout",
+          label: (
+            <div className="flex items-center gap-2 font-semibold">
+              <LogoutOutlined /> Logout
+            </div>
+          ),
           onClick: handleLogout,
         },
       ]}
@@ -38,8 +45,15 @@ const AppHeader: React.FC<{ userName?: string }> = ({
       className="flex items-center justify-between px-6 py-3 bg-white border-b border-[#E6E6E6] shadow-sm"
       style={{ height: 64 }}
     >
-      <div className="flex items-center gap-4">
-        <MenuOutlined className="text-[#0C1B36] text-xl cursor-pointer" />
+      <div
+        className="flex items-center gap-4 cursor-pointer"
+        onClick={onToggleSidebar}
+      >
+        <MenuOutlined
+          className={`text-[#0C1B36] text-xl transition-transform ${
+            collapsed ? "rotate-180" : ""
+          }`}
+        />
       </div>
 
       <div className="flex items-center gap-6">
