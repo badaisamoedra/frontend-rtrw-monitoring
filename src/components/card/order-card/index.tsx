@@ -7,7 +7,7 @@ import clsx from "clsx";
 
 type InvoiceCardProps = {
   orderNumber: string;
-  status: "Active" | "Not Active";
+  status: "Active" | "Not Active" | string;
   period: string;
   invoiceAmount: string;
   onDetail?: () => void;
@@ -95,11 +95,11 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
         type="default"
         shape="round"
         onClick={onDetail}
+        className="border-[#FF0025] text-[#FF0025] hover:!bg-[#FF0025] hover:!text-white"
         style={{
           borderWidth: 2,
           fontSize: 14,
           fontWeight: 600,
-          padding: "0 24px",
         }}
       >
         Order Detail
