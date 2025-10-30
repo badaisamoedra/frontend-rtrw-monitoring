@@ -6,10 +6,12 @@ import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import {
   DetailPackageModal,
+  FooterNavigation,
   LayoutContentPage,
   ModalCreateOrder,
   PackageCard,
 } from "@rtrw-monitoring-system/components";
+import { useRouter } from "next/navigation";
 
 const packages = [
   {
@@ -34,6 +36,8 @@ const OrderCreationContainer = () => {
   const [openModalDetailPackage, setOpenModalDetailPackage] =
     React.useState(false);
   const [openModalCreateOrder, setOpenModalCreateOrder] = React.useState(false);
+  const [step, setStep] = React.useState(1);
+  const router = useRouter();
 
   return (
     <LayoutContentPage className="bg-[#F1F1F4]">
@@ -75,6 +79,11 @@ const OrderCreationContainer = () => {
           </div>
         </div>
       </div>
+      <FooterNavigation
+        onBack={() => router.back()}
+        onNext={() => setOpenModalCreateOrder(true)}
+        disableNext={false}
+      />
       <DetailPackageModal
         open={openModalDetailPackage}
         onClose={() => setOpenModalDetailPackage(false)}

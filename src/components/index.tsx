@@ -7,6 +7,8 @@ import ModalStreetView from "./modal/modal-street-view";
 import ResellerStatus from "./reseller-status";
 import DetailPackageModal from "./modal/modal-detail-package";
 import ModalCreateOrder from "./modal/modal-create-order";
+import FooterNavigation from "./footer/footer-navigation";
+import OrderCard from "./card/order-card";
 
 export {
   LayoutContentPage,
@@ -18,4 +20,6 @@ export {
   ResellerStatus,
   DetailPackageModal,
   ModalCreateOrder,
+  FooterNavigation,
+  OrderCard,
 };
