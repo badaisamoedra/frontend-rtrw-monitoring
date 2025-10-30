@@ -9,6 +9,7 @@ import DetailPackageModal from "./modal/modal-detail-package";
 import ModalCreateOrder from "./modal/modal-create-order";
 import FooterNavigation from "./footer/footer-navigation";
 import OrderCard from "./card/order-card";
+import AppHeader from "./header"
 
 export {
   LayoutContentPage,
@@ -22,4 +23,5 @@ export {
   ModalCreateOrder,
   FooterNavigation,
   OrderCard,
+  AppHeader
 };
