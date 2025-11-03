@@ -356,12 +356,12 @@ const DashboardContainer = () => {
         </GoogleMap>
       </LoadScript>
 
-      <ModalStreetView
+      {/* <ModalStreetView
         open={showModal.modalOpen === "STREET"}
         image={showModal.image ?? ""}
         ticketNumber={showModal.ticket_number ?? ""}
         onClose={() => setShowModal({ modalOpen: "" })}
-      />
+      /> */}
       <ModalTicket
         open={showModal.modalOpen === "EDIT"}
         ticket={showModal.ticket}
