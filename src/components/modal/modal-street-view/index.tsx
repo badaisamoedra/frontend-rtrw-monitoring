@@ -4,32 +4,59 @@ import * as React from "react";
 interface ModalStreetViewProps {
   open: boolean;
   onClose: () => void;
-  image: string;
-  ticketNumber: string;
+  ticket: any;
 }
 const ModalStreetView: React.FC<ModalStreetViewProps> = ({
   open,
   onClose,
-  image,
-  ticketNumber,
+  ticket,
 }) => {
   return (
     <Modal
-      title={`Street View - ${ticketNumber}`}
+      title={
+        <span className="font-semibold text-base text-gray-800">
+          Street View – #{ticket?.ticketNumber ?? ""}
+        </span>
+      }
       open={open}
       onCancel={onClose}
       footer={null}
-      width={1000}
       centered
+      width={900}
+      maskClosable
+      className="p-0 rounded-xl overflow-hidden bg-black"
     >
-      <div className="px-2">
-        <Image src={image} alt="img street view" width={"100%"} height={600} />
-        <div className="flex justify-end items-center gap-2 mt-2">
-          <Button type="primary" className="bg-red-700">Print</Button>
-          <Button className="bg-gray-200" onClick={onClose}>
-            Close
-          </Button>
-        </div>
+      <div className="w-full h-[500px] bg-black">
+        {ticket?.lat && ticket?.lng ? (
+          <iframe
+            src={`https://www.google.com/maps/embed?pb=!4v0!6m8!1m7!1sCAoSLEFGMVFpcE5ZcXcyRGZsMUtOS0lsdHBNZVh0Mmt6ZWNBWWpDZlZ4RVNaMnJk!2m2!1d${ticket?.lat}!2d${ticket?.lng}!3f0!4f0!5f0.7820865974627469`}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-white text-sm">
+            Street View not available for this location
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end items-center px-4 py-3 border-t bg-gray-50">
+        <Button
+          type="primary"
+          size="middle"
+          onClick={() =>
+            window.open(
+              `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${ticket?.lat},${ticket?.lng}`,
+              "_blank"
+            )
+          }
+        >
+          Open in Google Maps
+        </Button>
       </div>
     </Modal>
   );

@@ -7,14 +7,18 @@ import { InfoCircleOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import { useGeolocated } from "react-geolocated";
-import { ModalTicket, ToastContent } from "@rtrw-monitoring-system/components";
+import {
+  ModalStreetView,
+  ModalTicket,
+  ToastContent,
+} from "@rtrw-monitoring-system/components";
 import { toast } from "react-toastify";
 import { useTicketRepository } from "@rtrw-monitoring-system/services/ticket";
 
 const DEFAULT = { lat: -6.273429747830478, lng: 106.822463982675 };
 
 type ModalProps = {
-  modalOpen: "EDIT" | "";
+  modalOpen: "EDIT" | "STREET_VIEW" | "";
   ticket?: any;
   image?: string;
 };
@@ -347,32 +351,44 @@ const DashboardAmazonContainer = () => {
             </p>
             <div className="flex gap-2 mt-3">
               <button
-                onClick={() =>
-                  setShowModal({ modalOpen: "EDIT", ticket: ticket })
-                }
-                className="bg-red-500 text-white text-xs px-3 py-1 rounded-md"
+                onClick={() => setShowModal({ modalOpen: "EDIT", ticket })}
+                className="bg-red-500 text-white text-xs px-3 py-1 rounded-md shadow-sm hover:bg-red-600 hover:shadow-md hover:scale-105 transition-all duration-200 cursor-pointer"
               >
                 Edit
               </button>
+
               <button
+                disabled={!ticket.lat || !ticket.lng}
                 onClick={() =>
                   window.open(
                     `https://www.google.com/maps/dir/?api=1&destination=${ticket.lat},${ticket.lng}`,
                     "_blank"
                   )
                 }
-                className="border border-gray-300 text-xs px-3 py-1 rounded-md"
+                className={`border text-xs px-3 py-1 rounded-md shadow-sm transition-all duration-200 cursor-pointer${
+                  !ticket.lat || !ticket.lng
+                    ? "cursor-not-allowed opacity-50 border-gray-200 text-gray-400"
+                    : "border-gray-300 hover:bg-gray-100 hover:shadow-md hover:scale-105"
+                }`}
               >
                 Get Direction
               </button>
+
               <button
-                onClick={() =>
-                  window.open(
-                    `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${ticket.lat},${ticket.lng}`,
-                    "_blank"
-                  )
-                }
-                className="bg-yellow-500 text-white text-xs px-3 py-1 rounded-md"
+                disabled={!ticket.lat || !ticket.lng}
+                onClick={() => {
+                  if (ticket.lat && ticket.lng) {
+                    setShowModal({
+                      modalOpen: "STREET_VIEW",
+                      ticket,
+                    });
+                  }
+                }}
+                className={`text-xs px-3 py-1 rounded-md shadow-sm transition-all duration-200 cursor-pointer ${
+                  !ticket.lat || !ticket.lng
+                    ? "cursor-not-allowed opacity-50 bg-gray-200 text-gray-400"
+                    : "bg-yellow-500 text-white hover:bg-yellow-600 hover:shadow-md hover:scale-105"
+                }`}
               >
                 Street View
               </button>
@@ -380,6 +396,12 @@ const DashboardAmazonContainer = () => {
           </div>
         ))}
       </div>
+      <ModalStreetView
+        open={showModal.modalOpen === "STREET_VIEW"}
+        onClose={() => setShowModal({ modalOpen: "" })}
+        ticket={showModal.ticket}
+      />
+
       <ModalTicket
         open={showModal.modalOpen === "EDIT"}
         ticket={showModal.ticket}
