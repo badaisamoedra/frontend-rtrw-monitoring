@@ -106,7 +106,6 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
       centered
     >
       <div className="px-2">
-        {/* ====== Basic Info ====== */}
         <Row className="mb-3">
           <Col span={8}>
             <Text strong>Ticket No.</Text>
@@ -185,7 +184,6 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           </Col>
         </Row>
 
-        {/* ====== Editable Fields ====== */}
         <Row className="mb-3" gutter={12}>
           <Col span={8}>
             <Text strong>Potential</Text>
@@ -307,7 +305,6 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           </Col>
         </Row>
 
-        {/* ====== Buttons ====== */}
         {section === "EDIT" ? (
           <div className="flex justify-end gap-2 mt-4">
             <Button type="primary" onClick={handleSave} disabled={!isFormValid}>
