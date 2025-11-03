@@ -44,6 +44,7 @@ const ModalStreetView: React.FC<ModalStreetViewProps> = ({
         )}
       </div>
 
+      <div className="flex justify-end items-center px-4 py-3 border-t bg-gray-50">
         <Button
           type="primary"
           size="middle"
