@@ -24,21 +24,19 @@ const AppHeader: React.FC<{
     router.replace("/login");
   };
 
-  const menu = (
-    <Menu
-      items={[
-        {
-          key: "1",
-          label: (
-            <div className="flex items-center gap-2 font-semibold">
-              <LogoutOutlined /> Logout
-            </div>
-          ),
-          onClick: handleLogout,
-        },
-      ]}
-    />
-  );
+  const menu = {
+    items: [
+      {
+        key: "1",
+        label: (
+          <div className="flex items-center gap-2 font-semibold">
+            <LogoutOutlined /> Logout
+          </div>
+        ),
+        onClick: handleLogout,
+      },
+    ],
+  };
 
   return (
     <header
@@ -63,7 +61,7 @@ const AppHeader: React.FC<{
         </div> */}
 
         <div className="flex items-center gap-3">
-          <Dropdown overlay={menu} placement="bottomRight" arrow>
+          <Dropdown menu={menu} placement="bottomRight" arrow>
             <div className="flex items-center gap-2 cursor-pointer">
               <div className="flex flex-col justify-center leading-none text-right gap-2">
                 <span className="text-[12px] text-[#8C8C8C] m-0 p-0">

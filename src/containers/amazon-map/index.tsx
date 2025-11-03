@@ -7,8 +7,17 @@ import { InfoCircleOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import { useGeolocated } from "react-geolocated";
+import { ModalTicket, ToastContent } from "@rtrw-monitoring-system/components";
+import { toast } from "react-toastify";
+import { useTicketRepository } from "@rtrw-monitoring-system/services/ticket";
 
 const DEFAULT = { lat: -6.273429747830478, lng: 106.822463982675 };
+
+type ModalProps = {
+  modalOpen: "EDIT" | "";
+  ticket?: any;
+  image?: string;
+};
 
 const DashboardAmazonContainer = () => {
   const region = process.env.NEXT_PUBLIC_AWS_REGION || "ap-southeast-1";
@@ -30,6 +39,11 @@ const DashboardAmazonContainer = () => {
   });
 
   const [position, setPosition] = React.useState(DEFAULT);
+  const [showModal, setShowModal] = React.useState<ModalProps>({
+    modalOpen: "",
+  });
+
+  const { updateTicket } = useTicketRepository();
 
   React.useEffect(() => {
     if (isGeolocationEnabled && coords) {
@@ -38,7 +52,7 @@ const DashboardAmazonContainer = () => {
   }, [coords, isGeolocationEnabled]);
 
   const {
-    queryResult: { data: ticketData, isLoading },
+    queryResult: { data: ticketData, isLoading, refetch },
   } = useData<TicketingAllResponse>(
     { url: TICKET_SERVICE.ticket_all },
     [TICKET_SERVICE.ticket_all],
@@ -55,13 +69,16 @@ const DashboardAmazonContainer = () => {
       .map((t) => ({
         id: t.id,
         ticketNumber: t.ticketNumber,
+        ticketDesc: t.ticketDesc,
+        userId: t.userId,
+        latitude: t.latitude,
+        longitude: t.longitude,
         lat: parseFloat(t.latitude),
         lng: parseFloat(t.longitude),
         status: t.status,
         district: t.district,
         subDistrict: t.subDistrict,
-        potentialRevenue: t.details?.[0]?.potentialRevenue ?? 0,
-        date: new Date(t.details?.[0]?.createdAt ?? "").toLocaleDateString(),
+        details: t.details,
       }));
   }, [ticketData]);
 
@@ -189,6 +206,47 @@ const DashboardAmazonContainer = () => {
     }
   };
 
+  const handleSaveTicket = async (updatedTicket: UpdateTicketPayload) => {
+    try {
+      const payload: UpdateTicketPayload = {
+        id: updatedTicket.id,
+        status: updatedTicket.status,
+        district: updatedTicket.district,
+        latitude: updatedTicket.lat ?? "",
+        longitude: updatedTicket.lng ?? "",
+        subDistrict: updatedTicket.subDistrict,
+        ticketDesc: updatedTicket.ticketDesc,
+        ticketNumber: updatedTicket.ticketNumber,
+        details: [
+          {
+            id: updatedTicket.details?.[0]?.id,
+            potentialHigh: updatedTicket.details?.[0]?.potentialHigh,
+            potentialLow: updatedTicket.details?.[0]?.potentialLow,
+            threeMonth: updatedTicket.details?.[0]?.threeMonth,
+            potentialRevenue: updatedTicket.details?.[0]?.potentialRevenue,
+            notes: updatedTicket.details?.[0]?.notes,
+          },
+        ],
+      };
+
+      await updateTicket.mutateAsync(payload);
+
+      toast.success(
+        <ToastContent description="Data user berhasil diperbarui" />
+      );
+
+      refetch();
+      setShowModal({ modalOpen: "" });
+    } catch (error: any) {
+      toast.error(
+        <ToastContent
+          type="error"
+          description={error.response?.data?.message}
+        />
+      );
+    }
+  };
+
   if (isLoading) return <div className="p-4">Loading tickets...</div>;
 
   return (
@@ -282,22 +340,53 @@ const DashboardAmazonContainer = () => {
               <b>Latitude:</b> {ticket.lat}
             </p>
             <p className="text-xs text-gray-700">
-              <b>Ticket Date:</b> {ticket.date}
+              <b>Ticket Date:</b>{" "}
+              {new Date(
+                ticket.details?.[0]?.createdAt ?? ""
+              ).toLocaleDateString()}
             </p>
             <div className="flex gap-2 mt-3">
-              <button className="bg-red-500 text-white text-xs px-3 py-1 rounded-md">
+              <button
+                onClick={() =>
+                  setShowModal({ modalOpen: "EDIT", ticket: ticket })
+                }
+                className="bg-red-500 text-white text-xs px-3 py-1 rounded-md"
+              >
                 Edit
               </button>
-              <button className="border border-gray-300 text-xs px-3 py-1 rounded-md">
+              <button
+                onClick={() =>
+                  window.open(
+                    `https://www.google.com/maps/dir/?api=1&destination=${ticket.lat},${ticket.lng}`,
+                    "_blank"
+                  )
+                }
+                className="border border-gray-300 text-xs px-3 py-1 rounded-md"
+              >
                 Get Direction
               </button>
-              <button className="bg-yellow-500 text-white text-xs px-3 py-1 rounded-md">
+              <button
+                onClick={() =>
+                  window.open(
+                    `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${ticket.lat},${ticket.lng}`,
+                    "_blank"
+                  )
+                }
+                className="bg-yellow-500 text-white text-xs px-3 py-1 rounded-md"
+              >
                 Street View
               </button>
             </div>
           </div>
         ))}
       </div>
+      <ModalTicket
+        open={showModal.modalOpen === "EDIT"}
+        ticket={showModal.ticket}
+        section="EDIT"
+        onClose={() => setShowModal({ modalOpen: "" })}
+        onSave={handleSaveTicket}
+      />
     </div>
   );
 };
