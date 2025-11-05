@@ -64,6 +64,118 @@ const DashboardAmazonContainer = () => {
     { enabled: true }
   );
 
+  const renderPolygons = (map: maplibregl.Map) => {
+    if (!ticketData?.data?.length) return;
+
+    const districtGroups = ticketData.data.reduce((acc, ticket) => {
+      if (!acc[ticket.district]) acc[ticket.district] = [];
+      acc[ticket.district].push([
+        parseFloat(ticket.longitude),
+        parseFloat(ticket.latitude),
+      ]);
+      return acc;
+    }, {} as Record<string, [number, number][]>);
+
+    const features = Object.entries(districtGroups).map(
+      ([district, coords]) => {
+        const bounds = coords.reduce(
+          (b, [lng, lat]) => {
+            b.minLng = Math.min(b.minLng, lng);
+            b.maxLng = Math.max(b.maxLng, lng);
+            b.minLat = Math.min(b.minLat, lat);
+            b.maxLat = Math.max(b.maxLat, lat);
+            return b;
+          },
+          {
+            minLng: coords[0][0],
+            maxLng: coords[0][0],
+            minLat: coords[0][1],
+            maxLat: coords[0][1],
+          }
+        );
+
+        return {
+          type: "Feature",
+          properties: { name: district },
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [bounds.minLng, bounds.minLat],
+                [bounds.maxLng, bounds.minLat],
+                [bounds.maxLng, bounds.maxLat],
+                [bounds.minLng, bounds.maxLat],
+                [bounds.minLng, bounds.minLat],
+              ],
+            ],
+          },
+        } satisfies GeoJSON.Feature<GeoJSON.Polygon>;
+      }
+    );
+
+    const polygonData: GeoJSON.FeatureCollection<GeoJSON.Polygon> = {
+      type: "FeatureCollection",
+      features,
+    };
+
+    if (map.getSource("district-polygons")) {
+      (map.getSource("district-polygons") as maplibregl.GeoJSONSource).setData(
+        polygonData
+      );
+    } else {
+      map.addSource("district-polygons", {
+        type: "geojson",
+        data: polygonData,
+      } satisfies maplibregl.GeoJSONSourceSpecification);
+
+      map.addLayer({
+        id: "polygon-fill",
+        type: "fill",
+        source: "district-polygons",
+        paint: {
+          "fill-color": [
+            "match",
+            ["get", "name"],
+            "Jakarta Selatan",
+            "#4ade80",
+            "Jakarta Barat",
+            "#60a5fa",
+            "Bekasi Barat",
+            "#facc15",
+            "#a855f7",
+          ],
+          "fill-opacity": 0.25,
+        },
+      });
+
+      map.addLayer({
+        id: "polygon-outline",
+        type: "line",
+        source: "district-polygons",
+        paint: {
+          "line-color": "#1e3a8a",
+          "line-width": 2,
+        },
+      });
+
+      map.on("click", "polygon-fill", (e) => {
+        const name = e.features?.[0]?.properties?.name;
+        const coordinates = e.lngLat;
+        new maplibregl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(`<strong>${name}</strong>`)
+          .addTo(map);
+      });
+
+      map.on("mouseenter", "polygon-fill", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "polygon-fill", () => {
+        map.getCanvas().style.cursor = "";
+      });
+    }
+  };
+
   const tickets = React.useMemo(() => {
     if (!ticketData?.data) return [];
     return ticketData.data
@@ -106,10 +218,33 @@ const DashboardAmazonContainer = () => {
       renderMarkers(map);
     });
 
+    map.on("click", "polygon-fill", (e) => {
+      const name = e.features?.[0]?.properties?.name;
+      const coordinates = e.lngLat;
+
+      new maplibregl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(`<strong>${name}</strong>`)
+        .addTo(map);
+    });
+
+    map.on("mouseenter", "polygon-fill", () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+    map.on("mouseleave", "polygon-fill", () => {
+      map.getCanvas().style.cursor = "";
+    });
+
     map.on("error", (e) => {
       console.error("❌ Map initialization error:", e);
     });
   }, [region, mapName, apiKey, position]);
+
+  React.useEffect(() => {
+    if (isMapReady && mapRef.current && ticketData?.data?.length) {
+      renderPolygons(mapRef.current);
+    }
+  }, [isMapReady, ticketData]);
 
   React.useLayoutEffect(() => {
     const timer = setTimeout(() => {
