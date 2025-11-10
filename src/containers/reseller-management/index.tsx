@@ -14,10 +14,33 @@ import { SearchOutlined, DownOutlined, MoreOutlined } from "@ant-design/icons";
 import {
   LayoutContentPage,
   ResellerStatus,
+  Tables,
 } from "@rtrw-monitoring-system/components";
 import { useRouter } from "next/navigation";
 import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
+import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
 const { RangePicker } = DatePicker;
+
+type Reseller = {
+  id: number;
+  name: string;
+  code: string;
+  partner: string;
+  area: string;
+  region: string;
+  branch: string;
+  status: string;
+};
+
+const columns: Column<Reseller>[] = [
+  { title: "Nama Reseller", dataIndex: "name" },
+  { title: "Kode SF", dataIndex: "code" },
+  { title: "Nama Partner", dataIndex: "partner" },
+  { title: "Area", dataIndex: "area" },
+  { title: "Region", dataIndex: "region" },
+  { title: "Branch", dataIndex: "branch" },
+  { title: "Status", dataIndex: "status" },
+];
 
 const ResellerManagementContainer = () => {
   const data = [
@@ -171,82 +194,17 @@ const ResellerManagementContainer = () => {
         </div>
       </div>
       <div className="p-6">
-        <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-[#FF0025] text-white text-left">
-                <th className="py-3 px-4 w-[40px]">No.</th>
-                <th className="py-3 px-4">Nama Reseller</th>
-                <th className="py-3 px-4">Kode SF</th>
-                <th className="py-3 px-4">Nama Partner</th>
-                <th className="py-3 px-4">Area</th>
-                <th className="py-3 px-4">Region</th>
-                <th className="py-3 px-4">Branch</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((item, i) => (
-                <tr
-                  key={item.id}
-                  className={`${
-                    i % 2 === 0 ? "bg-[#fafafa]" : "bg-white"
-                  } hover:bg-gray-50 transition-all duration-150`}
-                >
-                  <td className="py-3 px-4 text-gray-700">{i + 1}</td>
-                  <td className="py-3 px-4 font-medium text-gray-800">
-                    {item.name}
-                  </td>
-                  <td className="py-3 px-4 text-gray-700">{item.code}</td>
-                  <td className="py-3 px-4 text-gray-700">{item.partner}</td>
-                  <td className="py-3 px-4 text-gray-700">{item.area}</td>
-                  <td className="py-3 px-4 text-gray-700">{item.region}</td>
-                  <td className="py-3 px-4 text-gray-700">{item.branch}</td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`px-3 py-[4px] rounded-full text-xs font-medium ${getStatusColor(
-                        item.status
-                      )}`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <Dropdown
-                      menu={{ items: actionItems }}
-                      placement="bottomRight"
-                      arrow
-                    >
-                      <Button
-                        onClick={() => router.push(PAGE_NAME.client_order)}
-                        type="text"
-                        icon={<MoreOutlined />}
-                        className="hover:text-red-500 text-gray-600"
-                      />
-                    </Dropdown>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex justify-between items-center text-sm text-gray-500 mt-6">
-          <div>
-            Menampilkan{" "}
-            <select className="border rounded px-1">
-              <option>10</option>
-              <option>20</option>
-            </select>{" "}
-            dari 10 Data
-          </div>
-          <div className="flex gap-3 items-center">
-            <Button size="small">‹</Button>
-            <span>1</span>
-            <Button size="small">›</Button>
-          </div>
-        </div>
+        <Tables<Reseller>
+          data={data}
+          columns={columns}
+          actionItems={[{ key: "1", label: "Details" }]}
+          onActionClick={() => router.push(PAGE_NAME.client_order)}
+          statusColorFn={getStatusColor}
+          pageSize={10}
+          totalItems={data.length}
+          onPageChange={(page) => console.log("Page:", page)}
+          onPageSizeChange={(size) => console.log("New page size:", size)}
+        />
       </div>
     </LayoutContentPage>
   );
