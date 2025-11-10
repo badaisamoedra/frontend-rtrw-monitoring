@@ -2,7 +2,7 @@
 
 import {
   LayoutContentPage,
-  OrderCard,
+  OrderListTable,
 } from "@rtrw-monitoring-system/components";
 import { Button, DatePicker, Input, Select, Space } from "antd";
 import React from "react";
@@ -53,7 +53,7 @@ const ListOrderContainer = () => {
             type="default"
             shape="round"
             danger
-            className="border-[#FF0025] text-[#FF0025] hover:!bg-[#FF0025] hover:!text-white"
+            className="border-[#FF0025] text-[#FF0025]"
             style={{ borderWidth: 2, fontSize: 14, fontWeight: "600" }}
           >
             Download Template
@@ -63,7 +63,7 @@ const ListOrderContainer = () => {
             type="default"
             shape="round"
             danger
-            className="border-[#FF0025] hover:!bg-white hover:!text-[#FF0025]"
+            className="border-[#FF0025]"
             style={{
               borderWidth: 2,
               fontSize: 14,
@@ -174,41 +174,30 @@ const ListOrderContainer = () => {
           </ResponsiveContainer>
         </div>
       </div>
-      <div className="space-y-3">
-        {[
-          { status: "Not Active", active: false },
-          { status: "Active", active: true },
-          { status: "Active", active: true },
-          { status: "Active", active: true },
-          { status: "Active", active: true },
-        ].map((item, idx) => (
-          <OrderCard
-            key={idx}
-            orderNumber="12345678910121213"
-            status={item.status}
-            period="November 2024"
-            invoiceAmount="Rp. 500.000"
-            onDetail={() => router.push(PAGE_NAME.order_detail)}
-            onCopy={() => navigator.clipboard.writeText("12345678910121213")}
-          />
-        ))}
-      </div>
-
-      <div className="flex justify-between items-center text-sm text-gray-500 mt-6">
-        <div>
-          Menampilkan{" "}
-          <select className="border rounded px-1">
-            <option>10</option>
-            <option>20</option>
-          </select>{" "}
-          dari 10 Data
-        </div>
-        <div className="flex gap-3 items-center">
-          <Button size="small">‹</Button>
-          <span>1</span>
-          <Button size="small">›</Button>
-        </div>
-      </div>
+      <OrderListTable
+        data={[
+          {
+            id: 1,
+            orderNumber: "12345678910121213",
+            status: "Not Active",
+            period: "November 2024",
+            invoiceAmount: "Rp. 500.000",
+            onDetail: () => router.push(PAGE_NAME.order_detail),
+            onCopy: () => navigator.clipboard.writeText("12345678910121213"),
+          },
+          {
+            id: 2,
+            orderNumber: "12345678910121214",
+            status: "Active",
+            period: "November 2024",
+            invoiceAmount: "Rp. 500.000",
+            onDetail: () => router.push(PAGE_NAME.order_detail),
+            onCopy: () => navigator.clipboard.writeText("12345678910121214"),
+          },
+        ]}
+        pageSize={5}
+        totalItems={10}
+      />
     </LayoutContentPage>
   );
 };
