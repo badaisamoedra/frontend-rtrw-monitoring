@@ -38,3 +38,11 @@ export const ticketingListParam = {
   startDate: StringParam,
   endDate: StringParam,
 };
+
+export const resellerListParam = {
+  ...defaultParam,
+  search: StringParam,
+  startDate: StringParam,
+  endDate: StringParam,
+  area: StringParam,
+};

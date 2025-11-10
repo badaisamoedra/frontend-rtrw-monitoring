@@ -10,6 +10,8 @@ import ModalCreateOrder from "./modal/modal-create-order";
 import FooterNavigation from "./footer/footer-navigation";
 import OrderCard from "./card/order-card";
 import AppHeader from "./header"
+import Tables from './table/custom-table'
+import OrderListTable from './table/order-table'
 
 export {
   LayoutContentPage,
@@ -23,5 +25,7 @@ export {
   ModalCreateOrder,
   FooterNavigation,
   OrderCard,
-  AppHeader
+  AppHeader,
+  Tables,
+  OrderListTable
 };

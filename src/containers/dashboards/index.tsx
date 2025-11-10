@@ -362,13 +362,13 @@ const DashboardContainer = () => {
         ticketNumber={showModal.ticket_number ?? ""}
         onClose={() => setShowModal({ modalOpen: "" })}
       /> */}
-      <ModalTicket
+      {/* <ModalTicket
         open={showModal.modalOpen === "EDIT"}
         ticket={showModal.ticket}
         section="EDIT"
         onClose={() => setShowModal({ modalOpen: "" })}
         onSave={handleSaveTicket}
-      />
+      /> */}
     </div>
   );
 };

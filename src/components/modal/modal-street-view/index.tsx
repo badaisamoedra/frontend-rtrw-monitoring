@@ -1,21 +1,21 @@
-import { Button, Image, Modal } from "antd";
+import { Button, Modal } from "antd";
 import * as React from "react";
 
 interface ModalStreetViewProps {
   open: boolean;
   onClose: () => void;
-  ticket: any;
+  reseller: any;
 }
 const ModalStreetView: React.FC<ModalStreetViewProps> = ({
   open,
   onClose,
-  ticket,
+  reseller,
 }) => {
   return (
     <Modal
       title={
         <span className="font-semibold text-base text-gray-800">
-          Street View – #{ticket?.ticketNumber ?? ""}
+          Street View – #{reseller?.resellerNumber ?? ""}
         </span>
       }
       open={open}
@@ -27,9 +27,9 @@ const ModalStreetView: React.FC<ModalStreetViewProps> = ({
       className="p-0 rounded-xl overflow-hidden bg-black"
     >
       <div className="w-full h-[500px] bg-black">
-        {ticket?.lat && ticket?.lng ? (
+        {reseller?.latitude && reseller?.longitude ? (
           <iframe
-            src={`https://www.google.com/maps/embed?pb=!4v0!6m8!1m7!1sCAoSLEFGMVFpcE5ZcXcyRGZsMUtOS0lsdHBNZVh0Mmt6ZWNBWWpDZlZ4RVNaMnJk!2m2!1d${ticket?.lat}!2d${ticket?.lng}!3f0!4f0!5f0.7820865974627469`}
+            src={`https://www.google.com/maps/embed?pb=!4v0!6m8!1m7!1sCAoSLEFGMVFpcE5ZcXcyRGZsMUtOS0lsdHBNZVh0Mmt6ZWNBWWpDZlZ4RVNaMnJk!2m2!1d${reseller?.latitude}!2d${reseller?.longitude}!3f0!4f0!5f0.7820865974627469`}
             width="100%"
             height="100%"
             style={{ border: 0 }}
@@ -50,7 +50,7 @@ const ModalStreetView: React.FC<ModalStreetViewProps> = ({
           size="middle"
           onClick={() =>
             window.open(
-              `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${ticket?.lat},${ticket?.lng}`,
+              `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${reseller?.latitude},${reseller?.longitude}`,
               "_blank"
             )
           }

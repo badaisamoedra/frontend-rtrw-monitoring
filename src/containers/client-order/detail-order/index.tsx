@@ -1,13 +1,14 @@
 "use client";
 
-import { LayoutContentPage } from "@rtrw-monitoring-system/components";
-import { Button, Dropdown, Input, MenuProps, Space, Table, Tag } from "antd";
-import { MoreOutlined, SearchOutlined } from "@ant-design/icons";
+import { LayoutContentPage, Tables } from "@rtrw-monitoring-system/components";
+import { Input, MenuProps, Space } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
+import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
 
 interface Customer {
-  key: string;
+  id: string;
   orderId: string;
   name: string;
   phone: string;
@@ -24,7 +25,7 @@ interface Customer {
 
 const data: Customer[] = [
   {
-    key: "1",
+    id: "1",
     orderId: "AOx6241215082640552f17b30",
     name: "Dominic Sudirman",
     phone: "0812-2233-4455",
@@ -34,7 +35,7 @@ const data: Customer[] = [
     status: "Menunggu Data Pelanggan",
   },
   {
-    key: "2",
+    id: "2",
     orderId: "AOx6241215082640552f17b31",
     name: "Budi Sawarna",
     phone: "0812-2233-4455",
@@ -44,7 +45,7 @@ const data: Customer[] = [
     status: "Menunggu Validasi Data",
   },
   {
-    key: "3",
+    id: "3",
     orderId: "AOx6241215082640552f17b32",
     name: "Rudolf",
     phone: "0812-2233-4455",
@@ -54,7 +55,7 @@ const data: Customer[] = [
     status: "Menunggu Instalasi",
   },
   {
-    key: "4",
+    id: "4",
     orderId: "AOx6241215082640552f17b33",
     name: "Amir Marawi",
     phone: "0812-2233-4455",
@@ -64,7 +65,7 @@ const data: Customer[] = [
     status: "Menunggu Instalasi",
   },
   {
-    key: "5",
+    id: "5",
     orderId: "AOx6241215082640552f17b34",
     name: "Najih",
     phone: "0812-2233-4455",
@@ -74,7 +75,7 @@ const data: Customer[] = [
     status: "Active",
   },
   {
-    key: "6",
+    id: "6",
     orderId: "AOx6241215082640552f17b35",
     name: "Zaki Maliq",
     phone: "0812-2233-4455",
@@ -84,7 +85,7 @@ const data: Customer[] = [
     status: "Active",
   },
   {
-    key: "7",
+    id: "7",
     orderId: "AOx6241215082640552f17b36",
     name: "Soekarno",
     phone: "0812-2233-4455",
@@ -94,7 +95,7 @@ const data: Customer[] = [
     status: "Active",
   },
   {
-    key: "8",
+    id: "8",
     orderId: "AOx6241215082640552f17b37",
     name: "Hatta Maro",
     phone: "0812-2233-4455",
@@ -104,7 +105,7 @@ const data: Customer[] = [
     status: "Active",
   },
   {
-    key: "9",
+    id: "9",
     orderId: "AOx6241215082640552f17b38",
     name: "Marlo",
     phone: "0812-2233-4455",
@@ -114,7 +115,7 @@ const data: Customer[] = [
     status: "Active",
   },
   {
-    key: "10",
+    id: "10",
     orderId: "AOx6241215082640552f17b39",
     name: "Marco",
     phone: "0812-2233-4455",
@@ -128,114 +129,35 @@ const data: Customer[] = [
 const OrderDetailContainer = () => {
   const router = useRouter();
 
-  const columns = [
-    {
-      title: "Order ID",
-      dataIndex: "orderId",
-      key: "orderId",
-      render: (text: string) => (
-        <span className="font-medium text-[#0C1A30]">{text}</span>
-      ),
-    },
-    {
-      title: "Nama Pelanggan",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "No Handphone",
-      dataIndex: "phone",
-      key: "phone",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
-    {
-      title: "Tanggal Upload",
-      dataIndex: "uploadDate",
-      key: "uploadDate",
-    },
-    {
-      title: "Paket Internet",
-      dataIndex: "package",
-      key: "package",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: Customer["status"]) => {
-        let color = "";
-        let bg = "";
-        switch (status) {
-          case "Active":
-            color = "#0F9D58";
-            bg = "#E6F4EA";
-            break;
-          case "Failed":
-            color = "#D93025";
-            bg = "#FCE8E6";
-            break;
-          default:
-            color = "#1A73E8";
-            bg = "#E8F0FE";
-        }
-        return (
-          <Tag
-            color="transparent"
-            style={{
-              borderRadius: 8,
-              backgroundColor: bg,
-              color,
-              fontWeight: 500,
-              padding: "2px 12px",
-            }}
-          >
-            {status}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: "Action",
-      key: "action",
-      render: () => (
-        <Dropdown
-          menu={{
-            items: [
-              { key: "1", label: "Edit" },
-              { key: "2", label: "View Detail" },
-            ],
-          }}
-        >
-          <Button
-            onClick={() => router.push(PAGE_NAME.activity_order)}
-            shape="circle"
-            icon={<MoreOutlined style={{ color: "#D93025", fontSize: 18 }} />}
-          />
-        </Dropdown>
-      ),
-    },
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
         return "bg-[#EBFEF3] text-[#008E53]";
+      case "Failed":
+        return "bg-[#FFF5F6] text-[#B71932]";
       case "Menunggu Data Pelanggan":
       case "Menunggu Validasi Data":
       case "Menunggu Instalasi":
         return "bg-[#E9F6FF] text-[#0050AE]";
-      case "Failed":
-        return "bg-[#FFF5F6] text-[#B71932]";
       default:
-        break;
+        return "bg-gray-100 text-gray-600";
     }
   };
 
-  const actionItems: MenuProps["items"] = [{ key: "1", label: "Details" }];
+  const actionItems: MenuProps["items"] = [
+    { key: "1", label: "Edit" },
+    { key: "2", label: "View Detail" },
+  ];
+
+  const columns: Column<Customer>[] = [
+    { title: "Order ID", dataIndex: "orderId" },
+    { title: "Nama Pelanggan", dataIndex: "name" },
+    { title: "No Handphone", dataIndex: "phone" },
+    { title: "Email", dataIndex: "email" },
+    { title: "Tanggal Upload", dataIndex: "uploadDate" },
+    { title: "Paket Internet", dataIndex: "package" },
+    { title: "Status", dataIndex: "status" },
+  ];
 
   return (
     <LayoutContentPage className="p-6">
@@ -265,82 +187,16 @@ const OrderDetailContainer = () => {
         />
       </div>
 
-      <div>
-        <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-[#FF0025] text-white text-left">
-                <th className="py-3 px-4 w-[40px]">Order ID</th>
-                <th className="py-3 px-4">Nama Pelanggan</th>
-                <th className="py-3 px-4">No Handphone</th>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Tanggal Upload</th>
-                <th className="py-3 px-4">Paket Internet</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((item, i) => (
-                <tr
-                  key={item.key}
-                  className={`${
-                    i % 2 === 0 ? "bg-[#fafafa]" : "bg-white"
-                  } hover:bg-gray-50 transition-all duration-150`}
-                >
-                  <td className="py-3 px-4 text-gray-700">{i + 1}</td>
-                  <td className="py-3 px-4 font-medium text-gray-800">
-                    {item.name}
-                  </td>
-                  <td className="py-3 px-4 text-gray-700">{item.phone}</td>
-                  <td className="py-3 px-4 text-gray-700">{item.email}</td>
-                  <td className="py-3 px-4 text-gray-700">{item.uploadDate}</td>
-                  <td className="py-3 px-4 text-gray-700">{item.package}</td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`px-3 py-[4px] rounded-full text-xs font-medium ${getStatusColor(
-                        item.status
-                      )}`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <Dropdown
-                      menu={{ items: actionItems }}
-                      placement="bottomRight"
-                      arrow
-                    >
-                      <Button
-                        onClick={() => router.push(PAGE_NAME.activity_order)}
-                        type="text"
-                        icon={<MoreOutlined />}
-                        className="hover:text-red-500 text-gray-600"
-                      />
-                    </Dropdown>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex justify-between items-center text-sm text-gray-500 mt-6">
-          <div>
-            Menampilkan{" "}
-            <select className="border rounded px-1">
-              <option>10</option>
-              <option>20</option>
-            </select>{" "}
-            dari 10 Data
-          </div>
-          <div className="flex gap-3 items-center">
-            <Button size="small">‹</Button>
-            <span>1</span>
-            <Button size="small">›</Button>
-          </div>
-        </div>
-      </div>
+      <Tables<Customer>
+        data={data}
+        columns={columns}
+        showIndex={false}
+        statusColorFn={getStatusColor}
+        actionItems={actionItems}
+        onActionClick={(record) => router.push(PAGE_NAME.activity_order)}
+        pageSize={10}
+        totalItems={data.length}
+      />
     </LayoutContentPage>
   );
 };

@@ -20,6 +20,10 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
+  const pocUser =
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("pocUser") || "{}")
+      : {};
 
   const selectedKey = React.useMemo(() => {
     if (pathname?.includes("/dashboard")) return "1";
@@ -76,7 +80,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               }}
             />
           ) : (
-            <Image src={ICONS.TelkomselLogo} alt="telkomsel logo"  />
+            <Image src={ICONS.TelkomselLogo} alt="telkomsel logo" />
           )}
         </div>
 
@@ -131,7 +135,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           }}
         >
           <AppHeader
-            userName="Varel"
+            userName={pocUser.username ?? "-"}
             onToggleSidebar={() => setCollapsed(!collapsed)}
             collapsed={collapsed}
           />
