@@ -17,8 +17,12 @@ import {
   Tables,
 } from "@rtrw-monitoring-system/components";
 import { useRouter } from "next/navigation";
-import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
+import { PAGE_NAME, PARAMS } from "@rtrw-monitoring-system/app/constants";
 import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
+import { useDataTable } from "@rtrw-monitoring-system/hooks";
+import {
+  RESELLER_SERVICE,
+} from "@rtrw-monitoring-system/app/constants/api_url";
 const { RangePicker } = DatePicker;
 
 type Reseller = {
@@ -43,108 +47,43 @@ const columns: Column<Reseller>[] = [
 ];
 
 const ResellerManagementContainer = () => {
-  const data = [
-    {
-      id: 1,
-      name: "Dominic Sudirman",
-      code: "111222333",
-      partner: "PT Funura Jaya",
-      area: "Area 1",
-      region: "Sumbagteng",
-      branch: "Pekanbaru",
-      status: "Pending Deactivated",
-    },
-    {
-      id: 2,
-      name: "Budi Sawarna",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 2",
-      region: "Jateng",
-      branch: "Solo",
-      status: "Pending Reactivated",
-    },
-    {
-      id: 3,
-      name: "Rudolf",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 3",
-      region: "Bali",
-      branch: "Denpasar",
-      status: "Active",
-    },
-    {
-      id: 4,
-      name: "Amir Marawi",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 4",
-      region: "Papua",
-      branch: "Papua",
-      status: "Active",
-    },
-    {
-      id: 5,
-      name: "Najih",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 1",
-      region: "Sumbagut",
-      branch: "Medan",
-      status: "Active",
-    },
-    {
-      id: 6,
-      name: "Zaki Maliq",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 1",
-      region: "Sumbagut",
-      branch: "Medan",
-      status: "Active",
-    },
-    {
-      id: 7,
-      name: "Soekarno",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 1",
-      region: "Sumbagut",
-      branch: "Medan",
-      status: "Not Active",
-    },
-    {
-      id: 8,
-      name: "Hatta Maro",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 1",
-      region: "Sumbagut",
-      branch: "Medan",
-      status: "Reject",
-    },
-    {
-      id: 9,
-      name: "Marlo",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 1",
-      region: "Sumbagut",
-      branch: "Medan",
-      status: "Reject",
-    },
-    {
-      id: 10,
-      name: "Marco",
-      code: "111222333",
-      partner: "PT Inkom 1",
-      area: "Area 1",
-      region: "Sumbagut",
-      branch: "Medan",
-      status: "Reject",
-    },
-  ];
+  const {
+    queryResult: { data: listReseller },
+    config,
+    setFilterItem,
+    filterItem,
+  } = useDataTable<ResellerResponse, ListResellerParam>(
+    { url: RESELLER_SERVICE.reseller_list },
+    [RESELLER_SERVICE.reseller_list],
+    PARAMS.resellerListParam
+  );
+
+  const resellerData: Reseller[] = React.useMemo(() => {
+    const list = listReseller?.data?.list || [];
+    return list.map((item: any) => ({
+      id: item.id,
+      name: item.resellerName || "-",
+      phone: item.resellerPhone || "-",
+      code: item.codeSf || "-",
+      partner: item.partnerName || "-",
+      area: item.area || "-",
+      region: item.region || "-",
+      branch: item.branch || "-",
+      status: item.status || "Not Active",
+    }));
+  }, [listReseller]);
+
+  const totalItems = listReseller?.data?.total ?? 0;
+  const currentPage = filterItem?.page ?? 1;
+  const pageSize = filterItem?.limit ?? 10;
+
+  const handlePageChange = (page: number) => {
+    setFilterItem((prev: any) => ({ ...prev, page }));
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setFilterItem((prev: any) => ({ ...prev, limit: size, page: 1 }));
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -179,31 +118,42 @@ const ResellerManagementContainer = () => {
           prefix={<SearchOutlined />}
           placeholder="Search"
           style={{ width: 250 }}
+          onChange={(e) =>
+            setFilterItem((prev: any) => ({
+              ...prev,
+              search: e.target.value,
+              page: 1,
+            }))
+          }
         />
         <div className="flex items-center gap-3">
           <RangePicker />
           <Select
             placeholder="All Area"
             suffixIcon={<DownOutlined />}
-            options={[
-              { key: "1", label: "All Area" },
-              { key: "2", label: "Area 1" },
-              { key: "3", label: "Area 2" },
-            ]}
+            options={[{ key: "JEMBER", label: "Jember" }]}
+            onChange={(value) =>
+              setFilterItem((prev: any) => ({
+                ...prev,
+                area: value,
+                page: 1,
+              }))
+            }
           />
         </div>
       </div>
       <div className="p-6">
         <Tables<Reseller>
-          data={data}
+          data={resellerData}
           columns={columns}
-          actionItems={[{ key: "1", label: "Details" }]}
+          actionItems={actionItems}
           onActionClick={() => router.push(PAGE_NAME.client_order)}
           statusColorFn={getStatusColor}
-          pageSize={10}
-          totalItems={data.length}
-          onPageChange={(page) => console.log("Page:", page)}
-          onPageSizeChange={(size) => console.log("New page size:", size)}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          showIndex
         />
       </div>
     </LayoutContentPage>

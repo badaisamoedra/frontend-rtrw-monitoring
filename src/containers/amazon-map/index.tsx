@@ -5,7 +5,7 @@ import maplibregl from "maplibre-gl";
 import { Button, Input } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
-import { TICKET_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
+import { RESELLER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import { useGeolocated } from "react-geolocated";
 import {
   ModalStreetView,
@@ -13,13 +13,13 @@ import {
   ToastContent,
 } from "@rtrw-monitoring-system/components";
 import { toast } from "react-toastify";
-import { useTicketRepository } from "@rtrw-monitoring-system/services/ticket";
+import { useResellerRepository } from "@rtrw-monitoring-system/services/reseller";
 
-const DEFAULT = { lat: -6.273429747830478, lng: 106.822463982675 };
+const DEFAULT = { lat: -8.2, lng: 114.05 };
 
 type ModalProps = {
   modalOpen: "EDIT" | "STREET_VIEW" | "";
-  ticket?: any;
+  reseller?: any;
   image?: string;
 };
 
@@ -47,7 +47,8 @@ const DashboardAmazonContainer = () => {
     modalOpen: "",
   });
 
-  const { updateTicket } = useTicketRepository();
+  const { updateReseller } = useResellerRepository();
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (isGeolocationEnabled && coords) {
@@ -56,147 +57,161 @@ const DashboardAmazonContainer = () => {
   }, [coords, isGeolocationEnabled]);
 
   const {
-    queryResult: { data: ticketData, isLoading, refetch },
-  } = useData<TicketingAllResponse>(
-    { url: TICKET_SERVICE.ticket_all },
-    [TICKET_SERVICE.ticket_all],
+    queryResult: { data: resellerData, isLoading, refetch },
+  } = useData<ResellerMapResponse>(
+    { url: RESELLER_SERVICE.reseller_map },
+    [RESELLER_SERVICE.reseller_map],
     null,
     { enabled: true }
   );
 
-  const renderPolygons = (map: maplibregl.Map) => {
-    if (!ticketData?.data?.length) return;
+  const {
+    queryResult: {
+      data: resellerDetailData,
+      isLoading: loadingDetail,
+      refetch: refetchDetail,
+    },
+  } = useData<ResellerMapResponse>(
+    { url: RESELLER_SERVICE.reseller_detail(selectedId ?? "") }, // ini diisi reseller id
+    [RESELLER_SERVICE.reseller_detail(selectedId ?? "")],
+    null,
+    { enabled: !!selectedId }
+  );
 
-    const districtGroups = ticketData.data.reduce((acc, ticket) => {
-      if (!acc[ticket.district]) acc[ticket.district] = [];
-      acc[ticket.district].push([
-        parseFloat(ticket.longitude),
-        parseFloat(ticket.latitude),
-      ]);
-      return acc;
-    }, {} as Record<string, [number, number][]>);
+  // this function will be called when this future on
+  // const renderPolygons = (map: maplibregl.Map) => {
+  //   if (!ticketData?.data?.length) return;
 
-    const features = Object.entries(districtGroups).map(
-      ([district, coords]) => {
-        const bounds = coords.reduce(
-          (b, [lng, lat]) => {
-            b.minLng = Math.min(b.minLng, lng);
-            b.maxLng = Math.max(b.maxLng, lng);
-            b.minLat = Math.min(b.minLat, lat);
-            b.maxLat = Math.max(b.maxLat, lat);
-            return b;
-          },
-          {
-            minLng: coords[0][0],
-            maxLng: coords[0][0],
-            minLat: coords[0][1],
-            maxLat: coords[0][1],
-          }
-        );
+  //   const districtGroups = ticketData.data.reduce((acc, ticket) => {
+  //     if (!acc[ticket.district]) acc[ticket.district] = [];
+  //     acc[ticket.district].push([
+  //       parseFloat(ticket.longitude),
+  //       parseFloat(ticket.latitude),
+  //     ]);
+  //     return acc;
+  //   }, {} as Record<string, [number, number][]>);
 
-        return {
-          type: "Feature",
-          properties: { name: district },
-          geometry: {
-            type: "Polygon",
-            coordinates: [
-              [
-                [bounds.minLng, bounds.minLat],
-                [bounds.maxLng, bounds.minLat],
-                [bounds.maxLng, bounds.maxLat],
-                [bounds.minLng, bounds.maxLat],
-                [bounds.minLng, bounds.minLat],
-              ],
-            ],
-          },
-        } satisfies GeoJSON.Feature<GeoJSON.Polygon>;
-      }
-    );
+  //   const features = Object.entries(districtGroups).map(
+  //     ([district, coords]) => {
+  //       const bounds = coords.reduce(
+  //         (b, [lng, lat]) => {
+  //           b.minLng = Math.min(b.minLng, lng);
+  //           b.maxLng = Math.max(b.maxLng, lng);
+  //           b.minLat = Math.min(b.minLat, lat);
+  //           b.maxLat = Math.max(b.maxLat, lat);
+  //           return b;
+  //         },
+  //         {
+  //           minLng: coords[0][0],
+  //           maxLng: coords[0][0],
+  //           minLat: coords[0][1],
+  //           maxLat: coords[0][1],
+  //         }
+  //       );
 
-    const polygonData: GeoJSON.FeatureCollection<GeoJSON.Polygon> = {
-      type: "FeatureCollection",
-      features,
-    };
+  //       return {
+  //         type: "Feature",
+  //         properties: { name: district },
+  //         geometry: {
+  //           type: "Polygon",
+  //           coordinates: [
+  //             [
+  //               [bounds.minLng, bounds.minLat],
+  //               [bounds.maxLng, bounds.minLat],
+  //               [bounds.maxLng, bounds.maxLat],
+  //               [bounds.minLng, bounds.maxLat],
+  //               [bounds.minLng, bounds.minLat],
+  //             ],
+  //           ],
+  //         },
+  //       } satisfies GeoJSON.Feature<GeoJSON.Polygon>;
+  //     }
+  //   );
 
-    if (map.getSource("district-polygons")) {
-      (map.getSource("district-polygons") as maplibregl.GeoJSONSource).setData(
-        polygonData
-      );
-    } else {
-      map.addSource("district-polygons", {
-        type: "geojson",
-        data: polygonData,
-      } satisfies maplibregl.GeoJSONSourceSpecification);
+  //   const polygonData: GeoJSON.FeatureCollection<GeoJSON.Polygon> = {
+  //     type: "FeatureCollection",
+  //     features,
+  //   };
 
-      map.addLayer({
-        id: "polygon-fill",
-        type: "fill",
-        source: "district-polygons",
-        paint: {
-          "fill-color": [
-            "match",
-            ["get", "name"],
-            "Jakarta Selatan",
-            "#4ade80",
-            "Jakarta Barat",
-            "#60a5fa",
-            "Bekasi Barat",
-            "#facc15",
-            "#a855f7",
-          ],
-          "fill-opacity": 0.25,
-        },
-      });
+  //   if (map.getSource("district-polygons")) {
+  //     (map.getSource("district-polygons") as maplibregl.GeoJSONSource).setData(
+  //       polygonData
+  //     );
+  //   } else {
+  //     map.addSource("district-polygons", {
+  //       type: "geojson",
+  //       data: polygonData,
+  //     } satisfies maplibregl.GeoJSONSourceSpecification);
 
-      map.addLayer({
-        id: "polygon-outline",
-        type: "line",
-        source: "district-polygons",
-        paint: {
-          "line-color": "#1e3a8a",
-          "line-width": 2,
-        },
-      });
+  //     map.addLayer({
+  //       id: "polygon-fill",
+  //       type: "fill",
+  //       source: "district-polygons",
+  //       paint: {
+  //         "fill-color": [
+  //           "match",
+  //           ["get", "name"],
+  //           "Jakarta Selatan",
+  //           "#4ade80",
+  //           "Jakarta Barat",
+  //           "#60a5fa",
+  //           "Bekasi Barat",
+  //           "#facc15",
+  //           "#a855f7",
+  //         ],
+  //         "fill-opacity": 0.25,
+  //       },
+  //     });
 
-      map.on("click", "polygon-fill", (e) => {
-        const name = e.features?.[0]?.properties?.name;
-        const coordinates = e.lngLat;
-        new maplibregl.Popup()
-          .setLngLat(coordinates)
-          .setHTML(`<strong>${name}</strong>`)
-          .addTo(map);
-      });
+  //     map.addLayer({
+  //       id: "polygon-outline",
+  //       type: "line",
+  //       source: "district-polygons",
+  //       paint: {
+  //         "line-color": "#1e3a8a",
+  //         "line-width": 2,
+  //       },
+  //     });
 
-      map.on("mouseenter", "polygon-fill", () => {
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", "polygon-fill", () => {
-        map.getCanvas().style.cursor = "";
-      });
-    }
-  };
+  //     map.on("click", "polygon-fill", (e) => {
+  //       const name = e.features?.[0]?.properties?.name;
+  //       const coordinates = e.lngLat;
+  //       new maplibregl.Popup()
+  //         .setLngLat(coordinates)
+  //         .setHTML(`<strong>${name}</strong>`)
+  //         .addTo(map);
+  //     });
 
-  const tickets = React.useMemo(() => {
-    if (!ticketData?.data) return [];
-    return ticketData.data
+  //     map.on("mouseenter", "polygon-fill", () => {
+  //       map.getCanvas().style.cursor = "pointer";
+  //     });
+  //     map.on("mouseleave", "polygon-fill", () => {
+  //       map.getCanvas().style.cursor = "";
+  //     });
+  //   }
+  // };
+
+  const resellers = React.useMemo(() => {
+    if (!resellerData?.data) return [];
+    return resellerData.data
       .filter(
-        (t) => !isNaN(parseFloat(t.latitude)) && !isNaN(parseFloat(t.longitude))
+        (t) =>
+          t.latitude !== null &&
+          t.longitude !== null &&
+          !isNaN(t.latitude) &&
+          !isNaN(t.longitude)
       )
       .map((t) => ({
         id: t.id,
-        ticketNumber: t.ticketNumber,
-        ticketDesc: t.ticketDesc,
-        userId: t.userId,
+        resellerNumber: t.resellerNumber || "",
         latitude: t.latitude,
         longitude: t.longitude,
-        lat: parseFloat(t.latitude),
-        lng: parseFloat(t.longitude),
-        status: t.status,
-        district: t.district,
-        subDistrict: t.subDistrict,
-        details: t.details,
+        lat: t.latitude,
+        lng: t.longitude,
+        status: t.status || "UNKNOWN",
+        createdAt: t.createdAt,
       }));
-  }, [ticketData]);
+  }, [resellerData]);
 
   const initializeMap = React.useCallback(() => {
     if (!mapContainer.current || !region || !mapName || !apiKey) return;
@@ -206,7 +221,7 @@ const DashboardAmazonContainer = () => {
     const map = new maplibregl.Map({
       container: mapContainer.current!,
       style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
-      center: [position.lng, position.lat],
+      center: [DEFAULT.lng, DEFAULT.lat],
       zoom: 13,
     });
 
@@ -240,11 +255,11 @@ const DashboardAmazonContainer = () => {
     });
   }, [region, mapName, apiKey, position]);
 
-  React.useEffect(() => {
-    if (isMapReady && mapRef.current && ticketData?.data?.length) {
-      renderPolygons(mapRef.current);
-    }
-  }, [isMapReady, ticketData]);
+  // React.useEffect(() => {
+  //   if (isMapReady && mapRef.current && resellerData?.data?.length) {
+  //     renderPolygons(mapRef.current);
+  //   }
+  // }, [isMapReady, resellerData]);
 
   React.useLayoutEffect(() => {
     const timer = setTimeout(() => {
@@ -264,17 +279,17 @@ const DashboardAmazonContainer = () => {
     if (isMapReady && mapRef.current) {
       renderMarkers(mapRef.current);
     }
-  }, [isMapReady, tickets]);
+  }, [isMapReady, resellers]);
 
   const renderMarkers = (map: maplibregl.Map) => {
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    if (!tickets.length) return;
+    if (!resellers.length) return;
 
     const bounds = new maplibregl.LngLatBounds();
 
-    tickets.forEach((ticket) => {
+    resellers.forEach((reseller, index) => {
       const el = document.createElement("div");
       el.className = "custom-marker";
       el.style.cssText = `
@@ -284,10 +299,10 @@ const DashboardAmazonContainer = () => {
         border: 2px solid white;
         box-shadow: 0 0 6px rgba(0,0,0,0.4);
         background-color: ${
-          ticket.status === "OPEN"
-            ? "#22c55e"
-            : ticket.status === "FOLLOWED_UP"
-            ? "#2563eb"
+          reseller.status === "ACTIVE"
+            ? "#008E53"
+            : reseller.status === "PENDING"
+            ? "#0050AE"
             : "#dc2626"
         };
         cursor: pointer;
@@ -295,20 +310,21 @@ const DashboardAmazonContainer = () => {
       `;
 
       const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([ticket.lng, ticket.lat])
+        .setLngLat([reseller.lng, reseller.lat])
         .addTo(map);
 
       markersRef.current.push(marker);
-      bounds.extend([ticket.lng, ticket.lat]);
+      bounds.extend([reseller.lng, reseller.lat]);
 
       el.addEventListener("click", () => {
-        setSelected(ticket);
+        setSelectedId(reseller.id);
+        setSelected(reseller);
         map.flyTo({
-          center: [ticket.lng, ticket.lat],
+          center: [reseller.lng, reseller.lat],
           zoom: 15,
           duration: 800,
         });
-        scrollToCard(ticket.id);
+        scrollToCard(reseller.id, index);
       });
     });
 
@@ -317,18 +333,19 @@ const DashboardAmazonContainer = () => {
     }
   };
 
-  const scrollToCard = (ticketId: string | number) => {
-    const el = document.getElementById(`card-${ticketId}`);
-    const container = document.getElementById("ticket-card-scroll");
+  const scrollToCard = (resellerId: string | number, index?: number) => {
+    const el = document.getElementById(`card-${resellerId}-${index ?? 0}`);
+    const container = document.getElementById("reseller-card-scroll");
     if (el && container) {
       el.scrollIntoView({ behavior: "smooth", inline: "center" });
     }
   };
 
-  const handleCardClick = (ticket: any) => {
-    setSelected(ticket);
+  const handleCardClick = (reseller: any) => {
+    setSelected(reseller);
+    setSelectedId(reseller.id);
     mapRef.current?.flyTo({
-      center: [ticket.lng, ticket.lat],
+      center: [reseller.lng, reseller.lat],
       zoom: 15,
       duration: 800,
     });
@@ -336,8 +353,8 @@ const DashboardAmazonContainer = () => {
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    const found = tickets.find((t) =>
-      t.ticketNumber.toLowerCase().includes(value.toLowerCase())
+    const found = resellers.find((t) =>
+      t.resellerNumber.toLowerCase().includes(value.toLowerCase())
     );
     if (found) {
       handleCardClick(found);
@@ -345,30 +362,27 @@ const DashboardAmazonContainer = () => {
     }
   };
 
-  const handleSaveTicket = async (updatedTicket: UpdateTicketPayload) => {
+  const handleSaveReseller = async (updatedReseller: UpdateResellerPayload) => {
     try {
-      const payload: UpdateTicketPayload = {
-        id: updatedTicket.id,
-        status: updatedTicket.status,
-        district: updatedTicket.district,
-        latitude: updatedTicket.lat ?? "",
-        longitude: updatedTicket.lng ?? "",
-        subDistrict: updatedTicket.subDistrict,
-        ticketDesc: updatedTicket.ticketDesc,
-        ticketNumber: updatedTicket.ticketNumber,
-        details: [
-          {
-            id: updatedTicket.details?.[0]?.id,
-            potentialHigh: updatedTicket.details?.[0]?.potentialHigh,
-            potentialLow: updatedTicket.details?.[0]?.potentialLow,
-            threeMonth: updatedTicket.details?.[0]?.threeMonth,
-            potentialRevenue: updatedTicket.details?.[0]?.potentialRevenue,
-            notes: updatedTicket.details?.[0]?.notes,
-          },
-        ],
+      const pocUser =
+        typeof window !== "undefined"
+          ? JSON.parse(localStorage.getItem("pocUser") || "{}")
+          : {};
+
+      const payload: UpdateResellerPayload = {
+        id: updatedReseller?.id,
+        status: updatedReseller?.status,
+        potentialHigh: updatedReseller?.potentialHigh,
+        potentialLow: updatedReseller?.potentialLow,
+        potentialThreeMonth: Number(updatedReseller?.potentialThreeMonth),
+        potentialRevenue: Number(updatedReseller?.potentialRevenue),
+        notes: updatedReseller?.notes,
+        createdBy: pocUser?.id ?? null,
+        latitude: updatedReseller?.latitude,
+        longitude: updatedReseller?.longitude,
       };
 
-      await updateTicket.mutateAsync(payload);
+      await updateReseller.mutateAsync(payload);
 
       toast.success(
         <ToastContent description="Data user berhasil diperbarui" />
@@ -386,13 +400,13 @@ const DashboardAmazonContainer = () => {
     }
   };
 
-  if (isLoading) return <div className="p-4">Loading tickets...</div>;
+  if (isLoading) return <div className="p-4">Loading resellers...</div>;
 
   return (
     <div className="relative w-full h-[calc(100vh-64px)] overflow-hidden">
       <div className="absolute top-[50px] left-1/14 z-50 w-[400px] flex gap-2">
         <Input.Search
-          placeholder="Search Ticket No."
+          placeholder="Search Reseller No."
           allowClear
           enterButton
           onSearch={handleSearch}
@@ -424,16 +438,20 @@ const DashboardAmazonContainer = () => {
         <div className="absolute top-[130px] right-6 bg-white shadow-md rounded p-3 text-sm space-y-1 z-50 w-[200px]">
           <h4 className="font-semibold mb-2">Legend Information</h4>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-3 h-3 rounded-full bg-green-600"></span>
-            <span>Open</span>
+            <span className="inline-block w-3 h-3 rounded-full bg-[#008E53]"></span>
+            <span>Active</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-3 h-3 rounded-full bg-blue-600"></span>
-            <span>Followed Up</span>
+            <span className="inline-block w-3 h-3 rounded-full bg-[#0050AE]"></span>
+            <span>Pending</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-3 h-3 rounded-full bg-red-600"></span>
-            <span>Closed</span>
+            <span className="inline-block w-3 h-3 rounded-full bg-[#dc2626]"></span>
+            <span>Non Active</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-3 h-3 rounded-full bg-[#dc2626]"></span>
+            <span>Reject</span>
           </div>
         </div>
       )}
@@ -445,17 +463,19 @@ const DashboardAmazonContainer = () => {
       />
 
       <div
-        id="ticket-card-scroll"
+        id="reseller-card-scroll"
         className="absolute bottom-5 left-0 right-0 px-5 py-2 flex gap-4 overflow-x-auto pb-3 scrollbar-hide z-50"
         style={{ scrollSnapType: "x mandatory" }}
       >
-        {tickets.map((ticket) => (
+        {resellers.map((reseller, index) => (
           <div
-            key={ticket.id}
-            id={`card-${ticket.id}`}
-            onClick={() => handleCardClick(ticket)}
+            key={`${reseller.id}-${index}`}
+            id={`card-${reseller.id}`}
+            onClick={() => handleCardClick(reseller)}
             className={`min-w-[320px] bg-white rounded-2xl shadow-md p-4 flex-shrink-0 cursor-pointer transition-all duration-300 scroll-snap-align-center ${
-              selected?.id === ticket.id ? "ring-4 ring-red-500 scale-105" : ""
+              selected?.id === reseller.id
+                ? "ring-4 ring-red-500 scale-105"
+                : ""
             }`}
           >
             <div className="flex items-center mb-2">
@@ -463,45 +483,50 @@ const DashboardAmazonContainer = () => {
                 className="w-4 h-4 rounded-full mr-2"
                 style={{
                   backgroundColor:
-                    ticket.status === "OPEN"
-                      ? "#22c55e"
-                      : ticket.status === "FOLLOWED_UP"
-                      ? "#2563eb"
+                    reseller.status === "ACTIVE"
+                      ? "#008E53"
+                      : reseller.status === "PENDING"
+                      ? "#0050AE"
                       : "#dc2626",
                 }}
               />
-              <h3 className="font-semibold text-sm">#{ticket.ticketNumber}</h3>
+              <h3 className="font-semibold text-sm">
+                #{reseller.resellerNumber ?? ""}
+              </h3>
             </div>
             <p className="text-xs text-gray-700">
-              <b>Longitude:</b> {ticket.lng}
+              <b>Longitude:</b> {reseller.lng}
             </p>
             <p className="text-xs text-gray-700">
-              <b>Latitude:</b> {ticket.lat}
+              <b>Latitude:</b> {reseller.lat}
             </p>
             <p className="text-xs text-gray-700">
-              <b>Ticket Date:</b>{" "}
-              {new Date(
-                ticket.details?.[0]?.createdAt ?? ""
-              ).toLocaleDateString()}
+              <b>reseller Date:</b>{" "}
+              {new Date(reseller?.createdAt ?? "").toLocaleDateString()}
             </p>
             <div className="flex gap-2 mt-3">
               <button
-                onClick={() => setShowModal({ modalOpen: "EDIT", ticket })}
+                onClick={() =>
+                  setShowModal({
+                    modalOpen: "EDIT",
+                    reseller: resellerDetailData?.data,
+                  })
+                }
                 className="bg-red-500 text-white text-xs px-3 py-1 rounded-md shadow-sm hover:bg-red-600 hover:shadow-md hover:scale-105 transition-all duration-200 cursor-pointer"
               >
                 Edit
               </button>
 
               <button
-                disabled={!ticket.lat || !ticket.lng}
+                disabled={!reseller.lat || !reseller.lng}
                 onClick={() =>
                   window.open(
-                    `https://www.google.com/maps/dir/?api=1&destination=${ticket.lat},${ticket.lng}`,
+                    `https://www.google.com/maps/dir/?api=1&destination=${reseller.lat},${reseller.lng}`,
                     "_blank"
                   )
                 }
                 className={`border text-xs px-3 py-1 rounded-md shadow-sm transition-all duration-200 cursor-pointer${
-                  !ticket.lat || !ticket.lng
+                  !reseller.lat || !reseller.lng
                     ? "cursor-not-allowed opacity-50 border-gray-200 text-gray-400"
                     : "border-gray-300 hover:bg-gray-100 hover:shadow-md hover:scale-105"
                 }`}
@@ -510,17 +535,17 @@ const DashboardAmazonContainer = () => {
               </button>
 
               <button
-                disabled={!ticket.lat || !ticket.lng}
+                disabled={!reseller.lat || !reseller.lng}
                 onClick={() => {
-                  if (ticket.lat && ticket.lng) {
+                  if (reseller.lat && reseller.lng) {
                     setShowModal({
                       modalOpen: "STREET_VIEW",
-                      ticket,
+                      reseller: resellerDetailData?.data,
                     });
                   }
                 }}
                 className={`text-xs px-3 py-1 rounded-md shadow-sm transition-all duration-200 cursor-pointer ${
-                  !ticket.lat || !ticket.lng
+                  !reseller.lat || !reseller.lng
                     ? "cursor-not-allowed opacity-50 bg-gray-200 text-gray-400"
                     : "bg-yellow-500 text-white hover:bg-yellow-600 hover:shadow-md hover:scale-105"
                 }`}
@@ -534,15 +559,15 @@ const DashboardAmazonContainer = () => {
       <ModalStreetView
         open={showModal.modalOpen === "STREET_VIEW"}
         onClose={() => setShowModal({ modalOpen: "" })}
-        ticket={showModal.ticket}
+        reseller={showModal.reseller}
       />
 
       <ModalTicket
         open={showModal.modalOpen === "EDIT"}
-        ticket={showModal.ticket}
+        ticket={showModal.reseller}
         section="EDIT"
         onClose={() => setShowModal({ modalOpen: "" })}
-        onSave={handleSaveTicket}
+        onSave={handleSaveReseller}
       />
     </div>
   );

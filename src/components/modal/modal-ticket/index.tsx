@@ -3,7 +3,6 @@
 import {
   numberWithDots,
   removeNonNumeric,
-  toRupiah,
 } from "@rtrw-monitoring-system/utils";
 import { Modal, Row, Col, Input, Button, Typography, Select } from "antd";
 import dayjs from "dayjs";
@@ -14,15 +13,16 @@ const { Text } = Typography;
 interface ModalTicketProps {
   open: boolean;
   onClose: () => void;
-  onSave?: (updatedTicket: TicketingList) => void;
-  ticket?: TicketingList;
+  onSave?: (updatedReseller: UpdateResellerPayload) => void;
+  ticket?: any;
   section: "VIEW" | "EDIT";
 }
 
 const ListStatus = [
-  { value: "OPEN", label: "Open" },
-  { value: "FOLLOWED_UP", label: "Followed Up" },
-  { value: "NO_RESPONSE", label: "No Response" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "INACTIVE", label: "In Active" },
+  { value: "REJECT", label: "Reject" },
+  { value: "PENDING", label: "Pending" },
 ];
 
 const ModalTicket: React.FC<ModalTicketProps> = ({
@@ -36,7 +36,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
   const [errors, setErrors] = React.useState({
     potentialHigh: "",
     potentialLow: "",
-    threeMonth: "",
+    potentialThreeMonth: "",
     potentialRevenue: "",
     status: "",
     notes: "",
@@ -47,7 +47,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
     setErrors({
       potentialHigh: "",
       potentialLow: "",
-      threeMonth: "",
+      potentialThreeMonth: "",
       potentialRevenue: "",
       status: "",
       notes: "",
@@ -55,21 +55,39 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
   }, [ticket]);
 
   const handleChange = (field: string, value: any) => {
-    setEditedTicket((prev: any) => ({
-      ...prev,
-      details: [
-        {
-          ...prev.details?.[0],
-          [field]: value,
-        },
-      ],
-    }));
+    setEditedTicket((prev: any) => {
+      const updated = { ...prev, [field]: value };
 
-    if (!value || value === "") {
-      setErrors((prev) => ({ ...prev, [field]: "Field ini wajib diisi." }));
-    } else {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
+      if (field === "potentialLow" && updated.potentialHigh !== undefined) {
+        if (Number(value) > Number(updated.potentialHigh)) {
+          setErrors((prev) => ({
+            ...prev,
+            potentialLow: "Nilai Low tidak boleh lebih besar dari High.",
+          }));
+        } else {
+          setErrors((prev) => ({ ...prev, potentialLow: "" }));
+        }
+      }
+
+      if (field === "potentialHigh" && updated.potentialLow !== undefined) {
+        if (Number(updated.potentialLow) > Number(value)) {
+          setErrors((prev) => ({
+            ...prev,
+            potentialLow: "Nilai Low tidak boleh lebih besar dari High.",
+          }));
+        } else {
+          setErrors((prev) => ({ ...prev, potentialLow: "" }));
+        }
+      }
+
+      if (!value || value === "") {
+        setErrors((prev) => ({ ...prev, [field]: "Field ini wajib diisi." }));
+      } else if (field !== "potentialLow" && field !== "potentialHigh") {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+
+      return updated;
+    });
   };
 
   const handleStatusChange = (val: string) => {
@@ -83,12 +101,16 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
   const isFormValid =
     !errors.potentialHigh &&
     !errors.potentialLow &&
+    !errors.potentialThreeMonth &&
+    !errors.potentialRevenue &&
     !errors.status &&
     !errors.notes &&
-    editedTicket?.details?.[0]?.potentialHigh &&
-    editedTicket?.details?.[0]?.potentialLow &&
+    editedTicket?.potentialHigh &&
+    editedTicket?.potentialLow &&
+    editedTicket?.potentialThreeMonth &&
+    editedTicket?.potentialRevenue &&
     editedTicket?.status &&
-    editedTicket?.details?.[0]?.notes;
+    editedTicket?.notes;
 
   const handleSave = () => {
     if (!isFormValid) return;
@@ -111,7 +133,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
             <Text strong>Ticket No.</Text>
           </Col>
           <Col span={16}>
-            <Input value={editedTicket?.ticketNumber} disabled />
+            <Input value={editedTicket?.resellerNumber ?? "-"} disabled />
           </Col>
         </Row>
 
@@ -120,12 +142,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
             <Text strong>Longitude</Text>
           </Col>
           <Col span={16}>
-            <Input
-              value={
-                section === "EDIT" ? editedTicket?.lng : editedTicket?.longitude
-              }
-              disabled
-            />
+            <Input value={editedTicket?.longitude ?? "-"} disabled />
           </Col>
         </Row>
 
@@ -134,12 +151,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
             <Text strong>Latitude</Text>
           </Col>
           <Col span={16}>
-            <Input
-              value={
-                section === "EDIT" ? editedTicket?.lat : editedTicket?.latitude
-              }
-              disabled
-            />
+            <Input value={editedTicket?.latitude ?? "-"} disabled />
           </Col>
         </Row>
 
@@ -149,7 +161,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           </Col>
           <Col span={16}>
             <Input
-              value={dayjs(editedTicket?.details?.[0]?.createdAt).format(
+              value={dayjs(editedTicket?.createdAt).format(
                 "DD-MMM-YYYY HH:mm:ss"
               )}
               disabled
@@ -162,7 +174,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
             <Text strong>Kabupaten</Text>
           </Col>
           <Col span={16}>
-            <Input value={editedTicket?.district} disabled />
+            <Input value={editedTicket?.province ?? "-"} disabled />
           </Col>
         </Row>
 
@@ -171,7 +183,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
             <Text strong>Kecamatan</Text>
           </Col>
           <Col span={16}>
-            <Input value={editedTicket?.subDistrict} disabled />
+            <Input value={editedTicket?.district ?? "-"} disabled />
           </Col>
         </Row>
 
@@ -180,7 +192,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
             <Text strong>Kelurahan / Desa</Text>
           </Col>
           <Col span={16}>
-            <Input value={editedTicket?.subDistrict} disabled />
+            <Input value={editedTicket?.city ?? "-"} disabled />
           </Col>
         </Row>
 
@@ -191,7 +203,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           <Col span={8}>
             <Input
               addonBefore="High"
-              value={editedTicket?.details?.[0]?.potentialHigh}
+              value={editedTicket?.potentialHigh ?? 0}
               disabled={section === "VIEW"}
               onChange={(e) =>
                 handleChange("potentialHigh", Number(e.target.value))
@@ -206,7 +218,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           <Col span={8}>
             <Input
               addonBefore="Low"
-              value={editedTicket?.details?.[0]?.potentialLow}
+              value={editedTicket?.potentialLow ?? 0}
               disabled={section === "VIEW"}
               onChange={(e) =>
                 handleChange("potentialLow", Number(e.target.value))
@@ -227,14 +239,17 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           <Col span={16}>
             <Input
               addonBefore="IDR"
-              value={numberWithDots(editedTicket?.details?.[0]?.threeMonth)}
+              value={numberWithDots(editedTicket?.potentialThreeMonth)}
               onChange={(e) =>
-                handleChange("threeMonth", removeNonNumeric(e.target.value))
+                handleChange(
+                  "potentialThreeMonth",
+                  removeNonNumeric(e.target.value)
+                )
               }
             />
-            {errors.threeMonth && (
+            {errors.potentialThreeMonth && (
               <Text type="danger" style={{ color: "red" }}>
-                {errors.threeMonth}
+                {errors.potentialThreeMonth}
               </Text>
             )}
           </Col>
@@ -247,9 +262,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           <Col span={16}>
             <Input
               addonBefore="IDR"
-              value={numberWithDots(
-                editedTicket?.details?.[0]?.potentialRevenue
-              )}
+              value={numberWithDots(editedTicket?.potentialRevenue)}
               disabled={section === "VIEW"}
               onChange={(e) =>
                 handleChange(
@@ -293,7 +306,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           <Col span={16}>
             <Input.TextArea
               rows={3}
-              value={editedTicket?.details?.[0]?.notes}
+              value={editedTicket?.notes}
               disabled={section === "VIEW"}
               onChange={(e) => handleChange("notes", e.target.value)}
             />
