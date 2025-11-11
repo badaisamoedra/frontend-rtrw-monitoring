@@ -501,7 +501,7 @@ const DashboardAmazonContainer = () => {
               <b>Latitude:</b> {reseller.lat}
             </p>
             <p className="text-xs text-gray-700">
-              <b>reseller Date:</b>{" "}
+              <b>Tanggal:</b>{" "}
               {new Date(reseller?.createdAt ?? "").toLocaleDateString()}
             </p>
             <div className="flex gap-2 mt-3">
