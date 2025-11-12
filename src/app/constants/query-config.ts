@@ -55,3 +55,9 @@ export const orderListParam = {
   area: StringParam,
   resellerNumber: StringParam,
 };
+
+export const orderDetailListParam = {
+  ...defaultParam,
+  search: StringParam,
+  orderId: StringParam,
+};

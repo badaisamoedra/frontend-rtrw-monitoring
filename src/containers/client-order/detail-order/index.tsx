@@ -3,9 +3,12 @@
 import { LayoutContentPage, Tables } from "@rtrw-monitoring-system/components";
 import { Input, MenuProps, Space } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { useRouter } from "next/navigation";
-import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
+import { useRouter, useSearchParams } from "next/navigation";
+import { PAGE_NAME, PARAMS } from "@rtrw-monitoring-system/app/constants";
 import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
+import { useDataTable } from "@rtrw-monitoring-system/hooks";
+import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
+import React from "react";
 
 interface Customer {
   id: string;
@@ -15,119 +18,90 @@ interface Customer {
   email: string;
   uploadDate: string;
   package: string;
-  status:
-    | "Menunggu Data Pelanggan"
-    | "Menunggu Validasi Data"
-    | "Menunggu Instalasi"
-    | "Active"
-    | "Failed";
+  // status:
+  //   | "Menunggu Data Pelanggan"
+  //   | "Menunggu Validasi Data"
+  //   | "Menunggu Instalasi"
+  //   | "ACTIVE"
+  //   | "PENDING"
+  //   | "INACTIVE"
+  //   | "REJECT"
+  status: string
 }
 
-const data: Customer[] = [
-  {
-    id: "1",
-    orderId: "AOx6241215082640552f17b30",
-    name: "Dominic Sudirman",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 30mbps",
-    status: "Menunggu Data Pelanggan",
-  },
-  {
-    id: "2",
-    orderId: "AOx6241215082640552f17b31",
-    name: "Budi Sawarna",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 10mbps",
-    status: "Menunggu Validasi Data",
-  },
-  {
-    id: "3",
-    orderId: "AOx6241215082640552f17b32",
-    name: "Rudolf",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 30mbps",
-    status: "Menunggu Instalasi",
-  },
-  {
-    id: "4",
-    orderId: "AOx6241215082640552f17b33",
-    name: "Amir Marawi",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 10mbps",
-    status: "Menunggu Instalasi",
-  },
-  {
-    id: "5",
-    orderId: "AOx6241215082640552f17b34",
-    name: "Najih",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 30mbps",
-    status: "Active",
-  },
-  {
-    id: "6",
-    orderId: "AOx6241215082640552f17b35",
-    name: "Zaki Maliq",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 30mbps",
-    status: "Active",
-  },
-  {
-    id: "7",
-    orderId: "AOx6241215082640552f17b36",
-    name: "Soekarno",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 30mbps",
-    status: "Active",
-  },
-  {
-    id: "8",
-    orderId: "AOx6241215082640552f17b37",
-    name: "Hatta Maro",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 30mbps",
-    status: "Active",
-  },
-  {
-    id: "9",
-    orderId: "AOx6241215082640552f17b38",
-    name: "Marlo",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 30mbps",
-    status: "Active",
-  },
-  {
-    id: "10",
-    orderId: "AOx6241215082640552f17b39",
-    name: "Marco",
-    phone: "0812-2233-4455",
-    email: "Dominic@gmail.com",
-    uploadDate: "12 Des 2024",
-    package: "EZnet 30mbps",
-    status: "Failed",
-  },
+const actionItems: MenuProps["items"] = [
+  { key: "edit", label: "Edit" },
+  { key: "detail", label: "View Detail" },
+];
+
+const columns: Column<Customer>[] = [
+  { title: "Order ID", dataIndex: "orderId" },
+  { title: "Nama Pelanggan", dataIndex: "name" },
+  { title: "No Handphone", dataIndex: "phone" },
+  { title: "Email", dataIndex: "email" },
+  { title: "Tanggal Upload", dataIndex: "uploadDate" },
+  { title: "Paket Internet", dataIndex: "package" },
+  { title: "Status", dataIndex: "status" },
 ];
 
 const OrderDetailContainer = () => {
   const router = useRouter();
+  const params = useSearchParams();
+  const orderId = params.get("orderId");
+
+  const {
+    queryResult: { data: listOrderDetail },
+    setFilterItem,
+    filterItem,
+  } = useDataTable<ListOrderDetailRespone, ListOrderDetailParam>(
+    {
+      url: ORDER_SERVICE.order_details,
+    },
+    [ORDER_SERVICE.order_list],
+    PARAMS.orderDetailListParam
+  );
+
+  React.useEffect(() => {
+    if (orderId) {
+      setFilterItem((prev) => ({
+        ...prev,
+        orderId: orderId,
+        page: 1,
+      }));
+    }
+  }, [orderId, setFilterItem]);
+
+  const orderDetailData = React.useMemo(() => {
+    const list = listOrderDetail?.data?.list || [];
+    return list.map((item) => ({
+      id: item.id,
+      orderId: item.orderId || "-",
+      name: item.clientName || "-",
+      phone: item.phoneNumber || "-",
+      email: item.email || "-",
+      uploadDate: item.updatedAt
+        ? new Date(item.updatedAt).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "-",
+      package: item.package || "-",
+      status: item.status || "Menunggu Data Pelanggan",
+    }));
+  }, [listOrderDetail, router]);
+
+  const totalItems = listOrderDetail?.data?.total ?? 0;
+  const currentPage = filterItem?.page ?? 1;
+  const pageSize = filterItem?.limit ?? 5;
+
+  const handlePageChange = (page: number) => {
+    setFilterItem((prev) => ({ ...prev, page }));
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setFilterItem((prev) => ({ ...prev, limit: size, page: 1 }));
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -143,21 +117,6 @@ const OrderDetailContainer = () => {
         return "bg-gray-100 text-gray-600";
     }
   };
-
-  const actionItems: MenuProps["items"] = [
-    { key: "1", label: "Edit" },
-    { key: "2", label: "View Detail" },
-  ];
-
-  const columns: Column<Customer>[] = [
-    { title: "Order ID", dataIndex: "orderId" },
-    { title: "Nama Pelanggan", dataIndex: "name" },
-    { title: "No Handphone", dataIndex: "phone" },
-    { title: "Email", dataIndex: "email" },
-    { title: "Tanggal Upload", dataIndex: "uploadDate" },
-    { title: "Paket Internet", dataIndex: "package" },
-    { title: "Status", dataIndex: "status" },
-  ];
 
   return (
     <LayoutContentPage className="p-6">
@@ -184,18 +143,32 @@ const OrderDetailContainer = () => {
           prefix={<SearchOutlined />}
           placeholder="Search"
           style={{ width: 250, height: 40 }}
+          onChange={(e) =>
+            setFilterItem((prev) => ({
+              ...prev,
+              search: e.target.value,
+              page: 1,
+            }))
+          }
         />
       </div>
 
       <Tables<Customer>
-        data={data}
+        data={orderDetailData}
         columns={columns}
         showIndex={false}
         statusColorFn={getStatusColor}
         actionItems={actionItems}
-        onActionClick={(record) => router.push(PAGE_NAME.activity_order)}
-        pageSize={10}
-        totalItems={data.length}
+        onActionClick={(record, actionKey) => {
+          if (actionKey === "detail") {
+            router.push(`${PAGE_NAME.activity_order}?id=${record.id}`);
+          }
+        }}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
       />
     </LayoutContentPage>
   );

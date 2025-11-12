@@ -67,7 +67,7 @@ const ListOrderContainer = () => {
 
   const orderData = React.useMemo(() => {
     const list = listOrder?.data?.list || [];
-    return list.map((item: any) => ({
+    return list.map((item) => ({
       id: item.id,
       orderNumber: item.orderNumber || "-",
       status: item.status || "-",
