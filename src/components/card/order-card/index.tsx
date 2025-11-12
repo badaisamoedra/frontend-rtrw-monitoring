@@ -22,24 +22,35 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
   onDetail,
   onCopy,
 }) => {
-  const statusColor = {
-    Active: "text-[#28A745]",
-    "Not Active": "text-[#E31C25]",
-    Pending: "text-[#FFB800]",
-    Rejected: "text-[#E31C25]",
-  }[status];
+  const statusColor =
+    {
+      SUCCESS: "text-[#007C4C]",
+      PENDING: "text-[#FC9003]",
+      CANCELLED: "text-[#B71932]",
+      FAILED: "text-[#B71932]",
+    }[status] || "text-[#6B7280]";
 
-  const dotColor = {
-    Active: "bg-[#28A745]",
-    "Not Active": "bg-[#E31C25]",
-    Pending: "bg-[#FFB800]",
-    Rejected: "bg-[#E31C25]",
-  }[status];
+  const dotColor =
+    {
+      SUCCESS: "bg-[#007C4C]",
+      PENDING: "bg-[#FC9003]",
+      CANCELLED: "bg-[#B71932]",
+      FAILED: "bg-[#B71932]",
+    }[status] || "bg-gray-400";
 
   const backgroundStyle =
-    status === "Active"
-      ? "linear-gradient(90deg, rgba(40,167,69,0.08) 0%, rgba(255,255,255,1) 100%)"
-      : "linear-gradient(90deg, rgba(255,0,46,0.05) 0%, rgba(255,255,255,1) 100%)";
+    status === "SUCCESS"
+      ? "linear-gradient(90deg, rgba(0,124,76,0.08) 0%, rgba(255,255,255,1) 100%)"
+      : status === "PENDING"
+      ? "linear-gradient(90deg, rgba(252,144,3,0.08) 0%, rgba(255,255,255,1) 100%)"
+      : status === "CANCELLED" || status === "FAILED"
+      ? "linear-gradient(90deg, rgba(183,25,50,0.08) 0%, rgba(255,255,255,1) 100%)"
+      : "linear-gradient(90deg, rgba(0,0,0,0.03) 0%, rgba(255,255,255,1) 100%)";
+
+  const formattedStatus = (() => {
+    const s = String(status);
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  })();
 
   return (
     <div
@@ -70,7 +81,7 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
             )}
           ></span>
           <span className={clsx("text-[14px] font-semibold", statusColor)}>
-            {status}
+            {formattedStatus}
           </span>
         </div>
       </div>

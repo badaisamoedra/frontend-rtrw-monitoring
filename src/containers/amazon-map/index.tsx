@@ -290,6 +290,19 @@ const DashboardAmazonContainer = () => {
     const bounds = new maplibregl.LngLatBounds();
 
     resellers.forEach((reseller, index) => {
+      const getMarkerColor = (status: string) => {
+        switch (status?.toUpperCase()) {
+          case "ACTIVE":
+            return "#008E53"; // Hijau
+          case "PENDING":
+            return "#FC9003"; // Oranye
+          case "REJECT":
+          case "INACTIVE":
+            return "#dc2626"; // Merah
+          default:
+            return "#9CA3AF"; // Abu-abu default
+        }
+      };
       const el = document.createElement("div");
       el.className = "custom-marker";
       el.style.cssText = `
@@ -298,13 +311,7 @@ const DashboardAmazonContainer = () => {
         border-radius: 50%;
         border: 2px solid white;
         box-shadow: 0 0 6px rgba(0,0,0,0.4);
-        background-color: ${
-          reseller.status === "ACTIVE"
-            ? "#008E53"
-            : reseller.status === "PENDING"
-            ? "#0050AE"
-            : "#dc2626"
-        };
+        background-color: ${getMarkerColor(reseller.status)};
         cursor: pointer;
         transition: transform 0.2s ease;
       `;
@@ -324,7 +331,7 @@ const DashboardAmazonContainer = () => {
           zoom: 15,
           duration: 800,
         });
-        scrollToCard(reseller.id, index);
+        setTimeout(() => scrollToCard(reseller.id), 100);
       });
     });
 
@@ -333,8 +340,8 @@ const DashboardAmazonContainer = () => {
     }
   };
 
-  const scrollToCard = (resellerId: string | number, index?: number) => {
-    const el = document.getElementById(`card-${resellerId}-${index ?? 0}`);
+  const scrollToCard = (resellerId: string | number) => {
+    const el = document.getElementById(`card-${resellerId}`);
     const container = document.getElementById("reseller-card-scroll");
     if (el && container) {
       el.scrollIntoView({ behavior: "smooth", inline: "center" });
@@ -354,7 +361,7 @@ const DashboardAmazonContainer = () => {
   const handleSearch = (value: string) => {
     setSearch(value);
     const found = resellers.find((t) =>
-      t.resellerNumber.toLowerCase().includes(value.toLowerCase())
+      t.id.toLowerCase().includes(value.toLowerCase())
     );
     if (found) {
       handleCardClick(found);
@@ -435,23 +442,19 @@ const DashboardAmazonContainer = () => {
       </div>
 
       {showLegend && (
-        <div className="absolute top-[130px] right-6 bg-white shadow-md rounded p-3 text-sm space-y-1 z-50 w-[200px]">
+        <div className="absolute top-[90px] right-6 bg-white shadow-md rounded p-3 text-sm space-y-1 z-50 w-[200px]">
           <h4 className="font-semibold mb-2">Legend Information</h4>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#008E53]"></span>
             <span>Active</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-3 h-3 rounded-full bg-[#0050AE]"></span>
+            <span className="inline-block w-3 h-3 rounded-full bg-[#FC9003]"></span>
             <span>Pending</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#dc2626]"></span>
-            <span>Non Active</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-3 h-3 rounded-full bg-[#dc2626]"></span>
-            <span>Reject</span>
+            <span>Inactive / Reject</span>
           </div>
         </div>
       )}
@@ -483,16 +486,18 @@ const DashboardAmazonContainer = () => {
                 className="w-4 h-4 rounded-full mr-2"
                 style={{
                   backgroundColor:
-                    reseller.status === "ACTIVE"
-                      ? "#008E53"
-                      : reseller.status === "PENDING"
-                      ? "#0050AE"
-                      : "#dc2626",
+                    reseller.status?.toUpperCase() === "ACTIVE"
+                      ? "#008E53" // Hijau
+                      : reseller.status?.toUpperCase() === "PENDING"
+                      ? "#FC9003" // Oranye
+                      : reseller.status?.toUpperCase() === "REJECT" ||
+                        reseller.status?.toUpperCase() === "INACTIVE"
+                      ? "#dc2626" // Merah
+                      : "#9CA3AF", // Abu-abu default
                 }}
               />
-              <h3 className="font-semibold text-sm">
-                #{reseller.resellerNumber ?? ""}
-              </h3>
+
+              <h3 className="font-semibold text-sm">#{reseller.id ?? ""}</h3>
             </div>
             <p className="text-xs text-gray-700">
               <b>Longitude:</b> {reseller.lng}

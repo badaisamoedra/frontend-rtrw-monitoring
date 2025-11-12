@@ -134,14 +134,51 @@ interface UpdateResellerPayload {
   longitude: string;
 }
 
+interface TotalResellerStatus {
+  ACTIVE: number;
+  INACTIVE: number;
+  PENDING: number;
+  REJECT: number;
+}
+
+interface ListOrderResponseData {
+  list: ListOrder[];
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextPage: number;
+  page: number;
+  prevPage: number;
+  total: number;
+  totalPages: number;
+}
+interface ListOrder {
+  id: string;
+  resellerNumber: string;
+  orderNumber: string;
+  status: string;
+  periode: string;
+  amount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+  deletedBy: null;
+}
+
 type ListResellerParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.resellerListParam;
-
 type ListResellerFilter =
   import("use-query-params").DecodedValueMap<ListResellerParam>;
-
 type ListResellerFilterPayload = Omit<ListResellerFilter, "page" | "limit">;
+
+type ListOrderParam =
+  typeof import("@rtrw-monitoring-system/app/constants").PARAMS.orderListParam;
+type ListOrderFilter =
+  import("use-query-params").DecodedValueMap<ListOrderParam>;
+type ListOrderFilterPayload = Omit<ListOrderFilter, "page" | "limit">;
 
 type ResellerResponse = BaseResponse<ResellerResponseData>;
 type ResellerMapResponse = BaseResponse<ResellerMap[]>;
 type ResellerDetail = BaseResponse<ResellerDetail>;
+type TotalResellerStatusResponse = BaseResponse<TotalResellerStatus>;
+type ListOrderResponse = BaseResponse<ListOrderResponseData>;
