@@ -21,8 +21,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { useRouter } from "next/navigation";
-import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
+import { useRouter, useSearchParams } from "next/navigation";
+import { PAGE_NAME, PARAMS } from "@rtrw-monitoring-system/app/constants";
+import { useDataTable } from "@rtrw-monitoring-system/hooks";
+import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
+import dayjs from "dayjs";
 
 const data = [
   { date: "8 Jan", value: 20 },
@@ -37,6 +40,75 @@ const data = [
 const ListOrderContainer = () => {
   const [mode, setMode] = React.useState<"daily" | "monthly">("daily");
   const router = useRouter();
+  const params = useSearchParams();
+  const resellerId = params.get("id");
+
+  const {
+    queryResult: { data: listOrder },
+    setFilterItem,
+    filterItem,
+  } = useDataTable<ListOrderResponse, ListOrderParam>(
+    {
+      url: ORDER_SERVICE.order_list,
+    },
+    [ORDER_SERVICE.order_list],
+    PARAMS.orderListParam
+  );
+
+  React.useEffect(() => {
+    if (resellerId) {
+      setFilterItem((prev) => ({
+        ...prev,
+        resellerNumber: resellerId,
+        page: 1,
+      }));
+    }
+  }, [resellerId, setFilterItem]);
+
+  const orderData = React.useMemo(() => {
+    const list = listOrder?.data?.list || [];
+    return list.map((item: any) => ({
+      id: item.id,
+      orderNumber: item.orderNumber || "-",
+      status: item.status || "-",
+      period: item.periode ? dayjs(item.periode).format("MMMM YYYY") : "-",
+      invoiceAmount: item.amount
+        ? `Rp ${item.amount.toLocaleString("id-ID")}`
+        : "-",
+      onDetail: () => router.push(`${PAGE_NAME.order_detail}?id=${item.id}`),
+      onCopy: () => navigator.clipboard.writeText(item.orderNumber || ""),
+    }));
+  }, [listOrder, router]);
+
+  const totalItems = listOrder?.data?.total ?? 0;
+  const currentPage = filterItem?.page ?? 1;
+  const pageSize = filterItem?.limit ?? 5;
+
+  const handlePageChange = (page: number) => {
+    setFilterItem((prev) => ({ ...prev, page }));
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setFilterItem((prev) => ({ ...prev, limit: size, page: 1 }));
+  };
+
+  const handleDateChange = (dates: any, dateStrings: [string, string]) => {
+    if (dates && dateStrings[0] && dateStrings[1]) {
+      setFilterItem((prev) => ({
+        ...prev,
+        startDate: dayjs(dateStrings[0]).format("YYYY-MM-DD"),
+        endDate: dayjs(dateStrings[1]).format("YYYY-MM-DD"),
+        page: 1,
+      }));
+    } else {
+      setFilterItem((prev) => ({
+        ...prev,
+        startDate: undefined,
+        endDate: undefined,
+        page: 1,
+      }));
+    }
+  };
 
   return (
     <LayoutContentPage className="p-6">
@@ -81,9 +153,27 @@ const ListOrderContainer = () => {
           prefix={<SearchOutlined />}
           placeholder="Search"
           style={{ width: 250 }}
+          onChange={(e) =>
+            setFilterItem((prev) => ({
+              ...prev,
+              search: e.target.value,
+              page: 1,
+            }))
+          }
         />
         <div className="flex items-center gap-3">
-          <RangePicker />
+          <RangePicker
+            format="DD-MM-YYYY"
+            onChange={handleDateChange}
+            value={
+              filterItem?.startDate && filterItem?.endDate
+                ? [
+                    dayjs(filterItem.startDate, "YYYY-MM-DD"),
+                    dayjs(filterItem.endDate, "YYYY-MM-DD"),
+                  ]
+                : null
+            }
+          />
           <Select
             placeholder="All Area"
             suffixIcon={<DownOutlined />}
@@ -175,28 +265,12 @@ const ListOrderContainer = () => {
         </div>
       </div>
       <OrderListTable
-        data={[
-          {
-            id: 1,
-            orderNumber: "12345678910121213",
-            status: "Not Active",
-            period: "November 2024",
-            invoiceAmount: "Rp. 500.000",
-            onDetail: () => router.push(PAGE_NAME.order_detail),
-            onCopy: () => navigator.clipboard.writeText("12345678910121213"),
-          },
-          {
-            id: 2,
-            orderNumber: "12345678910121214",
-            status: "Active",
-            period: "November 2024",
-            invoiceAmount: "Rp. 500.000",
-            onDetail: () => router.push(PAGE_NAME.order_detail),
-            onCopy: () => navigator.clipboard.writeText("12345678910121214"),
-          },
-        ]}
-        pageSize={5}
-        totalItems={10}
+        data={orderData}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
       />
     </LayoutContentPage>
   );

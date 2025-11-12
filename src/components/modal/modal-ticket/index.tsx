@@ -120,7 +120,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
 
   return (
     <Modal
-      title={section === "EDIT" ? "Edit Ticket" : "View Ticket"}
+      title={section === "EDIT" ? "Edit Reseller" : "View Ticket"}
       open={open}
       onCancel={onClose}
       footer={null}
@@ -130,7 +130,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
       <div className="px-2">
         <Row className="mb-3">
           <Col span={8}>
-            <Text strong>Ticket No.</Text>
+            <Text strong>Reseller No.</Text>
           </Col>
           <Col span={16}>
             <Input value={editedTicket?.resellerNumber ?? "-"} disabled />
@@ -157,7 +157,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
 
         <Row className="mb-3">
           <Col span={8}>
-            <Text strong>Ticket Date</Text>
+            <Text strong>Tanggal</Text>
           </Col>
           <Col span={16}>
             <Input

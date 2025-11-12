@@ -3,6 +3,7 @@ const BASE_URL = "/";
 const BASE_URL_AUTH_V1 = "/api/v1/auth";
 const BASE_URL_TICKET_V1 = "/api/v1/tickets";
 const BASE_URL_RESELLER_V1 = "/api/v1/resellers";
+const BASE_URL_ORDER_V1 = "/api/v1/orders";
 
 const AUTH_SERVICE = {
   login: `${BASE_URL_AUTH_V1}/login`,
@@ -24,6 +25,11 @@ const RESELLER_SERVICE = {
   reseller_map: `${BASE_URL_RESELLER_V1}/map`,
   reseller_detail: (id: string) => `${BASE_URL_RESELLER_V1}/${id}`,
   update_reseller: (id: string) => `${BASE_URL_RESELLER_V1}/${id}`,
+  reseller_status: `${BASE_URL_RESELLER_V1}/statuses`,
 };
 
-export { AUTH_SERVICE, TICKET_SERVICE, RESELLER_SERVICE };
+const ORDER_SERVICE = {
+  order_list: `${BASE_URL_ORDER_V1}/paginate`,
+};
+
+export { AUTH_SERVICE, TICKET_SERVICE, RESELLER_SERVICE, ORDER_SERVICE };

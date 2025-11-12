@@ -15,7 +15,7 @@ export interface Column<T> {
 interface GeneralTableProps<T> {
   data: T[];
   columns: Column<T>[];
-  onActionClick?: (record: T) => void;
+  onActionClick?: (record: T, actionKey: string) => void;
   actionItems?: any[];
   showIndex?: boolean;
   statusColorFn?: (status: string) => string;
@@ -167,12 +167,17 @@ const Tables = <T extends { id: string | number }>({
                   {actionItems.length > 0 && (
                     <td className="py-3 px-4 text-center">
                       <Dropdown
-                        menu={{ items: actionItems }}
+                        menu={{
+                          items: actionItems.map((item) => ({
+                            ...item,
+                            onClick: () => onActionClick?.(record, item.key),
+                          })),
+                        }}
                         placement="bottomRight"
                         arrow
+                        trigger={["click"]}
                       >
                         <Button
-                          onClick={() => onActionClick?.(record)}
                           type="text"
                           icon={<MoreOutlined />}
                           className="hover:text-red-500 text-gray-600"

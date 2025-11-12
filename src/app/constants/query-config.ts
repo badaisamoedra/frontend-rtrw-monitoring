@@ -46,3 +46,12 @@ export const resellerListParam = {
   endDate: StringParam,
   area: StringParam,
 };
+
+export const orderListParam = {
+  ...defaultParam,
+  search: StringParam,
+  startDate: StringParam,
+  endDate: StringParam,
+  area: StringParam,
+  resellerNumber: StringParam,
+};

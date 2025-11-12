@@ -3,21 +3,30 @@
 import React from "react";
 import {
   MenuOutlined,
-  MailOutlined,
-  BellOutlined,
   DownOutlined,
   UserOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
-import { Avatar, Dropdown, Menu } from "antd";
+import { Avatar, Dropdown } from "antd";
 import { useRouter } from "next/navigation";
 
 const AppHeader: React.FC<{
   userName?: string;
   onToggleSidebar?: () => void;
   collapsed?: boolean;
-}> = ({ userName = "Varelandito Caesar", onToggleSidebar, collapsed }) => {
+}> = ({ userName = "-", onToggleSidebar, collapsed }) => {
   const router = useRouter();
+  const [clientUserName, setClientUserName] = React.useState<string | null>(
+    null
+  );
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const pocUser = JSON.parse(localStorage.getItem("pocUser") || "{}");
+      const nameFromStorage = pocUser?.name || userName || "-";
+      setClientUserName(nameFromStorage);
+    }
+  }, [userName]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -54,40 +63,32 @@ const AppHeader: React.FC<{
         />
       </div>
 
-      <div className="flex items-center gap-6">
-        {/* <div className="flex items-center gap-5">
-          <MailOutlined className="text-[#0C1B36] text-lg cursor-pointer relative" />
-          <BellOutlined className="text-[#0C1B36] text-lg cursor-pointer relative" />
-        </div> */}
-
-        <div className="flex items-center gap-3">
-          <Dropdown menu={menu} placement="bottomRight" arrow>
-            <div className="flex items-center gap-2 cursor-pointer">
-              <div className="flex flex-col justify-center leading-none text-right gap-2">
-                <span className="text-[12px] text-[#8C8C8C] m-0 p-0">
-                  Selamat Datang
+      <div className="flex items-center gap-3">
+        <Dropdown menu={menu} placement="bottomRight" arrow>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <div className="flex flex-col justify-center leading-none text-right gap-2">
+              <span className="text-[12px] text-[#8C8C8C] m-0 p-0">
+                Selamat Datang
+              </span>
+              <div className="flex items-center self-end gap-1">
+                <span className="text-[14px] font-semibold text-[#FF002E]">
+                  {clientUserName ?? "-"}
                 </span>
-                <div className="flex items-center self-end gap-1">
-                  <span className="text-[14px] font-semibold text-[#FF002E]">
-                    {userName}
-                  </span>
-                  <DownOutlined
-                    color="#FF002E"
-                    style={{ color: "#FF002E" }}
-                    className="text-xs"
-                  />
-                </div>
+                <DownOutlined
+                  style={{ color: "#FF002E" }}
+                  className="text-xs"
+                />
               </div>
-              <Avatar
-                size={36}
-                icon={<UserOutlined />}
-                style={{
-                  backgroundColor: "#0C1B36",
-                }}
-              />
             </div>
-          </Dropdown>
-        </div>
+            <Avatar
+              size={36}
+              icon={<UserOutlined />}
+              style={{
+                backgroundColor: "#0C1B36",
+              }}
+            />
+          </div>
+        </Dropdown>
       </div>
     </header>
   );
