@@ -93,22 +93,28 @@ const ResellerManagementContainer = () => {
     setFilterItem((prev) => ({ ...prev, limit: size, page: 1 }));
   };
 
-  const handleDateChange = (dates: any, dateStrings: [string, string]) => {
-    if (dates && dateStrings[0] && dateStrings[1]) {
-      setFilterItem((prev) => ({
-        ...prev,
-        startDate: dayjs(dateStrings[0]).format("YYYY-MM-DD"),
-        endDate: dayjs(dateStrings[1]).format("YYYY-MM-DD"),
-        page: 1,
-      }));
-    } else {
-      setFilterItem((prev) => ({
-        ...prev,
-        startDate: undefined,
-        endDate: undefined,
-        page: 1,
-      }));
+  const handleDateChange = (dates: any) => {
+    if (Array.isArray(dates) && dates[0] && dates[1]) {
+      const start = dayjs(dates[0]);
+      const end = dayjs(dates[1]);
+
+      if (start.isValid() && end.isValid()) {
+        setFilterItem((prev) => ({
+          ...prev,
+          startDate: start.format("YYYY-MM-DD"),
+          endDate: end.format("YYYY-MM-DD"),
+          page: 1,
+        }));
+        return;
+      }
     }
+
+    setFilterItem((prev) => ({
+      ...prev,
+      startDate: undefined,
+      endDate: undefined,
+      page: 1,
+    }));
   };
 
   const getStatusColor = (status: string) => {
@@ -129,6 +135,10 @@ const ResellerManagementContainer = () => {
   const actionItems: MenuProps["items"] = [{ key: "detail", label: "Details" }];
 
   const router = useRouter();
+
+  const disabledDate = (current: any) => {
+    return current && current > dayjs().endOf("day");
+  };
 
   return (
     <LayoutContentPage>
@@ -153,6 +163,7 @@ const ResellerManagementContainer = () => {
         <div className="flex items-center gap-3">
           <RangePicker
             format="DD-MM-YYYY"
+            disabledDate={disabledDate}
             onChange={handleDateChange}
             value={
               filterItem?.startDate && filterItem?.endDate
@@ -166,11 +177,12 @@ const ResellerManagementContainer = () => {
           <Select
             placeholder="All Area"
             suffixIcon={<DownOutlined />}
-            options={[{ key: "JEMBER", label: "Jember" }]}
+            value={filterItem?.branch ?? undefined}
+            options={[{ value: "JEMBER", label: "Jember" }]}
             onChange={(value) =>
               setFilterItem((prev) => ({
                 ...prev,
-                area: value,
+                branch: value,
                 page: 1,
               }))
             }
@@ -192,6 +204,7 @@ const ResellerManagementContainer = () => {
           totalItems={totalItems}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          currentPage={currentPage}
           showIndex
         />
       </div>

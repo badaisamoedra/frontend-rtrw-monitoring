@@ -80,7 +80,15 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               }}
             />
           ) : (
-            <Image src={ICONS.TelkomselLogo} alt="telkomsel logo" />
+            <div className="flex justify-center items-center">
+              <Image
+                src={ICONS.TelkomselLogo}
+                width={200}
+                height={100}
+                alt="telkomsel logo"
+                className="flex justify-center items-center"
+              />
+            </div>
           )}
         </div>
 
