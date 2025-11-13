@@ -63,7 +63,6 @@ const FooterNavigation: React.FC<FooterNavigationProps> = ({
               fontWeight: 600,
               fontSize: 14,
               padding: "0 40px",
-              height: 48,
               transition: "all 0.2s ease",
             }}
             onClick={onNext}

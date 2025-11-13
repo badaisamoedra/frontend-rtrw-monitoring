@@ -4,13 +4,14 @@ import React from "react";
 import { Button } from "antd";
 import { InfoCircleOutlined, RightOutlined } from "@ant-design/icons";
 import Link from "next/link";
+import { numberWithDots } from "@rtrw-monitoring-system/utils";
 
 type PackageCardProps = {
   promo?: boolean;
   name: string;
-  price: string;
-  speed: string;
-  device: string;
+  price: number;
+  speed?: string;
+  device?: string;
   onSelect?: () => void;
   onDetail?: () => void;
 };
@@ -40,7 +41,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
       <div className="mt-4">
         <h3 className="text-[15px] font-medium text-[#0C1A30] mb-1">{name}</h3>
         <p className="text-[20px] font-extrabold text-[#E31C25] mb-1 leading-tight">
-          {price}
+          Rp. {numberWithDots(price) ?? 0}
           <span className="text-[#0C1A30] text-sm font-normal">/bulan</span>
         </p>
 
@@ -48,12 +49,14 @@ const PackageCard: React.FC<PackageCardProps> = ({
           <p className="flex items-center">
             <InfoCircleOutlined className="text-gray-500 mr-2 text-[15px]" />
             Kecepatan internet hingga{" "}
-            <span className="font-bold text-[#0C1A30] ml-1">{speed}</span>
+            <span className="font-bold text-[#0C1A30] ml-1">{"30"} Mbps</span>
           </p>
           <p className="flex items-center">
             <InfoCircleOutlined className="text-gray-500 mr-2 text-[15px]" />
             Optimum untuk{" "}
-            <span className="font-bold text-[#0C1A30] ml-1">{device}</span>
+            <span className="font-bold text-[#0C1A30] ml-1">
+              {"3"} Perangkat
+            </span>
           </p>
         </div>
 

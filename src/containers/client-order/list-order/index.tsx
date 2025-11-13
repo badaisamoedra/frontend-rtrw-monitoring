@@ -75,7 +75,7 @@ const ListOrderContainer = () => {
       invoiceAmount: item.amount
         ? `Rp ${item.amount.toLocaleString("id-ID")}`
         : "-",
-      onDetail: () => router.push(`${PAGE_NAME.order_detail}?id=${item.id}`),
+      onDetail: () => router.push(`${PAGE_NAME.order_detail}?orderId=${item.id}`),
       onCopy: () => navigator.clipboard.writeText(item.orderNumber || ""),
     }));
   }, [listOrder, router]);
