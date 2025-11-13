@@ -65,6 +65,12 @@ interface OrderActivitiesResponseData {
   deletedBy: null;
 }
 
+interface OrderDetailSummary {
+  orderNumber: string;
+  totalCount: number;
+  activeCount: number;
+}
+
 type ListOrderParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.orderListParam;
 type ListOrderFilter =
@@ -83,3 +89,4 @@ type ListOrderDetailFilterPayload = Omit<
 type ListOrderResponse = BaseResponse<ListOrderResponseData>;
 type ListOrderDetailRespone = BaseResponse<ListOrderDetailResponseData>;
 type OrderActivitiesResponse = BaseResponse<OrderActivitiesResponseData[]>;
+type OrderDetailSummaryResponse = BaseResponse<OrderDetailSummary>;

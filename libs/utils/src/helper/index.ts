@@ -110,23 +110,6 @@ export const capitalizeFirstLetter = (str?: string) => {
   return printDashIfNull(undefined);
 };
 
-export const trackEvent = (eventName: string, eventValues = {}) => {
-  const amplitude = () =>
-    typeof window !== undefined && (window as any).amplitude;
-
-  if (amplitude()?.logEvent) {
-    amplitude()?.logEvent(eventName, eventValues);
-  } else {
-    console.warn("Amplitude is not initialized");
-  }
-
-  return {
-    amplitude,
-    eventName,
-    eventValues,
-  };
-};
-
 export const checkSameValue = (
   valueFirst: string | number,
   valueSecond: string | number

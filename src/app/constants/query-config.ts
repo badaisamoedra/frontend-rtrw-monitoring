@@ -44,7 +44,7 @@ export const resellerListParam = {
   search: StringParam,
   startDate: StringParam,
   endDate: StringParam,
-  area: StringParam,
+  branch: StringParam,
 };
 
 export const orderListParam = {
@@ -52,7 +52,6 @@ export const orderListParam = {
   search: StringParam,
   startDate: StringParam,
   endDate: StringParam,
-  area: StringParam,
   resellerNumber: StringParam,
 };
 

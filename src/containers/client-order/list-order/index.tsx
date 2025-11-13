@@ -92,22 +92,32 @@ const ListOrderContainer = () => {
     setFilterItem((prev) => ({ ...prev, limit: size, page: 1 }));
   };
 
-  const handleDateChange = (dates: any, dateStrings: [string, string]) => {
-    if (dates && dateStrings[0] && dateStrings[1]) {
-      setFilterItem((prev) => ({
-        ...prev,
-        startDate: dayjs(dateStrings[0]).format("YYYY-MM-DD"),
-        endDate: dayjs(dateStrings[1]).format("YYYY-MM-DD"),
-        page: 1,
-      }));
-    } else {
-      setFilterItem((prev) => ({
-        ...prev,
-        startDate: undefined,
-        endDate: undefined,
-        page: 1,
-      }));
+  const handleDateChange = (dates: any) => {
+    if (Array.isArray(dates) && dates[0] && dates[1]) {
+      const start = dayjs(dates[0]);
+      const end = dayjs(dates[1]);
+
+      if (start.isValid() && end.isValid()) {
+        setFilterItem((prev) => ({
+          ...prev,
+          startDate: start.format("YYYY-MM-DD"),
+          endDate: end.format("YYYY-MM-DD"),
+          page: 1,
+        }));
+        return;
+      }
     }
+
+    setFilterItem((prev) => ({
+      ...prev,
+      startDate: undefined,
+      endDate: undefined,
+      page: 1,
+    }));
+  };
+
+  const disabledDate = (current: any) => {
+    return current && current > dayjs().endOf("day");
   };
 
   return (
@@ -165,6 +175,7 @@ const ListOrderContainer = () => {
           <RangePicker
             format="DD-MM-YYYY"
             onChange={handleDateChange}
+            disabledDate={disabledDate}
             value={
               filterItem?.startDate && filterItem?.endDate
                 ? [
@@ -173,15 +184,6 @@ const ListOrderContainer = () => {
                   ]
                 : null
             }
-          />
-          <Select
-            placeholder="All Area"
-            suffixIcon={<DownOutlined />}
-            options={[
-              { key: "1", label: "All Area" },
-              { key: "2", label: "Area 1" },
-              { key: "3", label: "Area 2" },
-            ]}
           />
         </div>
       </div>
