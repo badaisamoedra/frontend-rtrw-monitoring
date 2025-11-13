@@ -6,6 +6,7 @@ const BASE_URL_RESELLER_V1 = "/api/v1/resellers";
 const BASE_URL_ORDER_V1 = "/api/v1/orders";
 const BASE_URL_ORDER_DETAIL_V1 = "/api/v1/order-details";
 const BASE_URL_ORDER_ACTIVITIES_V1 = "/api/v1/order-activities";
+const BASE_URL_MASTER_PACKAGE_V1 = "/api/v1/master-packages";
 
 const AUTH_SERVICE = {
   login: `${BASE_URL_AUTH_V1}/login`,
@@ -37,6 +38,19 @@ const ORDER_SERVICE = {
     `${BASE_URL_ORDER_ACTIVITIES_V1}/order-details/${id}`,
   order_details_summary: (id: string) =>
     `${BASE_URL_ORDER_DETAIL_V1}/summary/${id}`,
+  order_activities_summary: (id: string) =>
+    `${BASE_URL_ORDER_ACTIVITIES_V1}/summary/${id}`,
 };
 
-export { AUTH_SERVICE, TICKET_SERVICE, RESELLER_SERVICE, ORDER_SERVICE };
+const MASTER_SERVICE = {
+  master_package: `${BASE_URL_MASTER_PACKAGE_V1}/paginate`,
+  master_package_detail: (id: string) => `${BASE_URL_MASTER_PACKAGE_V1}/${id}`,
+};
+
+export {
+  AUTH_SERVICE,
+  TICKET_SERVICE,
+  RESELLER_SERVICE,
+  ORDER_SERVICE,
+  MASTER_SERVICE,
+};

@@ -3,15 +3,20 @@
 import React from "react";
 import { Modal, Button } from "antd";
 import { CheckCircleOutlined, CloseOutlined } from "@ant-design/icons";
+import { numberWithDots } from "@rtrw-monitoring-system/utils";
 
 type DetailPackageModalProps = {
   open: boolean;
   onClose: () => void;
+  name: string;
+  price: number;
 };
 
 const DetailPackageModal: React.FC<DetailPackageModalProps> = ({
   open,
   onClose,
+  name,
+  price,
 }) => {
   const details = [
     "Bebas Biaya Pasang (Nominal Rp 500.000)",
@@ -42,13 +47,11 @@ const DetailPackageModal: React.FC<DetailPackageModalProps> = ({
         </button>
       </div>
 
-      <h3 className="text-[16px] font-semibold text-[#001A41] mb-3">
-        EZnet 30 Mbps
-      </h3>
+      <h3 className="text-[16px] font-semibold text-[#001A41] mb-3">{name}</h3>
       <div className="bg-[#F8F8FA] rounded-2xl p-6 mb-6">
         <p className="text-[16px] font-bold text-[#001A41] mb-1">Total Harga</p>
         <p className="text-[32px] font-bold text-[#FF0025] leading-none">
-          Rp 150.000
+          Rp {numberWithDots(price)}
           <span className="text-[#0C1A30] text-[15px] font-medium">/bulan</span>
         </p>
       </div>

@@ -26,6 +26,17 @@ const ActivityOrderContainer = () => {
     { enabled: !!orderDetailId }
   );
 
+  const {
+    queryResult: { data: orderActivitiesSummary },
+  } = useData<OrderActivitiesSummaryResponse>(
+    { url: ORDER_SERVICE.order_activities_summary(orderDetailId ?? "") },
+    [ORDER_SERVICE.order_activities_summary(orderDetailId ?? "")],
+    null,
+    { enabled: !!orderDetailId }
+  );
+
+  console.log("SUMMARY ACTIVITIES :", orderActivitiesSummary);
+
   const list: any[] = Array.isArray(orderActivities)
     ? orderActivities
     : orderActivities?.data || [];
@@ -95,19 +106,19 @@ const ActivityOrderContainer = () => {
 
         <div className="mb-6 flex-col">
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Order Number : 12345678910121213
+            Order Number : {orderActivitiesSummary?.data?.orderNumber ?? "-"}
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Nama Pelanggan : Boaz Sanadi
+            Nama Pelanggan : {orderActivitiesSummary?.data?.clientName ?? "-"}
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Nama Produk : EZnet 10 mbps
+            Nama Produk : {orderActivitiesSummary?.data?.packageName ?? "-"}
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Kode SF : PKU-02
+            Kode SF : {orderActivitiesSummary?.data?.codeSf ?? "-"}
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Branch : Pekanbaru
+            Branch : {orderActivitiesSummary?.data?.branch ?? "-"}
           </p>
         </div>
 

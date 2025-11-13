@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { Input, Button, Tag } from "antd";
-import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
-import Link from "next/link";
+import { Input } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import {
   DetailPackageModal,
   FooterNavigation,
@@ -12,32 +11,66 @@ import {
   PackageCard,
 } from "@rtrw-monitoring-system/components";
 import { useRouter } from "next/navigation";
+import { useData } from "@rtrw-monitoring-system/hooks";
+import { MASTER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 
-const packages = [
-  {
-    id: 1,
-    name: "EZnet 10 Mbps",
-    price: "Rp130.000",
-    speed: "30 Mbps",
-    device: "3 Perangkat",
-    promo: true,
-  },
-  {
-    id: 2,
-    name: "EZnet 30 Mbps",
-    price: "Rp150.000",
-    speed: "30 Mbps",
-    device: "3 Perangkat",
-    promo: false,
-  },
-];
+// const packages = [
+//   {
+//     id: 1,
+//     name: "EZnet 10 Mbps",
+//     price: "Rp130.000",
+//     speed: "30 Mbps",
+//     device: "3 Perangkat",
+//     promo: true,
+//   },
+//   {
+//     id: 2,
+//     name: "EZnet 30 Mbps",
+//     price: "Rp150.000",
+//     speed: "30 Mbps",
+//     device: "3 Perangkat",
+//     promo: false,
+//   },
+// ];
 
 const OrderCreationContainer = () => {
   const [openModalDetailPackage, setOpenModalDetailPackage] =
     React.useState(false);
   const [openModalCreateOrder, setOpenModalCreateOrder] = React.useState(false);
-  const [step, setStep] = React.useState(1);
   const router = useRouter();
+  const [selectIdPackage, setSelectIdPackage] = React.useState<string | null>(
+    null
+  );
+
+  const [search, setSearch] = React.useState("");
+
+  const {
+    queryResult: { data: listPackage },
+  } = useData<MasterPackageResponse>(
+    { url: MASTER_SERVICE.master_package },
+    [MASTER_SERVICE.master_package],
+    null,
+    { enabled: true }
+  );
+
+  const {
+    queryResult: { data: packageDetail },
+  } = useData<MasterPackageDetailResponse>(
+    { url: MASTER_SERVICE.master_package_detail(selectIdPackage ?? "") },
+    [MASTER_SERVICE.master_package_detail(selectIdPackage ?? "")],
+    null,
+    { enabled: !!selectIdPackage }
+  );
+
+  console.log("MASTER PACKAGE :", packageDetail?.data);
+
+  const filteredPackage = React.useMemo(() => {
+    if (!listPackage?.data?.list) return [];
+
+    return listPackage?.data?.list.filter((item) =>
+      item.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [listPackage, search]);
 
   return (
     <LayoutContentPage className="bg-[#F1F1F4]">
@@ -60,19 +93,24 @@ const OrderCreationContainer = () => {
               className="rounded-lg py-2"
               style={{ width: "494px" }}
               size="large"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
           <div className="flex gap-6">
-            {packages.map((pkg) => (
+            {filteredPackage?.map((pkg) => (
               <PackageCard
                 key={pkg.id}
                 name={pkg.name}
                 price={pkg.price}
-                speed={pkg.speed}
-                device={pkg.device}
-                promo={pkg.promo}
-                onDetail={() => setOpenModalDetailPackage(true)}
+                // speed={pkg.speed}
+                // device={pkg.device}
+                // promo={pkg.promo}
+                onDetail={() => {
+                  setSelectIdPackage(pkg.id);
+                  setOpenModalDetailPackage(true);
+                }}
                 onSelect={() => setOpenModalCreateOrder(true)}
               />
             ))}
@@ -87,6 +125,8 @@ const OrderCreationContainer = () => {
       <DetailPackageModal
         open={openModalDetailPackage}
         onClose={() => setOpenModalDetailPackage(false)}
+        price={packageDetail?.data?.price ?? 0}
+        name={packageDetail?.data?.name ?? ""}
       />
       <ModalCreateOrder
         open={openModalCreateOrder}
