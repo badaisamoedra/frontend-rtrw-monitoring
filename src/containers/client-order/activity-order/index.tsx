@@ -69,7 +69,7 @@ const ActivityOrderContainer = () => {
           id: item.id,
           title: activity.title,
           desc: activity.desc,
-          updatedAt: item.updatedAt,
+          updatedAt: item.createdAt,
         };
       });
   }, [list]);
@@ -98,8 +98,7 @@ const ActivityOrderContainer = () => {
             Order Number : 12345678910121213
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Nama Pelanggan : Boaz Sanadi Order Detail ID :{" "}
-            {orderDetailId ?? "-"}
+            Nama Pelanggan : Boaz Sanadi
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
             Nama Produk : EZnet 10 mbps
@@ -108,7 +107,7 @@ const ActivityOrderContainer = () => {
             Kode SF : PKU-02
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Branch : Pekanbaru Jumlah Aktivitas : {timelineItems.length}
+            Branch : Pekanbaru
           </p>
         </div>
 

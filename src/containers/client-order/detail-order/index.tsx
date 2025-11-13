@@ -6,7 +6,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PAGE_NAME, PARAMS } from "@rtrw-monitoring-system/app/constants";
 import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
-import { useDataTable } from "@rtrw-monitoring-system/hooks";
+import { useData, useDataTable } from "@rtrw-monitoring-system/hooks";
 import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import React from "react";
 
@@ -26,7 +26,7 @@ interface Customer {
   //   | "PENDING"
   //   | "INACTIVE"
   //   | "REJECT"
-  status: string
+  status: string;
 }
 
 const actionItems: MenuProps["items"] = [
@@ -47,7 +47,7 @@ const columns: Column<Customer>[] = [
 const OrderDetailContainer = () => {
   const router = useRouter();
   const params = useSearchParams();
-  const orderId = params.get("orderId");
+  const orderId = params.get("id");
 
   const {
     queryResult: { data: listOrderDetail },
@@ -59,6 +59,15 @@ const OrderDetailContainer = () => {
     },
     [ORDER_SERVICE.order_list],
     PARAMS.orderDetailListParam
+  );
+
+  const {
+    queryResult: { data: orderDetailSummary },
+  } = useData<OrderDetailSummaryResponse>(
+    { url: ORDER_SERVICE.order_details_summary(orderId ?? "") },
+    [ORDER_SERVICE.order_details_summary(orderId ?? "")],
+    null,
+    { enabled: !!orderId }
   );
 
   React.useEffect(() => {
@@ -129,13 +138,15 @@ const OrderDetailContainer = () => {
       <div className="flex justify-between mb-6">
         <div>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Order Number : 12345678910121213
+            Order Number : {orderDetailSummary?.data?.orderNumber ?? "-"}
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Jumlah Order : 10 pelanggan
+            Jumlah Order : {orderDetailSummary?.data?.totalCount ?? "0"}{" "}
+            pelanggan
           </p>
           <p className="text-sm font-semibold text-[#0C1A30]">
-            Pelanggan Aktif : 5 pelanggan
+            Pelanggan Aktif : {orderDetailSummary?.data?.activeCount ?? "0"}{" "}
+            pelanggan
           </p>
         </div>
 

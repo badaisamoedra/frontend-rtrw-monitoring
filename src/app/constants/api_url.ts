@@ -35,6 +35,8 @@ const ORDER_SERVICE = {
   order_details: `${BASE_URL_ORDER_DETAIL_V1}/paginate`,
   order_activities: (id: string) =>
     `${BASE_URL_ORDER_ACTIVITIES_V1}/order-details/${id}`,
+  order_details_summary: (id: string) =>
+    `${BASE_URL_ORDER_DETAIL_V1}/summary/${id}`,
 };
 
 export { AUTH_SERVICE, TICKET_SERVICE, RESELLER_SERVICE, ORDER_SERVICE };
