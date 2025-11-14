@@ -179,6 +179,11 @@ const ResellerManagementContainer = () => {
                     ]
                   : null
               }
+              classNames={{
+                popup: {
+                  root: "mobile-calendar-popup",
+                },
+              }}
               style={{ width: "70%" }}
             />
 

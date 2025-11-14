@@ -197,6 +197,11 @@ const ListOrderContainer = () => {
                     ]
                   : null
               }
+              classNames={{
+                popup: {
+                  root: "mobile-calendar-popup",
+                },
+              }}
               style={{ width: "50%" }}
             />
           </div>
