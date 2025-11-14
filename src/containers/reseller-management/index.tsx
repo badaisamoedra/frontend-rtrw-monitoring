@@ -254,7 +254,7 @@ const ResellerManagementContainer = () => {
           actionItems={actionItems}
           onActionClick={(record, actionKey) => {
             if (actionKey === "detail") {
-              router.push(`${PAGE_NAME.client_order}?id=${record.id}`);
+              router.push(`${PAGE_NAME.client_order}?resellerNumber=${record.id}`);
             }
           }}
           statusColorFn={getStatusColor}

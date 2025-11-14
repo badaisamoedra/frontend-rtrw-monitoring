@@ -42,7 +42,7 @@ const ListOrderContainer = () => {
   const [mode, setMode] = React.useState<"daily" | "monthly">("daily");
   const router = useRouter();
   const params = useSearchParams();
-  const resellerId = params.get("id");
+  const resellerNumber = params.get("resellerNumber");
   const { isMobile } = WINDOW_HELPER.useWindowResize();
 
   const {
@@ -58,14 +58,14 @@ const ListOrderContainer = () => {
   );
 
   React.useEffect(() => {
-    if (resellerId) {
+    if (resellerNumber) {
       setFilterItem((prev) => ({
         ...prev,
-        resellerNumber: resellerId,
+        resellerNumber: resellerNumber,
         page: 1,
       }));
     }
-  }, [resellerId, setFilterItem]);
+  }, [resellerNumber, setFilterItem]);
 
   const orderData = React.useMemo(() => {
     const list = listOrder?.data?.list || [];
@@ -152,7 +152,11 @@ const ListOrderContainer = () => {
             Download Template
           </Button>
           <Button
-            onClick={() => router.push(PAGE_NAME.create_order)}
+            onClick={() =>
+              router.push(
+                `${PAGE_NAME.create_order}?resellerNumber=${resellerNumber}`
+              )
+            }
             type="default"
             shape="round"
             danger

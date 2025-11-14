@@ -9,9 +9,10 @@ import DetailPackageModal from "./modal/modal-detail-package";
 import ModalCreateOrder from "./modal/modal-create-order";
 import FooterNavigation from "./footer/footer-navigation";
 import OrderCard from "./card/order-card";
-import AppHeader from "./header"
-import Tables from './table/custom-table'
-import OrderListTable from './table/order-table'
+import AppHeader from "./header";
+import Tables from "./table/custom-table";
+import OrderListTable from "./table/order-table";
+import ModalConfirmCreateOrder from "./modal/modal-confirmation";
 
 export {
   LayoutContentPage,
@@ -27,5 +28,6 @@ export {
   OrderCard,
   AppHeader,
   Tables,
-  OrderListTable
+  OrderListTable,
+  ModalConfirmCreateOrder,
 };

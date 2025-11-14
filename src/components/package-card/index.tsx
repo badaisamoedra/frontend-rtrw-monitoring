@@ -14,6 +14,7 @@ type PackageCardProps = {
   device?: string;
   onSelect?: () => void;
   onDetail?: () => void;
+  selected?: boolean;
 };
 
 const PackageCard: React.FC<PackageCardProps> = ({
@@ -24,12 +25,22 @@ const PackageCard: React.FC<PackageCardProps> = ({
   device,
   onSelect,
   onDetail,
+  selected = false,
 }) => {
   return (
     <div
-      className="relative w-[418px] border border-[#A1A1AA] rounded-2xl bg-[#F9FAFB] p-5 hover:shadow-md transition-all"
+      className={`relative w-[418px] rounded-2xl p-5 transition-all cursor-pointer
+        ${
+          selected
+            ? "border-2 border-[#00A86B] bg-[#F0FFF6] shadow-md"
+            : "border border-[#A1A1AA] bg-[#F9FAFB]"
+        }
+      `}
+      onClick={onSelect}
       style={{
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        boxShadow: selected
+          ? "0 0 0 2px rgba(0,168,107,0.1)"
+          : "0 1px 3px rgba(0,0,0,0.05)",
       }}
     >
       {promo && (
@@ -75,14 +86,14 @@ const PackageCard: React.FC<PackageCardProps> = ({
             block
             size="large"
             style={{
-              backgroundColor: "#FF0025",
+              backgroundColor: selected ? "#00A86B" : "#FF0025",
               border: "none",
               fontWeight: 600,
               height: "40px",
             }}
             onClick={onSelect}
           >
-            Pilih Paket
+            {selected ? "Paket Dipilih ✓" : "Pilih Paket"}
           </Button>
         </div>
       </div>

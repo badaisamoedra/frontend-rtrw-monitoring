@@ -9,16 +9,67 @@ import {
   FilePdfOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
+import { toast } from "react-toastify";
+import ToastContent from "@rtrw-monitoring-system/components/toast-content";
 
 type TambahOrderModalProps = {
   open: boolean;
   onClose: () => void;
+  onSubmitCreateOrder: (base64: string, fileType: string) => void;
 };
 
 const ModalCreateOrder: React.FC<TambahOrderModalProps> = ({
   open,
   onClose,
+  onSubmitCreateOrder,
 }) => {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  const beforeUpload = (file: File) => {
+    if (!file.name.endsWith(".csv")) {
+      toast.error(
+        <ToastContent type="error" description={"File harus berformat .csv"} />
+      );
+      return Upload.LIST_IGNORE;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error(
+        <ToastContent type="error" description={"Ukuran file maksimal 2MB"} />
+      );
+      return Upload.LIST_IGNORE;
+    }
+
+    setFile(file);
+    return false;
+  };
+
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleSubmit = async () => {
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      const base64 = await convertToBase64(file);
+
+      onSubmitCreateOrder(base64, "csv");
+      setFile(null);
+      onClose();
+    } catch (err) {
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -91,18 +142,42 @@ const ModalCreateOrder: React.FC<TambahOrderModalProps> = ({
         </p>
 
         <div className="border-2 border-dashed border-[#D9D9D9] rounded-xl p-5 text-center bg-[#FAFAFA]">
-          <Upload showUploadList={false}>
-            <Button
-              type="link"
-              icon={<UploadOutlined className="text-[#1A3CCE]" />}
-              className="text-[#1A3CCE] font-semibold"
-            >
-              Upload File
-            </Button>
-          </Upload>
-          <p className="text-[12px] text-gray-400 mt-2 flex justify-center items-center gap-1">
-            <span>ⓘ</span> Max 2mb
-          </p>
+          {!file ? (
+            <>
+              <Upload
+                beforeUpload={beforeUpload}
+                accept=".csv"
+                showUploadList={false}
+              >
+                <Button
+                  type="link"
+                  icon={<UploadOutlined className="text-[#1A3CCE]" />}
+                  className="text-[#1A3CCE] font-semibold"
+                >
+                  Upload File
+                </Button>
+              </Upload>
+
+              <p className="text-[12px] text-gray-400 mt-2 flex justify-center items-center gap-1">
+                <span>ⓘ</span> Max 2mb
+              </p>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-sm text-gray-700 font-medium">
+                {file.name}
+              </span>
+
+              <Button
+                size="small"
+                danger
+                onClick={() => setFile(null)}
+                className="!text-red-600"
+              >
+                Hapus File
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -111,16 +186,17 @@ const ModalCreateOrder: React.FC<TambahOrderModalProps> = ({
           type="primary"
           shape="round"
           size="large"
-          disabled
+          disabled={!file}
           style={{
-            backgroundColor: "#E5E5E5",
-            border: "none",
             width: "100%",
+            height: 48,
             fontWeight: 600,
             fontSize: 15,
-            height: 48,
-            color: "#A3A3A3",
+            backgroundColor: file ? "#FF0025" : "#E5E5E5",
+            color: file ? "#FFF" : "#A3A3A3",
+            border: "none",
           }}
+          onClick={handleSubmit}
         >
           Tambah Order
         </Button>

@@ -4,6 +4,7 @@ import BannerLogin from "./banner-telkomsel.png";
 import NewTelkomselLogo from "./telkomsel-new-logo.png";
 import IconResellerStatus from "./icon-reseller-status.svg";
 import IconSmallTelkomsel from "./telkomsel-small-logo.png";
+import IconWarning from "./warning.svg"
 
 const ICONS = {
   BenLogo,
@@ -11,7 +12,8 @@ const ICONS = {
   BannerLogin,
   NewTelkomselLogo,
   IconResellerStatus,
-  IconSmallTelkomsel
+  IconSmallTelkomsel,
+  IconWarning
 };
 
 export default ICONS;
