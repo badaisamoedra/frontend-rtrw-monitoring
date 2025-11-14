@@ -79,6 +79,13 @@ interface OrderActivitiesSummary {
   branch: string;
 }
 
+interface UploadOrderPayload {
+  package_id: string;
+  reseller_id: string;
+  file_type: string;
+  base64: string;
+}
+
 type ListOrderParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.orderListParam;
 type ListOrderFilter =

@@ -40,6 +40,7 @@ const ORDER_SERVICE = {
     `${BASE_URL_ORDER_DETAIL_V1}/summary/${id}`,
   order_activities_summary: (id: string) =>
     `${BASE_URL_ORDER_ACTIVITIES_V1}/summary/${id}`,
+  upload_create_order: `${BASE_URL_ORDER_V1}/uploads`,
 };
 
 const MASTER_SERVICE = {

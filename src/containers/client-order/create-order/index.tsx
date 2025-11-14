@@ -7,12 +7,17 @@ import {
   DetailPackageModal,
   FooterNavigation,
   LayoutContentPage,
+  ModalConfirmCreateOrder,
   ModalCreateOrder,
   PackageCard,
+  ToastContent,
 } from "@rtrw-monitoring-system/components";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { MASTER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
+import { useOrderRepository } from "@rtrw-monitoring-system/services/order";
+import { toast } from "react-toastify";
+import { PAGE_NAME } from "@rtrw-monitoring-system/app/constants";
 
 // const packages = [
 //   {
@@ -43,6 +48,14 @@ const OrderCreationContainer = () => {
   );
 
   const [search, setSearch] = React.useState("");
+  const params = useSearchParams();
+  const resellerNumber = params.get("resellerNumber");
+  const { uploadOrder } = useOrderRepository();
+  const [openConfirmModal, setOpenConfirmModal] = React.useState(false);
+  const [pendingPayload, setPendingPayload] = React.useState<{
+    base64: string;
+    fileType: string;
+  } | null>(null);
 
   const {
     queryResult: { data: listPackage },
@@ -62,8 +75,6 @@ const OrderCreationContainer = () => {
     { enabled: !!selectIdPackage }
   );
 
-  console.log("MASTER PACKAGE :", packageDetail?.data);
-
   const filteredPackage = React.useMemo(() => {
     if (!listPackage?.data?.list) return [];
 
@@ -71,6 +82,40 @@ const OrderCreationContainer = () => {
       item.name.toLowerCase().includes(search.toLowerCase())
     );
   }, [listPackage, search]);
+
+  const handleConfirmSubmit = async () => {
+    if (!pendingPayload) return;
+
+    await submitCreateOrder(pendingPayload.base64, pendingPayload.fileType);
+
+    setOpenConfirmModal(false);
+    setOpenModalCreateOrder(false);
+  };
+
+  const submitCreateOrder = async (base64: string, fileType: string) => {
+    try {
+      const cleanBase64 = base64.split(",")[1];
+      const payload = {
+        package_id: selectIdPackage ?? "",
+        reseller_id: resellerNumber ?? "",
+        file_type: fileType,
+        base64: cleanBase64,
+      };
+
+      await uploadOrder.mutateAsync(payload);
+      toast.success(
+        <ToastContent description="Data user berhasil diperbarui" />
+      );
+      router.back()
+    } catch (error: any) {
+      toast.error(
+        <ToastContent
+          type="error"
+          description={error.response?.data?.message}
+        />
+      );
+    }
+  };
 
   return (
     <LayoutContentPage className="bg-[#F1F1F4]">
@@ -107,11 +152,14 @@ const OrderCreationContainer = () => {
                 // speed={pkg.speed}
                 // device={pkg.device}
                 // promo={pkg.promo}
+                selected={selectIdPackage === pkg.id}
                 onDetail={() => {
                   setSelectIdPackage(pkg.id);
                   setOpenModalDetailPackage(true);
                 }}
-                onSelect={() => setOpenModalCreateOrder(true)}
+                onSelect={() => {
+                  setSelectIdPackage(pkg.id);
+                }}
               />
             ))}
           </div>
@@ -120,7 +168,7 @@ const OrderCreationContainer = () => {
       <FooterNavigation
         onBack={() => router.back()}
         onNext={() => setOpenModalCreateOrder(true)}
-        disableNext={false}
+        disableNext={!selectIdPackage}
       />
       <DetailPackageModal
         open={openModalDetailPackage}
@@ -131,6 +179,15 @@ const OrderCreationContainer = () => {
       <ModalCreateOrder
         open={openModalCreateOrder}
         onClose={() => setOpenModalCreateOrder(false)}
+        onSubmitCreateOrder={(base64, fileType) => {
+          setPendingPayload({ base64, fileType });
+          setOpenConfirmModal(true);
+        }}
+      />
+      <ModalConfirmCreateOrder
+        open={openConfirmModal}
+        onCancel={() => setOpenConfirmModal(false)}
+        onConfirm={handleConfirmSubmit}
       />
     </LayoutContentPage>
   );
