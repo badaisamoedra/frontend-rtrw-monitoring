@@ -1,6 +1,20 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
+@media (max-width: 768px) {
+  .mobile-calendar-popup {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 72vw !important;
+  }
+
+  .mobile-calendar-popup .ant-picker-panel-container {
+    width: 100% !important;
+    max-width: 72vw !important;
+    border-radius: 14px !important;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
