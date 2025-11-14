@@ -4,6 +4,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import utc from "dayjs/plugin/utc";
 import localeData from "dayjs/plugin/localeData";
 import "dayjs/locale/id";
+import React from "react";
 // import * as XLSX from "xlsx";
 
 dayjs.extend(customParseFormat);
@@ -314,4 +315,23 @@ export const cleanParams = (obj: Record<string, any>) => {
     }
   });
   return cleaned;
+};
+
+export const WINDOW_HELPER = {
+  useWindowResize: () => {
+    const [isMobile, setIsMobile] = React.useState(false);
+    const [windowWidth, setWindowWidth] = React.useState<number>(0);
+
+    React.useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 768);
+        setWindowWidth(window.innerWidth);
+      };
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    return { isMobile, windowWidth };
+  },
 };

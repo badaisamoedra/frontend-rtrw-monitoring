@@ -4,18 +4,20 @@ import {
   FooterNavigation,
   LayoutContentPage,
 } from "@rtrw-monitoring-system/components";
-import { Space, Tag, Timeline, Empty } from "antd";
+import { Space, Tag, Timeline, Empty, Button } from "antd";
 import React from "react";
-import { CheckCircleFilled } from "@ant-design/icons";
+import { CheckCircleFilled, LeftOutlined } from "@ant-design/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import dayjs from "dayjs";
+import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
 
 const ActivityOrderContainer = () => {
   const router = useRouter();
   const params = useSearchParams();
   const orderDetailId = params.get("id");
+  const { isMobile } = WINDOW_HELPER.useWindowResize();
 
   const {
     queryResult: { data: orderActivities, isLoading },
@@ -34,8 +36,6 @@ const ActivityOrderContainer = () => {
     null,
     { enabled: !!orderDetailId }
   );
-
-  console.log("SUMMARY ACTIVITIES :", orderActivitiesSummary);
 
   const list: any[] = Array.isArray(orderActivities)
     ? orderActivities
@@ -96,34 +96,86 @@ const ActivityOrderContainer = () => {
 
   return (
     <>
-      <LayoutContentPage className="p-6">
-        <Space direction="vertical" size={"small"} className="mb-8">
-          <h1 className="text-2xl font-bold">Order Activity</h1>
-          <p className="text-sm font-normal text-[#4E5764]">
-            Lihat progres aktivitas pemasangan pelanggan
-          </p>
-        </Space>
+      <LayoutContentPage className={isMobile ? "p-4" : "p-6"}>
+        {isMobile ? (
+          <div className="mb-4 flex flex-col items-start space-y-2">
+            <Button
+              type="text"
+              onClick={() => router.back()}
+              icon={<LeftOutlined />}
+              style={{ color: "#FF4D4F", fontWeight: 600 }}
+              className="!px-0 !ml-0"
+            >
+              Kembali
+            </Button>
+            <h1 className="text-xl font-bold">Order Activity</h1>
+            <p className="text-xs text-[#4E5764]">
+              Lihat progres aktivitas pemasangan pelanggan
+            </p>
+          </div>
+        ) : (
+          <Space direction="vertical" size={"small"} className="mb-8">
+            <h1 className="text-2xl font-bold">Order Activity</h1>
+            <p className="text-sm font-normal text-[#4E5764]">
+              Lihat progres aktivitas pemasangan pelanggan
+            </p>
+          </Space>
+        )}
 
-        <div className="mb-6 flex-col">
-          <p className="text-sm font-semibold text-[#0C1A30]">
+        <div className="mb-6 flex flex-col space-y-2">
+          <p
+            className={
+              isMobile
+                ? "text-xs font-semibold text-[#0C1A30]"
+                : "text-sm font-semibold text-[#0C1A30]"
+            }
+          >
             Order Number : {orderActivitiesSummary?.data?.orderNumber ?? "-"}
           </p>
-          <p className="text-sm font-semibold text-[#0C1A30]">
+          <p
+            className={
+              isMobile
+                ? "text-xs font-semibold text-[#0C1A30]"
+                : "text-sm font-semibold text-[#0C1A30]"
+            }
+          >
             Nama Pelanggan : {orderActivitiesSummary?.data?.clientName ?? "-"}
           </p>
-          <p className="text-sm font-semibold text-[#0C1A30]">
+          <p
+            className={
+              isMobile
+                ? "text-xs font-semibold text-[#0C1A30]"
+                : "text-sm font-semibold text-[#0C1A30]"
+            }
+          >
             Nama Produk : {orderActivitiesSummary?.data?.packageName ?? "-"}
           </p>
-          <p className="text-sm font-semibold text-[#0C1A30]">
+          <p
+            className={
+              isMobile
+                ? "text-xs font-semibold text-[#0C1A30]"
+                : "text-sm font-semibold text-[#0C1A30]"
+            }
+          >
             Kode SF : {orderActivitiesSummary?.data?.codeSf ?? "-"}
           </p>
-          <p className="text-sm font-semibold text-[#0C1A30]">
+          <p
+            className={
+              isMobile
+                ? "text-xs font-semibold text-[#0C1A30]"
+                : "text-sm font-semibold text-[#0C1A30]"
+            }
+          >
             Branch : {orderActivitiesSummary?.data?.branch ?? "-"}
           </p>
         </div>
 
-        <div className="min-h-[60vh] p-8 flex">
-          <div className="w-full max-w-3xl">
+        <div
+          className={`min-h-[60vh] flex justify-center ${
+            isMobile ? "p-2" : "p-8"
+          }`}
+        >
+          <div className={`w-full ${isMobile ? "max-w-full" : "max-w-3xl"}`}>
             {timelineItems.length === 0 ? (
               <Empty description="Belum ada aktivitas untuk order ini" />
             ) : (
@@ -134,26 +186,38 @@ const ActivityOrderContainer = () => {
                     <CheckCircleFilled
                       style={{
                         color: "#009C5E",
-                        fontSize: 18,
+                        fontSize: isMobile ? 16 : 18,
                       }}
                     />
                   ),
                   children: (
                     <div
                       key={item.id}
-                      className="rounded-xl px-6 py-4 shadow-sm mb-2 transition-all duration-300 bg-[#009C5E] text-white"
+                      className={`rounded-xl shadow-sm mb-2 transition-all duration-300 ${
+                        isMobile ? "px-4 py-3" : "px-6 py-4"
+                      } bg-[#009C5E] text-white`}
                       style={{ width: "100%" }}
                     >
-                      <h3 className="text-[15px] font-semibold mb-1">
+                      <h3
+                        className={`font-semibold mb-1 ${
+                          isMobile ? "text-[14px]" : "text-[15px]"
+                        }`}
+                      >
                         {item.title}
                       </h3>
-                      <p className="text-sm opacity-90 mb-3">{item.desc}</p>
+                      <p
+                        className={`text-sm opacity-90 mb-3 ${
+                          isMobile ? "text-[12px]" : ""
+                        }`}
+                      >
+                        {item.desc}
+                      </p>
                       <Tag
                         style={{
                           borderRadius: "20px",
-                          fontSize: "10px",
+                          fontSize: isMobile ? "9px" : "10px",
                           border: "none",
-                          padding: "2px 10px",
+                          padding: isMobile ? "1px 8px" : "2px 10px",
                           backgroundColor: "#FFFFFF80",
                           color: "#353941",
                           fontWeight: "600",
@@ -174,11 +238,13 @@ const ActivityOrderContainer = () => {
         </div>
       </LayoutContentPage>
 
-      <FooterNavigation
-        onBack={() => router.back()}
-        showNext={false}
-        align="center"
-      />
+      {!isMobile && (
+        <FooterNavigation
+          onBack={() => router.back()}
+          showNext={false}
+          align="center"
+        />
+      )}
     </>
   );
 };

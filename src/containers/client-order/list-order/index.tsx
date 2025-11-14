@@ -26,6 +26,7 @@ import { PAGE_NAME, PARAMS } from "@rtrw-monitoring-system/app/constants";
 import { useDataTable } from "@rtrw-monitoring-system/hooks";
 import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import dayjs from "dayjs";
+import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
 
 const data = [
   { date: "8 Jan", value: 20 },
@@ -42,6 +43,7 @@ const ListOrderContainer = () => {
   const router = useRouter();
   const params = useSearchParams();
   const resellerId = params.get("id");
+  const { isMobile } = WINDOW_HELPER.useWindowResize();
 
   const {
     queryResult: { data: listOrder },
@@ -75,7 +77,8 @@ const ListOrderContainer = () => {
       invoiceAmount: item.amount
         ? `Rp ${item.amount.toLocaleString("id-ID")}`
         : "-",
-      onDetail: () => router.push(`${PAGE_NAME.order_detail}?orderId=${item.id}`),
+      onDetail: () =>
+        router.push(`${PAGE_NAME.order_detail}?orderId=${item.id}`),
       onCopy: () => navigator.clipboard.writeText(item.orderNumber || ""),
     }));
   }, [listOrder, router]);
@@ -122,21 +125,29 @@ const ListOrderContainer = () => {
 
   return (
     <LayoutContentPage className="p-6">
-      <div className="mb-4 flex flex-row justify-between">
+      <div
+        className={`mb-4 flex ${
+          isMobile ? "flex-col gap-4" : "flex-row justify-between"
+        }`}
+      >
         <Space direction="vertical" size={"small"}>
           <h1 className="text-2xl font-bold">End-Client Activation Order</h1>
           <p className="text-sm font-normal text-[#4E5764]">
             Tambar order RTRW
           </p>
         </Space>
-        <Space direction="horizontal" size={"small"} className="gap-4">
+        <Space direction={"horizontal"} size={"small"} className={"gap-4"}>
           <Button
             // onClick={() => router.push(PAGE_NAME.create_order)}
             type="default"
             shape="round"
             danger
             className="border-[#FF0025] text-[#FF0025]"
-            style={{ borderWidth: 2, fontSize: 14, fontWeight: "600" }}
+            style={{
+              borderWidth: 2,
+              fontSize: isMobile ? 12 : 14,
+              fontWeight: "600",
+            }}
           >
             Download Template
           </Button>
@@ -148,7 +159,7 @@ const ListOrderContainer = () => {
             className="border-[#FF0025]"
             style={{
               borderWidth: 2,
-              fontSize: 14,
+              fontSize: isMobile ? 12 : 14,
               fontWeight: "600",
               backgroundColor: "#FF0025",
               color: "#FFFFFF",
@@ -158,35 +169,69 @@ const ListOrderContainer = () => {
           </Button>
         </Space>
       </div>
-      <div className="flex justify-between items-center py-6">
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Search"
-          style={{ width: 250 }}
-          onChange={(e) =>
-            setFilterItem((prev) => ({
-              ...prev,
-              search: e.target.value,
-              page: 1,
-            }))
-          }
-        />
-        <div className="flex items-center gap-3">
-          <RangePicker
-            format="DD-MM-YYYY"
-            onChange={handleDateChange}
-            disabledDate={disabledDate}
-            value={
-              filterItem?.startDate && filterItem?.endDate
-                ? [
-                    dayjs(filterItem.startDate, "YYYY-MM-DD"),
-                    dayjs(filterItem.endDate, "YYYY-MM-DD"),
-                  ]
-                : null
+
+      {isMobile ? (
+        <div className="pt-4 mb-4 flex flex-col gap-3">
+          <div className="flex flex-row items-center gap-2 w-full">
+            <Input
+              prefix={<SearchOutlined />}
+              placeholder="Search"
+              style={{ width: "50%" }}
+              onChange={(e) =>
+                setFilterItem((prev) => ({
+                  ...prev,
+                  search: e.target.value,
+                  page: 1,
+                }))
+              }
+            />
+            <RangePicker
+              format="DD-MM-YYYY"
+              onChange={handleDateChange}
+              disabledDate={disabledDate}
+              value={
+                filterItem?.startDate && filterItem?.endDate
+                  ? [
+                      dayjs(filterItem.startDate, "YYYY-MM-DD"),
+                      dayjs(filterItem.endDate, "YYYY-MM-DD"),
+                    ]
+                  : null
+              }
+              style={{ width: "50%" }}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-between items-center py-6">
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Search"
+            style={{ width: 250 }}
+            onChange={(e) =>
+              setFilterItem((prev) => ({
+                ...prev,
+                search: e.target.value,
+                page: 1,
+              }))
             }
           />
+          <div className="flex items-center gap-3">
+            <RangePicker
+              format="DD-MM-YYYY"
+              onChange={handleDateChange}
+              disabledDate={disabledDate}
+              value={
+                filterItem?.startDate && filterItem?.endDate
+                  ? [
+                      dayjs(filterItem.startDate, "YYYY-MM-DD"),
+                      dayjs(filterItem.endDate, "YYYY-MM-DD"),
+                    ]
+                  : null
+              }
+            />
+          </div>
         </div>
-      </div>
+      )}
       <div className="border border-[#E9EEF6] rounded-xl p-6 mb-6">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-[#0C1A30]">
@@ -195,7 +240,11 @@ const ListOrderContainer = () => {
           <p className="text-sm text-gray-500">Data Penjualan RTRW</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div
+          className={`grid ${
+            isMobile ? "grid-cols-1 gap-4" : "grid-cols-3 gap-4"
+          } mb-8`}
+        >
           <div className="bg-white border border-[#E9EEF6] rounded-xl p-5">
             <div className="flex justify-between items-center mb-2">
               <p className="text-xs font-semibold text-[#D93025]">
@@ -234,7 +283,11 @@ const ListOrderContainer = () => {
         </div>
 
         <div className="mb-8">
-          <div className="flex justify-end mb-8 gap-2">
+          <div
+            className={`flex ${
+              isMobile ? "flex-col gap-4 mb-4" : "justify-end mb-8 gap-2"
+            }`}
+          >
             <Button
               type={mode === "daily" ? "primary" : "default"}
               onClick={() => setMode("daily")}
@@ -249,7 +302,7 @@ const ListOrderContainer = () => {
             </Button>
           </div>
 
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
             <LineChart data={data}>
               <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
               <XAxis dataKey="date" />
@@ -260,7 +313,7 @@ const ListOrderContainer = () => {
                 dataKey="value"
                 stroke="#A16AE8"
                 strokeWidth={2}
-                dot={{ fill: "#000", r: 4 }}
+                dot={{ fill: "#000", r: isMobile ? 3 : 4 }}
               />
             </LineChart>
           </ResponsiveContainer>

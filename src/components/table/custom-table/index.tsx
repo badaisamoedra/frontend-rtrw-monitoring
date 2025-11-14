@@ -51,6 +51,29 @@ const Tables = <T extends { id: string | number }>({
       ? data
       : data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [maxPagesToShow, setMaxPagesToShow] = React.useState(7);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+
+      if (mobile) {
+        const approxButtonWidth = 40;
+        const containerWidth = window.innerWidth - 100;
+        const maxButtons = Math.floor(containerWidth / approxButtonWidth);
+        setMaxPagesToShow(Math.max(maxButtons, 5));
+      } else {
+        setMaxPagesToShow(5);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handlePrev = () => {
     const next = Math.max(currentPage - 1, 1);
     setInternalPage(next);
@@ -75,7 +98,7 @@ const Tables = <T extends { id: string | number }>({
     onPageSizeChange?.(newSize);
   };
 
-  const getPageNumbers = () => {
+  const getDesktopPageNumbers = () => {
     const pages: (number | string)[] = [];
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -99,101 +122,138 @@ const Tables = <T extends { id: string | number }>({
     return pages;
   };
 
+  const getMobilePageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      const sideCount = Math.floor((maxPagesToShow - 3) / 2);
+      let start = currentPage - sideCount;
+      let end = currentPage + sideCount;
+
+      if (start <= 2) {
+        start = 2;
+        end = maxPagesToShow - 2;
+      }
+      if (end >= totalPages - 1) {
+        end = totalPages - 1;
+        start = totalPages - (maxPagesToShow - 2);
+      }
+
+      pages.push(1);
+      if (start > 2) pages.push("...");
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  const getPageNumbers = () =>
+    isMobile ? getMobilePageNumbers() : getDesktopPageNumbers();
+
   return (
     <>
+      <div className="block md:hidden px-2 pt-0 pb-4 text-sm text-[#001A41]">
+        Menampilkan <strong>{pageSize}</strong> dari{" "}
+        <strong>{total} Data</strong>
+      </div>
+
       <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
         {data.length === 0 ? (
           <div className="py-10 flex justify-center items-center">
             <Empty description="No data available" />
           </div>
         ) : (
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-[#FF0025] text-white text-left">
-                {showIndex && <th className="py-3 px-4 w-[40px]">No.</th>}
-                {columns.map((col, idx) => (
-                  <th
-                    key={idx}
-                    className="py-3 px-4 font-semibold"
-                    style={{
-                      width: col.width,
-                      textAlign: col.align || "left",
-                    }}
-                  >
-                    {col.title}
-                  </th>
-                ))}
-                {actionItems.length > 0 && (
-                  <th className="py-3 px-4 text-center">Action</th>
-                )}
-              </tr>
-            </thead>
-
-            <tbody>
-              {paginatedData.map((record, index) => (
-                <tr
-                  key={record.id}
-                  className={`${
-                    index % 2 === 0 ? "bg-[#fafafa]" : "bg-white"
-                  } hover:bg-gray-50 transition-all duration-150`}
-                >
-                  {showIndex && (
-                    <td className="py-3 px-4 text-gray-700">
-                      {(currentPage - 1) * pageSize + index + 1}
-                    </td>
-                  )}
-
-                  {columns.map((col, idx) => {
-                    const value = record[col.dataIndex];
-                    return (
-                      <td key={idx} className="py-3 px-4 text-gray-700">
-                        {col.render ? (
-                          col.render(value, record, index)
-                        ) : statusColorFn && col.dataIndex === "status" ? (
-                          <span
-                            className={`px-3 py-[4px] rounded-full text-xs font-medium ${statusColorFn(
-                              String(value)
-                            )}`}
-                          >
-                            {String(value)}
-                          </span>
-                        ) : (
-                          String(value)
-                        )}
-                      </td>
-                    );
-                  })}
-
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="bg-[#FF0025] text-white text-left">
+                  {showIndex && <th className="py-3 px-4 w-[40px]">No.</th>}
+                  {columns.map((col, idx) => (
+                    <th
+                      key={idx}
+                      className="py-3 px-4 font-semibold"
+                      style={{
+                        width: col.width,
+                        textAlign: col.align || "left",
+                      }}
+                    >
+                      {col.title}
+                    </th>
+                  ))}
                   {actionItems.length > 0 && (
-                    <td className="py-3 px-4 text-center">
-                      <Dropdown
-                        menu={{
-                          items: actionItems.map((item) => ({
-                            ...item,
-                            onClick: () => onActionClick?.(record, item.key),
-                          })),
-                        }}
-                        placement="bottomRight"
-                        arrow
-                        trigger={["click"]}
-                      >
-                        <Button
-                          type="text"
-                          icon={<MoreOutlined />}
-                          className="hover:text-red-500 text-gray-600"
-                        />
-                      </Dropdown>
-                    </td>
+                    <th className="py-3 px-4 text-center">Action</th>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {paginatedData.map((record, index) => (
+                  <tr
+                    key={record.id}
+                    className={`${
+                      index % 2 === 0 ? "bg-[#fafafa]" : "bg-white"
+                    } hover:bg-gray-50 transition-all duration-150`}
+                  >
+                    {showIndex && (
+                      <td className="py-3 px-4 text-gray-700">
+                        {(currentPage - 1) * pageSize + index + 1}
+                      </td>
+                    )}
+
+                    {columns.map((col, idx) => {
+                      const value = record[col.dataIndex];
+                      return (
+                        <td key={idx} className="py-3 px-4 text-gray-700">
+                          {col.render ? (
+                            col.render(value, record, index)
+                          ) : statusColorFn && col.dataIndex === "status" ? (
+                            <span
+                              className={`px-3 py-[4px] rounded-full text-xs font-medium ${statusColorFn(
+                                String(value)
+                              )}`}
+                            >
+                              {String(value)}
+                            </span>
+                          ) : (
+                            String(value)
+                          )}
+                        </td>
+                      );
+                    })}
+
+                    {actionItems.length > 0 && (
+                      <td className="py-3 px-4 text-center">
+                        <Dropdown
+                          menu={{
+                            items: actionItems.map((item) => ({
+                              ...item,
+                              onClick: () => onActionClick?.(record, item.key),
+                            })),
+                          }}
+                          placement="bottomRight"
+                          arrow
+                          trigger={["click"]}
+                        >
+                          <Button
+                            type="text"
+                            icon={<MoreOutlined />}
+                            className="hover:text-red-500 text-gray-600"
+                          />
+                        </Dropdown>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       <div className="flex justify-between items-center text-sm text-[#001A41] px-4 py-3">
-        <div>
+        <div className="hidden md:block">
           Menampilkan <strong>{pageSize}</strong>{" "}
           {/* this component for the customize limit data */}
           {/* <select

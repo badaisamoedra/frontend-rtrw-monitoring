@@ -50,21 +50,36 @@ const LoginPage = () => {
     );
   };
   return (
-    <div className="flex min-h-screen">
-      <div className="w-4/5 flex flex-col bg-[#28497C]">
+    <div className="flex flex-col md:flex-row min-h-screen bg-white text-black">
+      {/* desktop thumbnail */}
+      <div className="hidden md:flex w-4/5 flex-col bg-[#28497C]">
         <Image
           src={IMAGES.ThumbnailTelkomsel}
-          alt="Ben Logo"
+          alt="Telkomsel Banner"
           className="h-[100vh]"
         />
       </div>
 
-      <div className="w-2/5 flex flex-col justify-center items-center bg-white p-10">
+      {/* mobile thumbnail */}
+      <div className="flex md:hidden relative w-full h-[30vh] bg-[#28497C]">
+        <Image
+          src={IMAGES.ThumbnailTelkomsel}
+          alt="Telkomsel Banner"
+          fill
+          className="object-cover object-[100%_center]"
+          priority
+        />
+      </div>
+
+      {/* form section */}
+      <div className="w-full md:w-2/5 flex flex-col justify-center items-center p-6 md:p-10">
         <Image
           src={ICONS.NewTelkomselLogo}
-          alt="icon Telkomsel"
+          alt="Telkomsel Logo"
+          className="w-[55vw] max-w-[220px] h-auto mb-3 md:mb-6"
+          priority
         />
-        <h2 className="text-lg font-semibold mb-4 text-black">
+        <h2 className="text-sm md:text-lg font-semibold text-black md:text-black mb-4 text-center">
           RT RW NET Monitoring System
         </h2>
 
@@ -77,23 +92,25 @@ const LoginPage = () => {
         >
           <Form.Item
             name="username"
-            rules={[{ required: true, message: "Please input your username!" }]}
+            rules={[{ required: true, message: "Masukkan username kamu" }]}
           >
             <Input
               prefix={<UserOutlined />}
               placeholder="Username"
               size="large"
+              className="rounded-lg text-base"
             />
           </Form.Item>
 
           <Form.Item
             name="password"
-            rules={[{ required: true, message: "Please input your password!" }]}
+            rules={[{ required: true, message: "Masukkan password kamu" }]}
           >
             <Input.Password
               prefix={<LockOutlined />}
               placeholder="Password"
               size="large"
+              className="rounded-lg text-base"
             />
           </Form.Item>
 
@@ -101,7 +118,7 @@ const LoginPage = () => {
             <Button
               type="primary"
               htmlType="submit"
-              className="w-full bg-[#AD0808] hover:bg-[#AD0808] border-none text-white text-base h-14"
+              className="w-full bg-[#AD0808] hover:bg-[#AD0808] border-none text-white text-base h-12 md:h-14 rounded-lg"
             >
               Login
             </Button>
