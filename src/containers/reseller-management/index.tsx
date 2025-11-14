@@ -14,6 +14,8 @@ import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
 import { useData, useDataTable } from "@rtrw-monitoring-system/hooks";
 import { RESELLER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import dayjs from "dayjs";
+import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
+
 const { RangePicker } = DatePicker;
 
 type Reseller = {
@@ -135,6 +137,7 @@ const ResellerManagementContainer = () => {
   const actionItems: MenuProps["items"] = [{ key: "detail", label: "Details" }];
 
   const router = useRouter();
+  const { isMobile } = WINDOW_HELPER.useWindowResize();
 
   const disabledDate = (current: any) => {
     return current && current > dayjs().endOf("day");
@@ -147,48 +150,98 @@ const ResellerManagementContainer = () => {
         <p className="text-sm font-normal text-[#4E5764]">Edit List Reseller</p>
       </Space>
       <ResellerStatus status={totalStatus} />
-      <div className="flex justify-between items-center mb-4 px-6 pt-6">
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Search"
-          style={{ width: 250 }}
-          onChange={(e) =>
-            setFilterItem((prev) => ({
-              ...prev,
-              search: e.target.value,
-              page: 1,
-            }))
-          }
-        />
-        <div className="flex items-center gap-3">
-          <RangePicker
-            format="DD-MM-YYYY"
-            disabledDate={disabledDate}
-            onChange={handleDateChange}
-            value={
-              filterItem?.startDate && filterItem?.endDate
-                ? [
-                    dayjs(filterItem.startDate, "YYYY-MM-DD"),
-                    dayjs(filterItem.endDate, "YYYY-MM-DD"),
-                  ]
-                : null
-            }
-          />
-          <Select
-            placeholder="All Area"
-            suffixIcon={<DownOutlined />}
-            value={filterItem?.branch ?? undefined}
-            options={[{ value: "JEMBER", label: "Jember" }]}
-            onChange={(value) =>
+
+      {isMobile ? (
+        <div className="px-6 pt-6 mb-4 flex flex-col gap-3">
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Search"
+            style={{ width: "100%" }}
+            onChange={(e) =>
               setFilterItem((prev) => ({
                 ...prev,
-                branch: value,
+                search: e.target.value,
                 page: 1,
               }))
             }
           />
+
+          <div className="flex flex-row items-center gap-2 w-full">
+            <RangePicker
+              format="DD-MM-YYYY"
+              disabledDate={disabledDate}
+              onChange={handleDateChange}
+              value={
+                filterItem?.startDate && filterItem?.endDate
+                  ? [
+                      dayjs(filterItem.startDate, "YYYY-MM-DD"),
+                      dayjs(filterItem.endDate, "YYYY-MM-DD"),
+                    ]
+                  : null
+              }
+              style={{ width: "70%" }}
+            />
+
+            <Select
+              placeholder="All Area"
+              suffixIcon={<DownOutlined />}
+              value={filterItem?.branch ?? undefined}
+              options={[{ value: "JEMBER", label: "Jember" }]}
+              onChange={(value) =>
+                setFilterItem((prev) => ({
+                  ...prev,
+                  branch: value,
+                  page: 1,
+                }))
+              }
+              style={{ width: "28%" }}
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex justify-between items-center mb-4 px-6 pt-6">
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Search"
+            style={{ width: 250 }}
+            onChange={(e) =>
+              setFilterItem((prev) => ({
+                ...prev,
+                search: e.target.value,
+                page: 1,
+              }))
+            }
+          />
+          <div className="flex items-center gap-3">
+            <RangePicker
+              format="DD-MM-YYYY"
+              disabledDate={disabledDate}
+              onChange={handleDateChange}
+              value={
+                filterItem?.startDate && filterItem?.endDate
+                  ? [
+                      dayjs(filterItem.startDate, "YYYY-MM-DD"),
+                      dayjs(filterItem.endDate, "YYYY-MM-DD"),
+                    ]
+                  : null
+              }
+            />
+            <Select
+              placeholder="All Area"
+              suffixIcon={<DownOutlined />}
+              value={filterItem?.branch ?? undefined}
+              options={[{ value: "JEMBER", label: "Jember" }]}
+              onChange={(value) =>
+                setFilterItem((prev) => ({
+                  ...prev,
+                  branch: value,
+                  page: 1,
+                }))
+              }
+            />
+          </div>
+        </div>
+      )}
       <div className="p-6">
         <Tables<Reseller>
           data={resellerData}

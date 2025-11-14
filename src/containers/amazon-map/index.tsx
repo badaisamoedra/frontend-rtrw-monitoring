@@ -14,6 +14,7 @@ import {
 } from "@rtrw-monitoring-system/components";
 import { toast } from "react-toastify";
 import { useResellerRepository } from "@rtrw-monitoring-system/services/reseller";
+import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
 
 const DEFAULT = { lat: -8.2, lng: 114.05 };
 
@@ -49,6 +50,8 @@ const DashboardAmazonContainer = () => {
 
   const { updateReseller } = useResellerRepository();
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+
+  const { isMobile } = WINDOW_HELPER.useWindowResize();
 
   React.useEffect(() => {
     if (isGeolocationEnabled && coords) {
@@ -411,12 +414,19 @@ const DashboardAmazonContainer = () => {
 
   return (
     <div className="relative w-full h-[calc(100vh-64px)] overflow-hidden">
-      <div className="absolute top-[50px] left-1/14 z-50 w-[400px] flex gap-2">
+      <div
+        className={`absolute z-50 flex items-center gap-2 ${
+          isMobile
+            ? "top-4 left-[5%] w-[90%]"
+            : "top-[50px] left-1/14 w-[400px]"
+        }`}
+      >
         <Input.Search
           placeholder="Search Reseller No."
           allowClear
           enterButton
           onSearch={handleSearch}
+          className={isMobile ? "flex-1 max-w-[210px]" : "flex-1 w-full"}
         />
         <Button
           onClick={() => {
@@ -430,19 +440,33 @@ const DashboardAmazonContainer = () => {
         >
           Reset View
         </Button>
+
+        {isMobile && (
+          <Button
+            icon={<InfoCircleOutlined />}
+            onClick={() => setShowLegend((prev) => !prev)}
+            className="ml-[2px]"
+          />
+        )}
       </div>
 
-      <div className="absolute top-[50px] right-6 z-50">
-        <Button
-          icon={<InfoCircleOutlined />}
-          onClick={() => setShowLegend((prev) => !prev)}
-        >
-          Legend
-        </Button>
-      </div>
+      {!isMobile && (
+        <div className="absolute top-[50px] right-6 z-50 flex items-center">
+          <Button
+            icon={<InfoCircleOutlined />}
+            onClick={() => setShowLegend((prev) => !prev)}
+          >
+            Legend
+          </Button>
+        </div>
+      )}
 
       {showLegend && (
-        <div className="absolute top-[90px] right-6 bg-white shadow-md rounded p-3 text-sm space-y-1 z-50 w-[200px]">
+        <div
+          className={`absolute right-6 bg-white shadow-md rounded p-3 text-sm space-y-1 z-50 w-[200px] ${
+            isMobile ? "top-[60px]" : "top-[90px]"
+          }`}
+        >
           <h4 className="font-semibold mb-2">Legend Information</h4>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#008E53]"></span>

@@ -9,6 +9,7 @@ import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
 import { useData, useDataTable } from "@rtrw-monitoring-system/hooks";
 import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import React from "react";
+import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
 
 interface Customer {
   id: string;
@@ -48,6 +49,7 @@ const OrderDetailContainer = () => {
   const router = useRouter();
   const params = useSearchParams();
   const orderId = params.get("id");
+  const { isMobile } = WINDOW_HELPER.useWindowResize();
 
   const {
     queryResult: { data: listOrderDetail },
@@ -128,23 +130,52 @@ const OrderDetailContainer = () => {
   };
 
   return (
-    <LayoutContentPage className="p-6">
-      <Space direction="vertical" size={"small"} className="mb-8">
-        <h1 className="text-2xl font-bold">Order Detail</h1>
-        <p className="text-sm font-normal text-[#4E5764]">
-          Update status pemasangan
-        </p>
-      </Space>
-      <div className="flex justify-between mb-6">
-        <div>
-          <p className="text-sm font-semibold text-[#0C1A30]">
+    <LayoutContentPage className={isMobile ? "p-4" : "p-6"}>
+      {isMobile ? (
+        <div className="mb-4 flex flex-col items-start space-y-2">
+          <h1 className="text-xl font-bold">Order Detail</h1>
+          <p className="text-xs text-[#4E5764]">Update status pemasangan</p>
+        </div>
+      ) : (
+        <Space direction="vertical" size={"small"} className="mb-8">
+          <h1 className="text-2xl font-bold">Order Detail</h1>
+          <p className="text-sm font-normal text-[#4E5764]">
+            Update status pemasangan
+          </p>
+        </Space>
+      )}
+      <div
+        className={
+          isMobile ? "flex flex-col gap-3 mb-6" : "flex justify-between mb-6"
+        }
+      >
+        <div className={"flex flex-col gap-2 mb-4"}>
+          <p
+            className={
+              isMobile
+                ? "text-xs font-semibold text-[#0C1A30]"
+                : "text-sm font-semibold text-[#0C1A30]"
+            }
+          >
             Order Number : {orderDetailSummary?.data?.orderNumber ?? "-"}
           </p>
-          <p className="text-sm font-semibold text-[#0C1A30]">
+          <p
+            className={
+              isMobile
+                ? "text-xs font-semibold text-[#0C1A30]"
+                : "text-sm font-semibold text-[#0C1A30]"
+            }
+          >
             Jumlah Order : {orderDetailSummary?.data?.totalCount ?? "0"}{" "}
             pelanggan
           </p>
-          <p className="text-sm font-semibold text-[#0C1A30]">
+          <p
+            className={
+              isMobile
+                ? "text-xs font-semibold text-[#0C1A30]"
+                : "text-sm font-semibold text-[#0C1A30]"
+            }
+          >
             Pelanggan Aktif : {orderDetailSummary?.data?.activeCount ?? "0"}{" "}
             pelanggan
           </p>
@@ -153,7 +184,11 @@ const OrderDetailContainer = () => {
         <Input
           prefix={<SearchOutlined />}
           placeholder="Search"
-          style={{ width: 250, height: 40 }}
+          style={{
+            width: isMobile ? "100%" : 250,
+            height: 40,
+            marginTop: isMobile ? 0 : 20,
+          }}
           onChange={(e) =>
             setFilterItem((prev) => ({
               ...prev,
@@ -164,23 +199,25 @@ const OrderDetailContainer = () => {
         />
       </div>
 
-      <Tables<Customer>
-        data={orderDetailData}
-        columns={columns}
-        showIndex={false}
-        statusColorFn={getStatusColor}
-        actionItems={actionItems}
-        onActionClick={(record, actionKey) => {
-          if (actionKey === "detail") {
-            router.push(`${PAGE_NAME.activity_order}?id=${record.id}`);
-          }
-        }}
-        pageSize={pageSize}
-        totalItems={totalItems}
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-      />
+      <div className={isMobile ? "overflow-x-auto" : ""}>
+        <Tables<Customer>
+          data={orderDetailData}
+          columns={columns}
+          showIndex={false}
+          statusColorFn={getStatusColor}
+          actionItems={actionItems}
+          onActionClick={(record, actionKey) => {
+            if (actionKey === "detail") {
+              router.push(`${PAGE_NAME.activity_order}?id=${record.id}`);
+            }
+          }}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      </div>
     </LayoutContentPage>
   );
 };

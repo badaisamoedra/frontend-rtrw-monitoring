@@ -54,16 +54,16 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
 
   return (
     <div
-      className="flex justify-between items-center gap-6 rounded-2xl bg-[#FAFAFA] shadow-[0_2px_10px_rgba(0,0,0,0.06)] 
-      px-6 py-4 mb-4 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] transition-all duration-200 border border-[#E5E5E5]"
+      className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 rounded-2xl bg-[#FAFAFA] shadow-[0_2px_10px_rgba(0,0,0,0.06)] 
+      px-4 py-4 mb-4 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] transition-all duration-200 border border-[#E5E5E5]"
       style={{
         background: backgroundStyle,
       }}
     >
-      <div className="flex flex-col w-1/4">
-        <p className="text-[13px] font-semibold text-[#1A1A1A]">Order Number</p>
+      <div className="flex flex-col sm:w-1/4 w-full">
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">Order Number</p>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-[#0C1B36] font-medium">{orderNumber}</span>
+          <span className="text-[#0C1B36] font-medium truncate">{orderNumber}</span>
           <CopyOutlined
             onClick={onCopy}
             className="text-[#8C8C8C] cursor-pointer hover:text-[#FF002E] transition"
@@ -71,42 +71,31 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col w-1/4">
-        <p className="text-[13px] font-semibold text-[#1A1A1A]">Order Status</p>
+      <div className="flex flex-col sm:w-1/4 w-full">
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">Order Status</p>
         <div className="flex items-center gap-2 mt-1">
-          <span
-            className={clsx(
-              "w-[8px] h-[8px] rounded-full inline-block",
-              dotColor
-            )}
-          ></span>
-          <span className={clsx("text-[14px] font-semibold", statusColor)}>
+          <span className={clsx("w-[8px] h-[8px] rounded-full inline-block", dotColor)}></span>
+          <span className={clsx("text-[13px] sm:text-[14px] font-semibold", statusColor)}>
             {formattedStatus}
           </span>
         </div>
       </div>
 
-      <div className="flex flex-col w-1/4">
-        <p className="text-[13px] font-semibold text-[#1A1A1A]">Period</p>
-        <span className="mt-1 text-[14px] text-[#0C1B36] font-medium">
-          {period}
-        </span>
+      <div className="flex flex-col sm:w-1/4 w-full">
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">Period</p>
+        <span className="mt-1 text-[13px] sm:text-[14px] text-[#0C1B36] font-medium">{period}</span>
       </div>
 
-      <div className="flex flex-col w-1/4">
-        <p className="text-[13px] font-semibold text-[#1A1A1A]">
-          Invoice Amount
-        </p>
-        <span className="mt-1 text-[14px] font-semibold text-[#0C1B36]">
-          {invoiceAmount}
-        </span>
+      <div className="flex flex-col sm:w-1/4 w-full">
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">Invoice Amount</p>
+        <span className="mt-1 text-[13px] sm:text-[14px] font-semibold text-[#0C1B36]">{invoiceAmount}</span>
       </div>
 
       <Button
         type="default"
         shape="round"
         onClick={onDetail}
-        className="border-[#FF0025] text-[#FF0025] hover:!bg-[#FF0025] hover:!text-white"
+        className="border-[#FF0025] text-[#FF0025] hover:!bg-[#FF0025] hover:!text-white mt-3 sm:mt-0 w-full sm:w-auto"
         style={{
           borderWidth: 2,
           fontSize: 14,
