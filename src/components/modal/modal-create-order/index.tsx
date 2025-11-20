@@ -11,6 +11,8 @@ import {
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import ToastContent from "@rtrw-monitoring-system/components/toast-content";
+import Image from "next/image";
+import ICONS from "@rtrw-monitoring-system/public/assets/icons";
 
 type TambahOrderModalProps = {
   open: boolean;
@@ -102,8 +104,9 @@ const ModalCreateOrder: React.FC<TambahOrderModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="border border-[#E5E5E5] rounded-xl flex justify-between items-center p-4 bg-white transition-all">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#E6F7E9] flex items-center justify-center">
-                <FileExcelOutlined className="text-[#33A854] text-lg" />
+              <div className="w-12 h-12 rounded-lg bg-[#F6F3F3] flex items-center justify-center">
+                {/* <FileExcelOutlined className="text-[#33A854] text-lg" /> */}
+                <Image src={ICONS.IconSpreadsheet} alt="icon spreadsheet"/>
               </div>
               <div>
                 <p className="text-[#0C1A30] text-[13px] font-semibold">
@@ -115,7 +118,7 @@ const ModalCreateOrder: React.FC<TambahOrderModalProps> = ({
             <DownloadOutlined className="text-gray-400 text-lg cursor-pointer hover:text-[#E31C25]" />
           </div>
 
-          <div className="border border-[#E5E5E5] rounded-xl flex justify-between items-center p-4 bg-white transition-all">
+          {/* <div className="border border-[#E5E5E5] rounded-xl flex justify-between items-center p-4 bg-white transition-all">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-[#FFECEC] flex items-center justify-center">
                 <FilePdfOutlined className="text-[#E31C25] text-lg" />
@@ -128,7 +131,7 @@ const ModalCreateOrder: React.FC<TambahOrderModalProps> = ({
               </div>
             </div>
             <DownloadOutlined className="text-gray-400 text-lg cursor-pointer hover:text-[#E31C25]" />
-          </div>
+          </div> */}
         </div>
       </div>
 
