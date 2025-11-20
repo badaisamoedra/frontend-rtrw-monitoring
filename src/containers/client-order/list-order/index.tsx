@@ -4,12 +4,11 @@ import {
   LayoutContentPage,
   OrderListTable,
 } from "@rtrw-monitoring-system/components";
-import { Button, DatePicker, Input, Select, Space } from "antd";
+import { Button, DatePicker, Input, Space } from "antd";
 import React from "react";
 const { RangePicker } = DatePicker;
 import {
   SearchOutlined,
-  DownOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import {
@@ -241,7 +240,7 @@ const ListOrderContainer = () => {
           </div>
         </div>
       )}
-      <div className="border border-[#E9EEF6] rounded-xl p-6 mb-6">
+      {/* <div className="border border-[#E9EEF6] rounded-xl p-6 mb-6">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-[#0C1A30]">
             End-Client Acquisition
@@ -327,7 +326,7 @@ const ListOrderContainer = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </div> */}
       <OrderListTable
         data={orderData}
         totalItems={totalItems}
