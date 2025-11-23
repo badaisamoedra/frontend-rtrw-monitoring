@@ -27,16 +27,42 @@ type Reseller = {
   region: string;
   branch: string;
   status: string;
+  cluster: string
+  data_ip: string
+  hp_pic_reseller: string
+  potential_sales: string
+  acquisition_progress: string
+  next_progress: string
+  acq_month: string
+  q_acq: string
+  semester: string
+  acquired_sales_ytd: string
+  sales_ratio: string
+  alamat_point_sales: string
+  detail: string
 };
 
 const columns: Column<Reseller>[] = [
   { title: "Nama Reseller", dataIndex: "name" },
   { title: "Kode SF", dataIndex: "code" },
-  { title: "Nama Partner", dataIndex: "partner" },
+  { title: "PIC Reseller", dataIndex: "partner" },
   { title: "Area", dataIndex: "area" },
   { title: "Region", dataIndex: "region" },
   { title: "Branch", dataIndex: "branch" },
   { title: "Status", dataIndex: "status" },
+  { title: "Status", dataIndex: "cluster" },
+  { title: "Data IP", dataIndex: "data_ip" },
+  { title: "No HP PIC Reseller", dataIndex: "hp_pic_reseller" },
+  { title: "Potential Sales", dataIndex: "potential_sales" },
+  { title: "Acquisition Progress", dataIndex: "acquisition_progress" },
+  { title: "Next Progress", dataIndex: "next_progress" },
+  { title: "Acq Month", dataIndex: "acq_month" },
+  { title: "Q Acq", dataIndex: "q_acq" },
+  { title: "Semester", dataIndex: "semester" },
+  { title: "Acquired Sales YTD", dataIndex: "acquired_sales_ytd" },
+  { title: "Sales Ratio", dataIndex: "sales_ratio" },
+  { title: "Alamat Point of Sales", dataIndex: "alamat_point_sales" },
+  { title: "Detail", dataIndex: "detail" },
 ];
 
 const ResellerManagementContainer = () => {
@@ -80,6 +106,20 @@ const ResellerManagementContainer = () => {
       region: item.region || "-",
       branch: item.branch || "-",
       status: item.status || "Not Active",
+      cluster: "-",
+      data_ip: "-",
+      hp_pic_reseller: "-",
+      potential_sales: "-",
+      acquisition_progress: "-",
+      next_progress: "-",
+      acq_month: "-",
+      q_acq: "-",
+      semester: "-",
+      acquired_sales_ytd: "-",
+      sales_ratio: "-",
+      alamat_point_sales: "-",
+      detail: "-",
+
     }));
   }, [listReseller]);
 

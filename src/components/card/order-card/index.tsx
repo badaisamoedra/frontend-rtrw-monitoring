@@ -10,6 +10,7 @@ type InvoiceCardProps = {
   status: "Active" | "Not Active" | string;
   period: string;
   invoiceAmount: string;
+  countOrder: string;
   onDetail?: () => void;
   onCopy?: () => void;
 };
@@ -19,6 +20,7 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
   status,
   period,
   invoiceAmount,
+  countOrder,
   onDetail,
   onCopy,
 }) => {
@@ -61,9 +63,13 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
       }}
     >
       <div className="flex flex-col sm:w-1/4 w-full">
-        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">Order Number</p>
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">
+          Order Number
+        </p>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-[#0C1B36] font-medium truncate">{orderNumber}</span>
+          <span className="text-[#0C1B36] font-medium truncate">
+            {orderNumber}
+          </span>
           <CopyOutlined
             onClick={onCopy}
             className="text-[#8C8C8C] cursor-pointer hover:text-[#FF002E] transition"
@@ -72,23 +78,52 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
       </div>
 
       <div className="flex flex-col sm:w-1/4 w-full">
-        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">Order Status</p>
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">
+          Order Status
+        </p>
         <div className="flex items-center gap-2 mt-1">
-          <span className={clsx("w-[8px] h-[8px] rounded-full inline-block", dotColor)}></span>
-          <span className={clsx("text-[13px] sm:text-[14px] font-semibold", statusColor)}>
+          <span
+            className={clsx(
+              "w-[8px] h-[8px] rounded-full inline-block",
+              dotColor
+            )}
+          ></span>
+          <span
+            className={clsx(
+              "text-[13px] sm:text-[14px] font-semibold",
+              statusColor
+            )}
+          >
             {formattedStatus}
           </span>
         </div>
       </div>
 
       <div className="flex flex-col sm:w-1/4 w-full">
-        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">Period</p>
-        <span className="mt-1 text-[13px] sm:text-[14px] text-[#0C1B36] font-medium">{period}</span>
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">
+          Period
+        </p>
+        <span className="mt-1 text-[13px] sm:text-[14px] text-[#0C1B36] font-medium">
+          {period}
+        </span>
       </div>
 
       <div className="flex flex-col sm:w-1/4 w-full">
-        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">Invoice Amount</p>
-        <span className="mt-1 text-[13px] sm:text-[14px] font-semibold text-[#0C1B36]">{invoiceAmount}</span>
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">
+          Invoice Amount
+        </p>
+        <span className="mt-1 text-[13px] sm:text-[14px] font-semibold text-[#0C1B36]">
+          {invoiceAmount}
+        </span>
+      </div>
+
+      <div className="flex flex-col sm:w-1/4 w-full">
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">
+          Count Order
+        </p>
+        <span className="mt-1 text-[13px] sm:text-[14px] font-semibold text-[#0C1B36]">
+          {countOrder}
+        </span>
       </div>
 
       <Button

@@ -195,8 +195,9 @@ const ActivityOrderContainer = () => {
                       key={item.id}
                       className={`rounded-xl shadow-sm mb-2 transition-all duration-300 ${
                         isMobile ? "px-4 py-3" : "px-6 py-4"
-                      } bg-[#009C5E] text-white`}
-                      style={{ width: "100%" }}
+                      } bg-[#FFFFFF] text-black`}
+                      // } bg-[#009C5E] text-white`}
+                      style={{ width: "100%", borderColor: "#009C5E", borderWidth: 1 }}
                     >
                       <h3
                         className={`font-semibold mb-1 ${
@@ -205,6 +206,7 @@ const ActivityOrderContainer = () => {
                       >
                         {item.title}
                       </h3>
+
                       <p
                         className={`text-sm opacity-90 mb-3 ${
                           isMobile ? "text-[12px]" : ""
@@ -212,6 +214,7 @@ const ActivityOrderContainer = () => {
                       >
                         {item.desc}
                       </p>
+
                       <Tag
                         style={{
                           borderRadius: "20px",
@@ -229,6 +232,42 @@ const ActivityOrderContainer = () => {
                             )
                           : "-"}
                       </Tag>
+
+                      {/* {item.title === "Validasi Data Pelanggan" && ( */}
+                      <div
+                        className="flex gap-3 mt-4 justify-start"
+                        style={{ marginTop: isMobile ? 12 : 16 }}
+                      >
+                        <Button
+                          style={{
+                            backgroundColor: "#16A34A",
+                            borderColor: "#16A34A",
+                            borderRadius: 9999,
+                            padding: isMobile ? "0 18px" : "0 24px",
+                            fontWeight: 600,
+                            fontSize: isMobile ? 12 : 13,
+                            color: "white",
+                          }}
+                          onClick={() => console.log("Approve clicked")}
+                        >
+                          Approve
+                        </Button>
+
+                        <Button
+                          danger
+                          type="primary"
+                          style={{
+                            borderRadius: 9999,
+                            padding: isMobile ? "0 18px" : "0 24px",
+                            fontWeight: 600,
+                            fontSize: isMobile ? 12 : 13,
+                          }}
+                          onClick={() => console.log("Reject clicked")}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                      {/* )} */}
                     </div>
                   ),
                 }))}
