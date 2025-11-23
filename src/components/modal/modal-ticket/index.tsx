@@ -128,38 +128,13 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
       centered
     >
       <div className="px-2">
-        <Row className="mb-3">
-          <Col span={8}>
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
             <Text strong>Reseller No.</Text>
-          </Col>
-          <Col span={16}>
             <Input value={editedTicket?.resellerNumber ?? "-"} disabled />
           </Col>
-        </Row>
-
-        <Row className="mb-3">
-          <Col span={8}>
-            <Text strong>Longitude</Text>
-          </Col>
-          <Col span={16}>
-            <Input value={editedTicket?.longitude ?? "-"} disabled />
-          </Col>
-        </Row>
-
-        <Row className="mb-3">
-          <Col span={8}>
-            <Text strong>Latitude</Text>
-          </Col>
-          <Col span={16}>
-            <Input value={editedTicket?.latitude ?? "-"} disabled />
-          </Col>
-        </Row>
-
-        <Row className="mb-3">
-          <Col span={8}>
+          <Col span={12}>
             <Text strong>Tanggal</Text>
-          </Col>
-          <Col span={16}>
             <Input
               value={dayjs(editedTicket?.createdAt).format(
                 "DD-MMM-YYYY HH:mm:ss"
@@ -169,38 +144,87 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           </Col>
         </Row>
 
-        <Row className="mb-3">
-          <Col span={8}>
-            <Text strong>Kabupaten</Text>
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
+            <Text strong>Longitude</Text>
+            <Input value={editedTicket?.longitude ?? "-"} disabled />
           </Col>
-          <Col span={16}>
-            <Input value={editedTicket?.province ?? "-"} disabled />
+          <Col span={12}>
+            <Text strong>Latitude</Text>
+            <Input value={editedTicket?.latitude ?? "-"} disabled />
           </Col>
         </Row>
 
-        <Row className="mb-3">
-          <Col span={8}>
-            <Text strong>Kecamatan</Text>
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
+            <Text strong>Data IP</Text>
+            <Input value="-" disabled />
           </Col>
-          <Col span={16}>
+          <Col span={12}>
+            <Text strong>Alamat Point of Sales (PoS)</Text>
+            <Input value="-" disabled />
+          </Col>
+        </Row>
+
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
+            <Text strong>Area</Text>
+            <Input value="-" disabled />
+          </Col>
+          <Col span={12}>
+            <Text strong>Region</Text>
+            <Input value="-" disabled />
+          </Col>
+        </Row>
+
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
+            <Text strong>Branch</Text>
+            <Input value="-" disabled />
+          </Col>
+          <Col span={12}>
+            <Text strong>Cluster</Text>
+            <Input value="-" disabled />
+          </Col>
+        </Row>
+
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
+            <Text strong>Kabupaten</Text>
+            <Input value={editedTicket?.province ?? "-"} disabled />
+          </Col>
+          <Col span={12}>
+            <Text strong>Kecamatan</Text>
             <Input value={editedTicket?.district ?? "-"} disabled />
           </Col>
         </Row>
 
-        <Row className="mb-3">
-          <Col span={8}>
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
             <Text strong>Kelurahan / Desa</Text>
-          </Col>
-          <Col span={16}>
             <Input value={editedTicket?.city ?? "-"} disabled />
+          </Col>
+
+          <Col span={12}>
+            <Text strong>Status</Text>
+            <Select
+              value={editedTicket?.status}
+              onChange={handleStatusChange}
+              style={{ width: "100%" }}
+              options={ListStatus}
+              disabled={section === "VIEW"}
+            />
+            {errors.status && (
+              <Text type="danger" style={{ color: "red" }}>
+                {errors.status}
+              </Text>
+            )}
           </Col>
         </Row>
 
-        <Row className="mb-3" gutter={12}>
-          <Col span={8}>
-            <Text strong>Potential</Text>
-          </Col>
-          <Col span={8}>
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
+            <Text strong>Potential High</Text>
             <Input
               addonBefore="High"
               value={editedTicket?.potentialHigh ?? 0}
@@ -215,7 +239,9 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
               </Text>
             )}
           </Col>
-          <Col span={8}>
+
+          <Col span={12}>
+            <Text strong>Potential Low</Text>
             <Input
               addonBefore="Low"
               value={editedTicket?.potentialLow ?? 0}
@@ -232,14 +258,13 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           </Col>
         </Row>
 
-        <Row className="mb-3">
-          <Col span={8}>
-            <Text strong>ARPU 3 months</Text>
-          </Col>
-          <Col span={16}>
+        <Row gutter={12} className="mb-3">
+          <Col span={12}>
+            <Text strong>ARPU 3 Months</Text>
             <Input
               addonBefore="IDR"
               value={numberWithDots(editedTicket?.potentialThreeMonth)}
+              disabled={section === "VIEW"}
               onChange={(e) =>
                 handleChange(
                   "potentialThreeMonth",
@@ -253,13 +278,9 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
               </Text>
             )}
           </Col>
-        </Row>
 
-        <Row className="mb-3">
-          <Col span={8}>
+          <Col span={12}>
             <Text strong>Potential Revenue</Text>
-          </Col>
-          <Col span={16}>
             <Input
               addonBefore="IDR"
               value={numberWithDots(editedTicket?.potentialRevenue)}
@@ -280,30 +301,8 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
         </Row>
 
         <Row className="mb-3">
-          <Col span={8}>
-            <Text strong>Status</Text>
-          </Col>
-          <Col span={16}>
-            <Select
-              value={editedTicket?.status}
-              onChange={handleStatusChange}
-              style={{ width: "100%" }}
-              options={ListStatus}
-              disabled={section === "VIEW"}
-            />
-            {errors.status && (
-              <Text type="danger" style={{ color: "red" }}>
-                {errors.status}
-              </Text>
-            )}
-          </Col>
-        </Row>
-
-        <Row className="mb-3">
-          <Col span={8}>
+          <Col span={24}>
             <Text strong>Catatan</Text>
-          </Col>
-          <Col span={16}>
             <Input.TextArea
               rows={3}
               value={editedTicket?.notes}

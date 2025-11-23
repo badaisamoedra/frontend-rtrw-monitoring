@@ -58,17 +58,8 @@ const Tables = <T extends { id: string | number }>({
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-
-      if (mobile) {
-        const approxButtonWidth = 40;
-        const containerWidth = window.innerWidth - 100;
-        const maxButtons = Math.floor(containerWidth / approxButtonWidth);
-        setMaxPagesToShow(Math.max(maxButtons, 5));
-      } else {
-        setMaxPagesToShow(5);
-      }
+      setMaxPagesToShow(mobile ? 7 : 5);
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -79,50 +70,34 @@ const Tables = <T extends { id: string | number }>({
     setInternalPage(next);
     onPageChange?.(next);
   };
-
   const handleNext = () => {
     const next = Math.min(currentPage + 1, totalPages || 1);
     setInternalPage(next);
     onPageChange?.(next);
   };
-
   const handlePageClick = (page: number) => {
     setInternalPage(page);
     onPageChange?.(page);
   };
 
-  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSize = parseInt(e.target.value);
-    setPageSize(newSize);
-    setInternalPage(1);
-    onPageSizeChange?.(newSize);
-  };
+  const tableWrapperRef = React.useRef<HTMLDivElement | null>(null);
+  const [scrollPos, setScrollPos] = React.useState({ left: 0, max: 0 });
 
-  const getDesktopPageNumbers = () => {
-    const pages: (number | string)[] = [];
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, "...", totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(
-          1,
-          "...",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "...",
-          totalPages
-        );
-      }
-    }
-    return pages;
-  };
+  React.useEffect(() => {
+    const el = tableWrapperRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      setScrollPos({
+        left: el.scrollLeft,
+        max: el.scrollWidth - el.clientWidth,
+      });
+    };
+    handleScroll();
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  const getMobilePageNumbers = () => {
+  const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -149,9 +124,6 @@ const Tables = <T extends { id: string | number }>({
     return pages;
   };
 
-  const getPageNumbers = () =>
-    isMobile ? getMobilePageNumbers() : getDesktopPageNumbers();
-
   return (
     <>
       <div className="block md:hidden px-2 pt-0 pb-4 text-sm text-[#001A41]">
@@ -165,87 +137,220 @@ const Tables = <T extends { id: string | number }>({
             <Empty description="No data available" />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
+          <div ref={tableWrapperRef} className="overflow-auto max-h-[600px]">
+            <table
+              className="w-full text-sm"
+              style={{
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                tableLayout: "fixed",
+              }}
+            >
               <thead>
                 <tr className="bg-[#FF0025] text-white text-left">
-                  {showIndex && <th className="py-3 px-4 w-[40px]">No.</th>}
-                  {columns.map((col, idx) => (
+                  {showIndex && (
                     <th
-                      key={idx}
                       className="py-3 px-4 font-semibold"
                       style={{
-                        width: col.width,
-                        textAlign: col.align || "left",
+                        position: "sticky",
+                        left: 0,
+                        top: 0,
+                        zIndex: 5,
+                        background: "#FF0025",
+                        width: 80,
+                        minWidth: 80,
+                        maxWidth: 80,
+                        borderRight:
+                          scrollPos.left > 2 ? "1px solid #d9d9d9" : "none",
+                        boxShadow:
+                          scrollPos.left > 2
+                            ? "4px 0 6px -2px rgba(0,0,0,0.08)"
+                            : "none",
                       }}
                     >
-                      {col.title}
+                      No.
                     </th>
-                  ))}
+                  )}
+
+                  {columns.map((col, idx) => {
+                    const colWidth =
+                      typeof col.width === "number" ||
+                      typeof col.width === "string"
+                        ? col.width
+                        : 160;
+
+                    const isBeforeAction =
+                      actionItems.length > 0 && idx === columns.length - 1;
+
+                    return (
+                      <th
+                        key={idx}
+                        className="py-3 px-4 font-semibold whitespace-normal break-words"
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 4,
+                          background: "#FF0025",
+                          textAlign: col.align || "left",
+                          width: isBeforeAction
+                            ? (Number(colWidth) || 160) + 35
+                            : colWidth,
+                          minWidth: isBeforeAction
+                            ? (Number(colWidth) || 160) + 35
+                            : colWidth,
+                        }}
+                      >
+                        {col.title}
+                      </th>
+                    );
+                  })}
+
                   {actionItems.length > 0 && (
-                    <th className="py-3 px-4 text-center">Action</th>
+                    <th
+                      className="py-3 px-4 text-center font-semibold"
+                      style={{
+                        position: "sticky",
+                        right: 0,
+                        top: 0,
+                        zIndex: 6,
+                        background: "#FF0025",
+                        width: 110,
+                        minWidth: 110,
+                        maxWidth: 110,
+                        borderLeft:
+                          scrollPos.left < scrollPos.max - 2
+                            ? "1px solid #d9d9d9"
+                            : "none",
+                        boxShadow:
+                          scrollPos.left < scrollPos.max - 2
+                            ? "-4px 0 6px -2px rgba(0,0,0,0.08)"
+                            : "none",
+                      }}
+                    >
+                      Action
+                    </th>
                   )}
                 </tr>
               </thead>
 
               <tbody>
-                {paginatedData.map((record, index) => (
-                  <tr
-                    key={record.id}
-                    className={`${
-                      index % 2 === 0 ? "bg-[#fafafa]" : "bg-white"
-                    } hover:bg-gray-50 transition-all duration-150`}
-                  >
-                    {showIndex && (
-                      <td className="py-3 px-4 text-gray-700">
-                        {(currentPage - 1) * pageSize + index + 1}
-                      </td>
-                    )}
+                {paginatedData.map((record, index) => {
+                  const bgColor = index % 2 === 0 ? "#fafafa" : "#ffffff";
 
-                    {columns.map((col, idx) => {
-                      const value = record[col.dataIndex];
-                      return (
-                        <td key={idx} className="py-3 px-4 text-gray-700">
-                          {col.render ? (
-                            col.render(value, record, index)
-                          ) : statusColorFn && col.dataIndex === "status" ? (
-                            <span
-                              className={`px-3 py-[4px] rounded-full text-xs font-medium ${statusColorFn(
-                                String(value)
-                              )}`}
-                            >
-                              {String(value)}
-                            </span>
-                          ) : (
-                            String(value)
-                          )}
-                        </td>
-                      );
-                    })}
-
-                    {actionItems.length > 0 && (
-                      <td className="py-3 px-4 text-center">
-                        <Dropdown
-                          menu={{
-                            items: actionItems.map((item) => ({
-                              ...item,
-                              onClick: () => onActionClick?.(record, item.key),
-                            })),
+                  return (
+                    <tr
+                      key={record.id}
+                      className="hover:bg-gray-50 transition-all"
+                      style={{ backgroundColor: bgColor }}
+                    >
+                      {showIndex && (
+                        <td
+                          className="py-3 px-4"
+                          style={{
+                            position: "sticky",
+                            left: 0,
+                            zIndex: 3,
+                            backgroundColor: bgColor,
+                            width: 80,
+                            minWidth: 80,
+                            borderRight:
+                              scrollPos.left > 2 ? "1px solid #e5e5e5" : "none",
+                            boxShadow:
+                              scrollPos.left > 2
+                                ? "4px 0 6px -2px rgba(0,0,0,0.08)"
+                                : "none",
                           }}
-                          placement="bottomRight"
-                          arrow
-                          trigger={["click"]}
                         >
-                          <Button
-                            type="text"
-                            icon={<MoreOutlined />}
-                            className="hover:text-red-500 text-gray-600"
-                          />
-                        </Dropdown>
-                      </td>
-                    )}
-                  </tr>
-                ))}
+                          {(currentPage - 1) * pageSize + index + 1}
+                        </td>
+                      )}
+
+                      {columns.map((col, idx) => {
+                        const value = record[col.dataIndex];
+                        const colWidth =
+                          typeof col.width === "number" ||
+                          typeof col.width === "string"
+                            ? col.width
+                            : 160;
+
+                        const isBeforeAction =
+                          actionItems.length > 0 && idx === columns.length - 1;
+
+                        return (
+                          <td
+                            key={idx}
+                            className="py-3 px-4 text-gray-700 whitespace-normal break-words"
+                            style={{
+                              width: isBeforeAction
+                                ? (Number(colWidth) || 160) + 35
+                                : colWidth,
+                              minWidth: isBeforeAction
+                                ? (Number(colWidth) || 160) + 35
+                                : colWidth,
+                              backgroundColor: bgColor,
+                            }}
+                          >
+                            {col.render ? (
+                              col.render(value, record, index)
+                            ) : statusColorFn && col.dataIndex === "status" ? (
+                              <span
+                                className={`px-3 py-[4px] rounded-full text-xs font-medium ${statusColorFn(
+                                  String(value)
+                                )}`}
+                              >
+                                {String(value)}
+                              </span>
+                            ) : (
+                              String(value)
+                            )}
+                          </td>
+                        );
+                      })}
+
+                      {actionItems.length > 0 && (
+                        <td
+                          className="py-3 px-4 text-center"
+                          style={{
+                            position: "sticky",
+                            right: 0,
+                            zIndex: 2,
+                            backgroundColor: bgColor,
+                            width: 110,
+                            minWidth: 110,
+                            maxWidth: 110,
+                            borderLeft:
+                              scrollPos.left < scrollPos.max - 2
+                                ? "1px solid #e5e5e5"
+                                : "none",
+                            boxShadow:
+                              scrollPos.left < scrollPos.max - 2
+                                ? "-4px 0 6px -2px rgba(0,0,0,0.08)"
+                                : "none",
+                          }}
+                        >
+                          <Dropdown
+                            menu={{
+                              items: actionItems.map((item) => ({
+                                ...item,
+                                onClick: () =>
+                                  onActionClick?.(record, item.key),
+                              })),
+                            }}
+                            placement="bottomRight"
+                            arrow
+                            trigger={["click"]}
+                          >
+                            <Button
+                              type="text"
+                              icon={<MoreOutlined />}
+                              className="hover:text-red-500 text-gray-600"
+                            />
+                          </Dropdown>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -254,20 +359,8 @@ const Tables = <T extends { id: string | number }>({
 
       <div className="flex justify-between items-center text-sm text-[#001A41] px-4 py-3">
         <div className="hidden md:block">
-          Menampilkan <strong>{pageSize}</strong>{" "}
-          {/* this component for the customize limit data */}
-          {/* <select
-            className="border rounded px-1 cursor-pointer"
-            value={pageSize}
-            onChange={handlePageSizeChange}
-          >
-            {[5, 10, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>{" "} */}
-          dari <strong>{total} Data</strong>
+          Menampilkan <strong>{pageSize}</strong> dari{" "}
+          <strong>{total} Data</strong>
         </div>
 
         <div className="flex items-center gap-3">
@@ -277,12 +370,13 @@ const Tables = <T extends { id: string | number }>({
             onClick={handlePrev}
             icon={
               <LeftOutlined
-                className={`${
+                className={
                   currentPage === 1 ? "text-gray-300" : "text-gray-600"
-                }`}
+                }
               />
             }
           />
+
           <div className="flex items-center gap-2">
             {getPageNumbers().map((num, idx) =>
               typeof num === "number" ? (
@@ -304,15 +398,16 @@ const Tables = <T extends { id: string | number }>({
               )
             )}
           </div>
+
           <Button
             type="text"
             disabled={currentPage === totalPages || totalPages === 0}
             onClick={handleNext}
             icon={
               <RightOutlined
-                className={`${
+                className={
                   currentPage === totalPages ? "text-gray-300" : "text-gray-600"
-                }`}
+                }
               />
             }
           />

@@ -11,6 +11,7 @@ interface OrderItem {
   status: string;
   period: string;
   invoiceAmount: string;
+  countOrder: string;
   onDetail: () => void;
   onCopy: () => void;
 }
@@ -126,6 +127,7 @@ const OrderListTable: React.FC<OrderListTableProps> = ({
                 status={item.status}
                 period={item.period}
                 invoiceAmount={item.invoiceAmount}
+                countOrder={item.countOrder}
                 onDetail={item.onDetail}
                 onCopy={item.onCopy}
               />
@@ -134,64 +136,64 @@ const OrderListTable: React.FC<OrderListTableProps> = ({
         )}
 
         {/* {total > pageSize && ( */}
-          <div className="flex justify-between items-center text-sm text-[#001A41] mt-6 px-2">
-            {showTotalLabel && (
-              <div className="hidden md:block">
-                Menampilkan <strong>{pageSize}</strong> dari{" "}
-                <strong>{total} Data</strong>
-              </div>
-            )}
-
-            <div className="flex items-center gap-3">
-              <Button
-                type="text"
-                disabled={currentPage === 1}
-                onClick={handlePrev}
-                icon={
-                  <LeftOutlined
-                    className={`${
-                      currentPage === 1 ? "text-gray-300" : "text-gray-600"
-                    }`}
-                  />
-                }
-              />
-              <div className="flex items-center gap-2">
-                {getPageNumbers().map((num, idx) =>
-                  typeof num === "number" ? (
-                    <button
-                      key={idx}
-                      onClick={() => handlePageClick(num)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all duration-200 ${
-                        num === currentPage
-                          ? "bg-[#FF0025] text-white"
-                          : "text-[#4B5563] hover:text-[#FF0025]"
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ) : (
-                    <span key={idx} className="text-gray-400">
-                      {num}
-                    </span>
-                  )
-                )}
-              </div>
-              <Button
-                type="text"
-                disabled={currentPage === totalPages || totalPages === 0}
-                onClick={handleNext}
-                icon={
-                  <RightOutlined
-                    className={`${
-                      currentPage === totalPages || totalPages === 0
-                        ? "text-gray-300"
-                        : "text-gray-600"
-                    }`}
-                  />
-                }
-              />
+        <div className="flex justify-between items-center text-sm text-[#001A41] mt-6 px-2">
+          {showTotalLabel && (
+            <div className="hidden md:block">
+              Menampilkan <strong>{pageSize}</strong> dari{" "}
+              <strong>{total} Data</strong>
             </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            <Button
+              type="text"
+              disabled={currentPage === 1}
+              onClick={handlePrev}
+              icon={
+                <LeftOutlined
+                  className={`${
+                    currentPage === 1 ? "text-gray-300" : "text-gray-600"
+                  }`}
+                />
+              }
+            />
+            <div className="flex items-center gap-2">
+              {getPageNumbers().map((num, idx) =>
+                typeof num === "number" ? (
+                  <button
+                    key={idx}
+                    onClick={() => handlePageClick(num)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all duration-200 ${
+                      num === currentPage
+                        ? "bg-[#FF0025] text-white"
+                        : "text-[#4B5563] hover:text-[#FF0025]"
+                    }`}
+                  >
+                    {num}
+                  </button>
+                ) : (
+                  <span key={idx} className="text-gray-400">
+                    {num}
+                  </span>
+                )
+              )}
+            </div>
+            <Button
+              type="text"
+              disabled={currentPage === totalPages || totalPages === 0}
+              onClick={handleNext}
+              icon={
+                <RightOutlined
+                  className={`${
+                    currentPage === totalPages || totalPages === 0
+                      ? "text-gray-300"
+                      : "text-gray-600"
+                  }`}
+                />
+              }
+            />
           </div>
+        </div>
         {/* )} */}
       </div>
     </>
