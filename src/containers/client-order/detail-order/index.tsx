@@ -48,7 +48,7 @@ const columns: Column<Customer>[] = [
 const OrderDetailContainer = () => {
   const router = useRouter();
   const params = useSearchParams();
-  const orderId = params.get("id");
+  const orderId = params.get("orderId");
   const { isMobile } = WINDOW_HELPER.useWindowResize();
 
   const {
@@ -86,7 +86,7 @@ const OrderDetailContainer = () => {
     const list = listOrderDetail?.data?.list || [];
     return list.map((item) => ({
       id: item.id,
-      orderId: item.orderId || "-",
+      orderId: item.id || "-",
       name: item.clientName || "-",
       phone: item.phoneNumber || "-",
       email: item.email || "-",
@@ -97,7 +97,7 @@ const OrderDetailContainer = () => {
             year: "numeric",
           })
         : "-",
-      package: item.package || "-",
+      package: item.packageName || "-",
       status: item.status || "Menunggu Data Pelanggan",
     }));
   }, [listOrderDetail, router]);

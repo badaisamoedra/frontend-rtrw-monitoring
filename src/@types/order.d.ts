@@ -31,7 +31,8 @@ interface ListOrderDetail {
   clientName: string;
   status: string;
   phoneNumber: string;
-  package: string;
+  packageName: string;
+  packageId: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: null;
