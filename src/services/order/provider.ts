@@ -8,6 +8,12 @@ const providers = {
       method: HttpMethod.POST,
       data,
     }).then((res) => res),
+  updateOrderActivity: ({ id, ...data }: UpdateOrderActivityPayload) =>
+    fetcher({
+      url: ORDER_SERVICE.order_activities_by_id(id),
+      method: HttpMethod.PUT,
+      data,
+    }),
 };
 
 export default providers;

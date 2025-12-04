@@ -3,8 +3,11 @@
 import {
   FooterNavigation,
   LayoutContentPage,
+  ModalConfirmation,
+  ModalConfirmationCustom,
+  ToastContent,
 } from "@rtrw-monitoring-system/components";
-import { Space, Tag, Timeline, Empty, Button } from "antd";
+import { Space, Tag, Timeline, Empty, Button, Input } from "antd";
 import React from "react";
 import { CheckCircleFilled, LeftOutlined } from "@ant-design/icons";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,15 +15,34 @@ import { useData } from "@rtrw-monitoring-system/hooks";
 import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import dayjs from "dayjs";
 import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
+import { useOrderRepository } from "@rtrw-monitoring-system/services/order";
+import { toast } from "react-toastify";
+
+type ModalType = {
+  modalOpen: "APPROVED" | "REJECTED" | "";
+  activityName: string;
+  id: string;
+  notes?: string;
+};
 
 const ActivityOrderContainer = () => {
   const router = useRouter();
   const params = useSearchParams();
   const orderDetailId = params.get("id");
   const { isMobile } = WINDOW_HELPER.useWindowResize();
+  const [modal, setModal] = React.useState<ModalType>({
+    modalOpen: "",
+    activityName: "",
+    id: "",
+    notes: "",
+  });
 
   const {
-    queryResult: { data: orderActivities, isLoading },
+    queryResult: {
+      data: orderActivities,
+      isLoading,
+      refetch: refetchOrderActivity,
+    },
   } = useData<OrderActivitiesResponse>(
     { url: ORDER_SERVICE.order_activities(orderDetailId ?? "") },
     [ORDER_SERVICE.order_activities(orderDetailId ?? "")],
@@ -29,13 +51,17 @@ const ActivityOrderContainer = () => {
   );
 
   const {
-    queryResult: { data: orderActivitiesSummary },
+    queryResult: { data: orderActivitiesSummary, refetch: refetchOrderSummary },
   } = useData<OrderActivitiesSummaryResponse>(
     { url: ORDER_SERVICE.order_activities_summary(orderDetailId ?? "") },
     [ORDER_SERVICE.order_activities_summary(orderDetailId ?? "")],
     null,
     { enabled: !!orderDetailId }
   );
+
+  const { updateOrderActivity } = useOrderRepository();
+  const [rejectNotes, setRejectNotes] = React.useState("");
+  const [rejectError, setRejectError] = React.useState("");
 
   const list: any[] = Array.isArray(orderActivities)
     ? orderActivities
@@ -78,12 +104,51 @@ const ActivityOrderContainer = () => {
 
         return {
           id: item.id,
+          activityName: item.activityName,
+          status: item.status,
           title: activity.title,
           desc: activity.desc,
           updatedAt: item.createdAt,
+          notes: item.notes,
         };
       });
   }, [list]);
+
+  const updateActivity = async () => {
+    try {
+      const payload: {
+        id: string;
+        status: "" | "APPROVED" | "REJECTED";
+        activityName: string;
+        notes?: string;
+      } = {
+        id: modal.id,
+        status: modal.modalOpen,
+        activityName: modal.activityName,
+      };
+
+      if (modal.modalOpen === "REJECTED") {
+        payload.notes = rejectNotes;
+      }
+
+      await updateOrderActivity.mutateAsync(payload);
+      setRejectNotes("");
+      setModal({ modalOpen: "", activityName: "", id: "" });
+      toast.success(
+        <ToastContent description="Activity order berhasil diubah" />
+      );
+      refetchOrderActivity();
+      refetchOrderSummary();
+    } catch (error: any) {
+      setModal({ modalOpen: "", activityName: "", id: "" });
+      toast.error(
+        <ToastContent
+          type="error"
+          description={error?.response?.data?.messsage}
+        />
+      );
+    }
+  };
 
   if (isLoading)
     return (
@@ -171,8 +236,8 @@ const ActivityOrderContainer = () => {
         </div>
 
         <div
-          className={`min-h-[60vh] flex justify-center ${
-            isMobile ? "p-2" : "p-8"
+          className={`min-h-[60vh] flex ${
+            isMobile ? "p-2 justify-center" : "p-8 justify-start"
           }`}
         >
           <div className={`w-full ${isMobile ? "max-w-full" : "max-w-3xl"}`}>
@@ -181,96 +246,137 @@ const ActivityOrderContainer = () => {
             ) : (
               <Timeline
                 mode="left"
-                items={timelineItems.map((item) => ({
-                  dot: (
-                    <CheckCircleFilled
-                      style={{
-                        color: "#009C5E",
-                        fontSize: isMobile ? 16 : 18,
-                      }}
-                    />
-                  ),
-                  children: (
-                    <div
-                      key={item.id}
-                      className={`rounded-xl shadow-sm mb-2 transition-all duration-300 ${
-                        isMobile ? "px-4 py-3" : "px-6 py-4"
-                      } bg-[#FFFFFF] text-black`}
-                      // } bg-[#009C5E] text-white`}
-                      style={{ width: "100%", borderColor: "#009C5E", borderWidth: 1 }}
-                    >
-                      <h3
-                        className={`font-semibold mb-1 ${
-                          isMobile ? "text-[14px]" : "text-[15px]"
-                        }`}
-                      >
-                        {item.title}
-                      </h3>
+                // className="[&_.ant-timeline-item-head]:!bg-transparent [&_.ant-timeline-item-head]:!border-none [&_.ant-timeline-item-head]:!shadow-none"
+                items={timelineItems.map((item, index) => {
+                  const isApproved = item.status === "APPROVED";
+                  const isPending = item.status === "PENDING";
+                  const isRejected = item.status === "REJECTED";
 
-                      <p
-                        className={`text-sm opacity-90 mb-3 ${
-                          isMobile ? "text-[12px]" : ""
-                        }`}
-                      >
-                        {item.desc}
-                      </p>
+                  const eligibleActions =
+                    isPending &&
+                    (index === 0 || list[index - 1]?.status === "APPROVED");
 
-                      <Tag
+                  const disabled =
+                    index !== 0 && list[index - 1]?.status !== "APPROVED";
+
+                  return {
+                    dot: (
+                      <CheckCircleFilled
                         style={{
-                          borderRadius: "20px",
-                          fontSize: isMobile ? "9px" : "10px",
-                          border: "none",
-                          padding: isMobile ? "1px 8px" : "2px 10px",
-                          backgroundColor: "#FFFFFF80",
-                          color: "#353941",
-                          fontWeight: "600",
+                          color: isApproved ? "#009C5E" : "#d1d5db",
+                          fontSize: isMobile ? 16 : 18,
+                        }}
+                      />
+                    ),
+                    children: (
+                      <div
+                        key={item.id}
+                        className={`rounded-xl shadow-sm mb-2 transition-all duration-300 ${
+                          isApproved
+                            ? "bg-[#009C5E] text-white"
+                            : disabled
+                            ? "bg-[#E5E5E5] text-black"
+                            : isRejected
+                            ? "bg-[#FF383C] text-white"
+                            : "bg-white text-black"
+                        } p-6 border`}
+                        style={{
+                          width: "100%",
+                          borderColor: isApproved ? "#009C5E" : "#D1D5DB",
+                          borderWidth: 1,
                         }}
                       >
-                        {dayjs(item.updatedAt).isValid()
-                          ? dayjs(item.updatedAt).format(
-                              "DD MMMM YYYY, HH:mm:ss"
-                            )
-                          : "-"}
-                      </Tag>
+                        <h3 className="font-semibold mb-1">{item.title}</h3>
 
-                      {/* {item.title === "Validasi Data Pelanggan" && ( */}
-                      <div
-                        className="flex gap-3 mt-4 justify-start"
-                        style={{ marginTop: isMobile ? 12 : 16 }}
-                      >
-                        <Button
-                          style={{
-                            backgroundColor: "#16A34A",
-                            borderColor: "#16A34A",
-                            borderRadius: 9999,
-                            padding: isMobile ? "0 18px" : "0 24px",
-                            fontWeight: 600,
-                            fontSize: isMobile ? 12 : 13,
-                            color: "white",
-                          }}
-                          onClick={() => console.log("Approve clicked")}
+                        <p
+                          className={`text-sm mb-3 ${
+                            isApproved
+                              ? "text-white opacity-90"
+                              : isPending
+                              ? "text-[#0C1A30]"
+                              : isRejected
+                              ? "text-white font-normal"
+                              : "text-[#6B7280]"
+                          }`}
                         >
-                          Approve
-                        </Button>
+                          {isApproved
+                            ? item.desc
+                            : isPending && !disabled
+                            ? "Menunggu Aksi Untuk Melanjutkan Proses"
+                            : isRejected
+                            ? `Reason: ${item.notes ?? "-"}`
+                            : `Menunggu ${item.title}`}
+                        </p>
 
-                        <Button
-                          danger
-                          type="primary"
-                          style={{
-                            borderRadius: 9999,
-                            padding: isMobile ? "0 18px" : "0 24px",
-                            fontWeight: 600,
-                            fontSize: isMobile ? 12 : 13,
-                          }}
-                          onClick={() => console.log("Reject clicked")}
-                        >
-                          Reject
-                        </Button>
+                        {isPending && !disabled && (
+                          <p className="text-xs font-normal text-[#EC221F] italic">
+                            (1 day 14 hours)
+                          </p>
+                        )}
+
+                        {(isApproved || isRejected) && (
+                          <Tag
+                            style={{
+                              borderRadius: "20px",
+                              fontSize: 11,
+                              border: "none",
+                              backgroundColor: "#FFFFFF40",
+                              color: "#353941",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {dayjs(item.updatedAt).isValid()
+                              ? dayjs(item.updatedAt).format(
+                                  "DD MMMM YYYY, HH:mm"
+                                )
+                              : "-"}
+                          </Tag>
+                        )}
+
+                        {eligibleActions && (
+                          <div className="flex gap-3 mt-4">
+                            <Button
+                              style={{
+                                backgroundColor: "#16A34A",
+                                borderColor: "#16A34A",
+                                borderRadius: 9999,
+                                color: "white",
+                                fontWeight: 600,
+                              }}
+                              onClick={() =>
+                                setModal({
+                                  modalOpen: "APPROVED",
+                                  activityName: item.activityName,
+                                  id: item.id,
+                                })
+                              }
+                            >
+                              Approve
+                            </Button>
+
+                            <Button
+                              danger
+                              type="primary"
+                              style={{
+                                borderRadius: 9999,
+                                fontWeight: 600,
+                              }}
+                              onClick={() =>
+                                setModal({
+                                  modalOpen: "REJECTED",
+                                  activityName: item.activityName,
+                                  id: item.id,
+                                })
+                              }
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                      {/* )} */}
-                    </div>
-                  ),
-                }))}
+                    ),
+                  };
+                })}
               />
             )}
           </div>
@@ -284,6 +390,55 @@ const ActivityOrderContainer = () => {
           align="center"
         />
       )}
+
+      <ModalConfirmation
+        title="Anda akan mengubah status activity"
+        subTitle="Apakah anda yakin menyetujui activity ini?"
+        cancelText="Kembali"
+        confirmText="Yakin, Ubah Activity"
+        open={modal.modalOpen === "APPROVED"}
+        onCancel={() => setModal({ modalOpen: "", activityName: "", id: "" })}
+        onConfirm={updateActivity}
+      />
+
+      <ModalConfirmationCustom
+        open={modal.modalOpen === "REJECTED"}
+        title="Tolak"
+        subTitle="Apakah Anda akan menolak pengajuan ini? Bila iya, harap isi alasan penolakan"
+        cancelText="Kembali"
+        okText="Submit"
+        onCancel={() => setModal({ modalOpen: "", activityName: "", id: "" })}
+        onOk={() => {
+          if (!rejectNotes.trim()) {
+            setRejectError("Alasan penolakan wajib diisi");
+            return;
+          }
+          setRejectError("");
+          updateActivity();
+        }}
+      >
+        <div className="my-4">
+          <Space direction="vertical" size={4} className="w-full">
+            <label className="text-darkGunmetal text-sm font-semibold text-left">
+              Alasan Penolakan
+            </label>
+            <Input.TextArea
+              rows={6}
+              value={rejectNotes}
+              onChange={(e) => {
+                setRejectNotes(e.target.value);
+                if (e.target.value.trim()) setRejectError("");
+              }}
+              status={rejectError ? "error" : ""}
+            />
+            {rejectError && (
+              <span className="text-red-500 text-xs font-medium">
+                {rejectError}
+              </span>
+            )}
+          </Space>
+        </div>
+      </ModalConfirmationCustom>
     </>
   );
 };

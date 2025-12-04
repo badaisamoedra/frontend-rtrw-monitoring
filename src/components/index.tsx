@@ -12,7 +12,9 @@ import OrderCard from "./card/order-card";
 import AppHeader from "./header";
 import Tables from "./table/custom-table";
 import OrderListTable from "./table/order-table";
-import ModalConfirmCreateOrder from "./modal/modal-confirmation";
+import ModalConfirmCreateOrder from "./modal/modal-confirmation-order";
+import ModalConfirmation from "./modal/modal-confirmation"
+import ModalConfirmationCustom from "./modal/modal-confirmation-custom"
 
 export {
   LayoutContentPage,
@@ -30,4 +32,6 @@ export {
   Tables,
   OrderListTable,
   ModalConfirmCreateOrder,
+  ModalConfirmation,
+  ModalConfirmationCustom
 };
