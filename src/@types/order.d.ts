@@ -86,6 +86,13 @@ interface UploadOrderPayload {
   base64: string;
 }
 
+interface UpdateOrderActivityPayload {
+  id: string;
+  activityName: string;
+  status: string;
+  notes?: string;
+}
+
 type ListOrderParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.orderListParam;
 type ListOrderFilter =
