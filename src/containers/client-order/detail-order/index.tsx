@@ -97,7 +97,7 @@ const OrderDetailContainer = () => {
             year: "numeric",
           })
         : "-",
-      package: item.packageName || "-",
+      package: item.package_name || "-",
       status: item.status || "Menunggu Data Pelanggan",
     }));
   }, [listOrderDetail, router]);
