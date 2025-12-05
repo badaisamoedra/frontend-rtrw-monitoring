@@ -68,23 +68,23 @@ const ActivityOrderContainer = () => {
     : orderActivities?.data || [];
 
   const activityMap: Record<string, { title: string; desc: string }> = {
-    DEVICE_ACTIVE: {
+    "Validasi Data Pelanggan": {
       title: "Validasi Data Pelanggan",
       desc: "Menunggu Aksi Untuk Melanjutkan Proses",
     },
-    DEVICE_INSTALLATION: {
+    "Penandatanganan Kontrak Berlangganan Pelanggan": {
       title: "Penandatanganan Kontrak Berlangganan Pelanggan",
       desc: "Menunggu Validasi Data Pelanggan",
     },
-    USER_VALIDATION: {
+    "Pembuatan Akun Pelanggan": {
       title: "Pembuatan Akun Pelanggan",
       desc: "Menunggu Penandatanganan Kontrak",
     },
-    USER_INPUT: {
+    "Instalasi Perangkat Pelanggan": {
       title: "Instalasi Perangkat Pelanggan",
       desc: "Menunggu Pembuatan Akun Pelanggan",
     },
-    USER_REGISTRATION: {
+    "First Usage Pelanggan": {
       title: "First Usage Pelanggan",
       desc: "Menunggu Instalasi Perangkat",
     },
