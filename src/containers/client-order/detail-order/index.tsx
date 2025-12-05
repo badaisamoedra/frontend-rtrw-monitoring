@@ -9,7 +9,9 @@ import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
 import { useData, useDataTable } from "@rtrw-monitoring-system/hooks";
 import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import React from "react";
-import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
+import { getDiffDayHour, WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
+import Image from "next/image";
+import ICONS from "@rtrw-monitoring-system/public/assets/icons";
 
 interface Customer {
   id: string;
@@ -28,6 +30,7 @@ interface Customer {
   //   | "INACTIVE"
   //   | "REJECT"
   status: string;
+  timeAging: string;
 }
 
 const actionItems: MenuProps["items"] = [
@@ -43,6 +46,7 @@ const columns: Column<Customer>[] = [
   { title: "Tanggal Upload", dataIndex: "uploadDate" },
   { title: "Paket Internet", dataIndex: "package" },
   { title: "Status", dataIndex: "status" },
+  { title: "Time Aging", dataIndex: "timeAging" },
 ];
 
 const OrderDetailContainer = () => {
@@ -99,6 +103,7 @@ const OrderDetailContainer = () => {
         : "-",
       package: item.package_name || "-",
       status: item.status || "Menunggu Data Pelanggan",
+      timeAging: getDiffDayHour(item.createdAt),
     }));
   }, [listOrderDetail, router]);
 
@@ -206,16 +211,35 @@ const OrderDetailContainer = () => {
           showIndex={false}
           statusColorFn={getStatusColor}
           actionItems={actionItems}
-          onActionClick={(record, actionKey) => {
-            if (actionKey === "detail") {
-              router.push(`${PAGE_NAME.activity_order}?id=${record.id}`);
-            }
-          }}
+          // onActionClick={(record, actionKey) => {
+          //   if (actionKey === "detail") {
+          //     router.push(`${PAGE_NAME.activity_order}?id=${record.id}`);
+          //   }
+          // }}
           pageSize={pageSize}
           totalItems={totalItems}
           currentPage={currentPage}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          customActionRender={(record) => (
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() =>
+                  router.push(`${PAGE_NAME.activity_order}?id=${record.id}`)
+                }
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-[#EBFEF3] hover:bg-[#d2f7e2] transition"
+              >
+                <Image src={ICONS.IconDetail} alt="icon detail" />
+              </button>
+
+              <button
+                // onClick={() => onActionClick(record, "reject")}
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-[#FFF5F6] hover:bg-[#ffdfe3] transition"
+              >
+                <Image src={ICONS.IconCancel} alt="icon cancel" />
+              </button>
+            </div>
+          )}
         />
       </div>
     </LayoutContentPage>

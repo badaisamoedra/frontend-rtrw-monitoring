@@ -24,6 +24,7 @@ interface GeneralTableProps<T> {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
+  customActionRender?: (record: T) => React.ReactNode;
 }
 
 const Tables = <T extends { id: string | number }>({
@@ -38,6 +39,7 @@ const Tables = <T extends { id: string | number }>({
   currentPage: externalPage,
   onPageChange,
   onPageSizeChange,
+  customActionRender,
 }: GeneralTableProps<T>) => {
   const [internalPage, setInternalPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(defaultPageSize);
@@ -307,7 +309,7 @@ const Tables = <T extends { id: string | number }>({
                         );
                       })}
 
-                      {actionItems.length > 0 && (
+                      {/* {actionItems.length > 0 && (
                         <td
                           className="py-3 px-4 text-center"
                           style={{
@@ -346,6 +348,52 @@ const Tables = <T extends { id: string | number }>({
                               className="hover:text-red-500 text-gray-600"
                             />
                           </Dropdown>
+                        </td>
+                      )} */}
+
+                      {actionItems.length > 0 && (
+                        <td
+                          className="py-3 px-4 text-center"
+                          style={{
+                            position: "sticky",
+                            right: 0,
+                            zIndex: 2,
+                            backgroundColor: bgColor,
+                            width: 110,
+                            minWidth: 110,
+                            maxWidth: 110,
+                            borderLeft:
+                              scrollPos.left < scrollPos.max - 2
+                                ? "1px solid #e5e5e5"
+                                : "none",
+                            boxShadow:
+                              scrollPos.left < scrollPos.max - 2
+                                ? "-4px 0 6px -2px rgba(0,0,0,0.08)"
+                                : "none",
+                          }}
+                        >
+                          {customActionRender ? (
+                            customActionRender(record)
+                          ) : (
+                            <Dropdown
+                              menu={{
+                                items: actionItems.map((item) => ({
+                                  ...item,
+                                  onClick: () =>
+                                    onActionClick?.(record, item.key),
+                                })),
+                              }}
+                              placement="bottomRight"
+                              arrow
+                              trigger={["click"]}
+                            >
+                              <Button
+                                type="text"
+                                icon={<MoreOutlined />}
+                                className="hover:text-red-500 text-gray-600"
+                              />
+                            </Dropdown>
+                          )}
                         </td>
                       )}
                     </tr>

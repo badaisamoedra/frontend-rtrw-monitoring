@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import { ORDER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import dayjs from "dayjs";
-import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
+import { getDiffDayHour, WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
 import { useOrderRepository } from "@rtrw-monitoring-system/services/order";
 import { toast } from "react-toastify";
 
@@ -69,24 +69,24 @@ const ActivityOrderContainer = () => {
 
   const activityMap: Record<string, { title: string; desc: string }> = {
     DEVICE_ACTIVE: {
-      title: "Perangkat Aktif",
-      desc: "Selesai! Perangkat sudah tersambung dengan jaringan internet.",
+      title: "Validasi Data Pelanggan",
+      desc: "Menunggu Aksi Untuk Melanjutkan Proses",
     },
     DEVICE_INSTALLATION: {
-      title: "Instalasi Perangkat",
-      desc: "Selesai! Instalasi perangkat berhasil.",
+      title: "Penandatanganan Kontrak Berlangganan Pelanggan",
+      desc: "Menunggu Validasi Data Pelanggan",
     },
     USER_VALIDATION: {
-      title: "Validasi Data Pelanggan",
-      desc: "Selesai! Validasi data pelanggan berhasil.",
+      title: "Pembuatan Akun Pelanggan",
+      desc: "Menunggu Penandatanganan Kontrak",
     },
     USER_INPUT: {
-      title: "Penginputan Data Pelanggan",
-      desc: "Data pelanggan telah dikirim.",
+      title: "Instalasi Perangkat Pelanggan",
+      desc: "Menunggu Pembuatan Akun Pelanggan",
     },
     USER_REGISTRATION: {
-      title: "Registrasi & Validasi Data",
-      desc: "Data kamu sudah tervalidasi.",
+      title: "First Usage Pelanggan",
+      desc: "Menunggu Instalasi Perangkat",
     },
   };
 
@@ -110,6 +110,7 @@ const ActivityOrderContainer = () => {
           desc: activity.desc,
           updatedAt: item.createdAt,
           notes: item.notes,
+          createdAt: item.createdAt
         };
       });
   }, [list]);
@@ -310,7 +311,7 @@ const ActivityOrderContainer = () => {
 
                         {isPending && !disabled && (
                           <p className="text-xs font-normal text-[#EC221F] italic">
-                            (1 day 14 hours)
+                            {`(${getDiffDayHour(item.createdAt)})`}
                           </p>
                         )}
 

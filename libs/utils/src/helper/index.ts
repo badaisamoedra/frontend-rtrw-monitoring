@@ -5,9 +5,10 @@ import utc from "dayjs/plugin/utc";
 import localeData from "dayjs/plugin/localeData";
 import "dayjs/locale/id";
 import React from "react";
-// import * as XLSX from "xlsx";
+import duration from "dayjs/plugin/duration";
 
 dayjs.extend(customParseFormat);
+dayjs.extend(duration);
 
 export const toRupiah = (angka: number, prefixRupiah: "Rp" | "IDR" = "IDR") => {
   if (!angka) {
@@ -334,4 +335,12 @@ export const WINDOW_HELPER = {
 
     return { isMobile, windowWidth };
   },
+};
+
+export const getDiffDayHour = (createdAt: string | Date) => {
+  const diff = dayjs?.duration(dayjs().diff(dayjs(createdAt)));
+  const days = diff.days();
+  const hours = diff.hours();
+
+  return `${days} day ${hours} hours`;
 };
