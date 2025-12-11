@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { ToastContent } from "@rtrw-monitoring-system/components";
 import { PAGE_NAME } from "../constants";
 import IMAGES from "@rtrw-monitoring-system/public/assets/images";
+import { jwtDecode } from "jwt-decode";
 
 const LoginPage = () => {
   const [form] = Form.useForm();
@@ -33,6 +34,14 @@ const LoginPage = () => {
             LOCAL_STORAGE_KEYS.USER_INFO,
             res?.data?.data ?? ""
           );
+          const jwtData = jwtDecode(
+            res?.data?.data?.accessToken ?? ""
+          ) as JwtBaseResponse;
+          localStorageExt.setLocalStorage(
+            LOCAL_STORAGE_KEYS.USER_ROLE,
+            jwtData?.roles
+          );
+          console.log("JWT :", jwtData);
           router.push(PAGE_NAME.dashboard);
           toast.success(
             <ToastContent description="Data user berhasil diperbarui" />

@@ -43,6 +43,7 @@ const ORDER_SERVICE = {
   upload_create_order: `${BASE_URL_ORDER_V1}/uploads`,
   order_activities_by_id: (id: string) =>
     `${BASE_URL_ORDER_ACTIVITIES_V1}/${id}`,
+  order_details_by_id: (id: string) => `${BASE_URL_ORDER_DETAIL_V1}/${id}`,
 };
 
 const MASTER_SERVICE = {

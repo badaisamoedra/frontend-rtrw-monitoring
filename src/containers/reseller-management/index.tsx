@@ -50,7 +50,7 @@ const columns: Column<Reseller>[] = [
   { title: "Region", dataIndex: "region" },
   { title: "Branch", dataIndex: "branch" },
   { title: "Status", dataIndex: "status" },
-  { title: "Status", dataIndex: "cluster" },
+  { title: "Cluster", dataIndex: "cluster" },
   { title: "Data IP", dataIndex: "data_ip" },
   { title: "No HP PIC Reseller", dataIndex: "hp_pic_reseller" },
   { title: "Potential Sales", dataIndex: "potential_sales" },

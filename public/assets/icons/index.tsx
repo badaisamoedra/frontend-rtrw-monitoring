@@ -8,6 +8,7 @@ import IconWarning from "./warning.svg";
 import IconSpreadsheet from "./icon-spreadsheet.svg";
 import IconCancel from "./icon-cancel.svg";
 import IconDetail from "./icon-detail.svg";
+import IconDetailDisabled from "./icon-detail-disabled.svg";
 
 const ICONS = {
   BenLogo,
@@ -20,6 +21,7 @@ const ICONS = {
   IconSpreadsheet,
   IconCancel,
   IconDetail,
+  IconDetailDisabled,
 };
 
 export default ICONS;

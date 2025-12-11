@@ -15,7 +15,13 @@ const useOrderRepository = () => {
     UpdateOrderActivityPayload
   >(provider.updateOrderActivity);
 
-  return { uploadOrder, updateOrderActivity };
+  const updateStatusOrderDetail = useMutation<
+    AxiosResponse,
+    AxiosError,
+    UpdateStatusOrderDetailPayload
+  >(provider.updateStatusOrderDetail);
+
+  return { uploadOrder, updateOrderActivity, updateStatusOrderDetail };
 };
 
 export default useOrderRepository;

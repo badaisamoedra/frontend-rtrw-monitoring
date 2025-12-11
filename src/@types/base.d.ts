@@ -52,3 +52,17 @@ interface BaseSelection<T = unknown> {
   label?: string;
   data?: T;
 }
+
+interface JwtBaseResponse {
+  sub: string;
+  username: string;
+  status: string;
+  roles: BaseRole[];
+  iat: number;
+  exp: number;
+}
+
+interface BaseRole {
+  roleName: string;
+  tenantId: string;
+}

@@ -2,6 +2,7 @@ const APP_NAME = process.env["NEXT_PUBLIC_APP_NAME"] ?? "";
 
 export const LOCAL_STORAGE_KEYS = {
   USER_INFO: "pocUser" + APP_NAME,
+  USER_ROLE: "pocRole" + APP_NAME,
 };
 
 export const COLORS = {

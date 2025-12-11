@@ -67,27 +67,53 @@ const ActivityOrderContainer = () => {
     ? orderActivities
     : orderActivities?.data || [];
 
-  const activityMap: Record<string, { title: string; desc: string }> = {
+  const activityMap: Record<
+    string,
+    { title: string; desc: string; allowedRoles: string[] }
+  > = {
     "Validasi Data Pelanggan": {
       title: "Validasi Data Pelanggan",
       desc: "Menunggu Aksi Untuk Melanjutkan Proses",
+      allowedRoles: ["BRANCH ROLE"],
     },
     "Penandatanganan Kontrak Berlangganan Pelanggan": {
       title: "Penandatanganan Kontrak Berlangganan Pelanggan",
       desc: "Menunggu Validasi Data Pelanggan",
+      allowedRoles: ["BRANCH ROLE", "IP ROLE"],
     },
     "Pembuatan Akun Pelanggan": {
       title: "Pembuatan Akun Pelanggan",
       desc: "Menunggu Penandatanganan Kontrak",
+      allowedRoles: ["HQ ROLE"],
     },
     "Instalasi Perangkat Pelanggan": {
       title: "Instalasi Perangkat Pelanggan",
       desc: "Menunggu Pembuatan Akun Pelanggan",
+      allowedRoles: ["NOP ROLE"],
     },
     "First Usage Pelanggan": {
       title: "First Usage Pelanggan",
       desc: "Menunggu Instalasi Perangkat",
+      allowedRoles: ["HQ ROLE"],
     },
+  };
+
+  const userRoles = React.useMemo(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem("roles") || "[]").map(
+        (r: any) => r.roleName
+      );
+    } catch {
+      return [];
+    }
+  }, []);
+
+  const isRoleAllowed = (activityName: string) => {
+    const config = activityMap[activityName];
+    if (!config) return false;
+
+    return config.allowedRoles.some((role) => userRoles.includes(role));
   };
 
   const timelineItems = React.useMemo(() => {
@@ -102,6 +128,8 @@ const ActivityOrderContainer = () => {
           desc: "Belum ada deskripsi.",
         };
 
+        const canDoAction = isRoleAllowed(item.activityName);
+
         return {
           id: item.id,
           activityName: item.activityName,
@@ -110,7 +138,8 @@ const ActivityOrderContainer = () => {
           desc: activity.desc,
           updatedAt: item.createdAt,
           notes: item.notes,
-          createdAt: item.createdAt
+          createdAt: item.createdAt,
+          disabled: !canDoAction,
         };
       });
   }, [list]);
@@ -145,7 +174,7 @@ const ActivityOrderContainer = () => {
       toast.error(
         <ToastContent
           type="error"
-          description={error?.response?.data?.messsage}
+          description={error?.response?.data?.error?.message}
         />
       );
     }
@@ -337,12 +366,17 @@ const ActivityOrderContainer = () => {
                         {eligibleActions && (
                           <div className="flex gap-3 mt-4">
                             <Button
+                              disabled={item.disabled}
                               style={{
-                                backgroundColor: "#16A34A",
-                                borderColor: "#16A34A",
                                 borderRadius: 9999,
-                                color: "white",
                                 fontWeight: 600,
+                                ...(item.disabled
+                                  ? {}
+                                  : {
+                                      backgroundColor: "#16A34A",
+                                      borderColor: "#16A34A",
+                                      color: "white",
+                                    }),
                               }}
                               onClick={() =>
                                 setModal({
@@ -356,6 +390,7 @@ const ActivityOrderContainer = () => {
                             </Button>
 
                             <Button
+                              disabled={item.disabled}
                               danger
                               type="primary"
                               style={{
