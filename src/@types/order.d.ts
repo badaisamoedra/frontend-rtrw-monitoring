@@ -94,6 +94,11 @@ interface UpdateOrderActivityPayload {
   notes?: string;
 }
 
+interface UpdateStatusOrderDetailPayload {
+  id: string;
+  status: string;
+}
+
 type ListOrderParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.orderListParam;
 type ListOrderFilter =

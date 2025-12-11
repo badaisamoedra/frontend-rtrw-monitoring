@@ -14,6 +14,12 @@ const providers = {
       method: HttpMethod.PUT,
       data,
     }),
+  updateStatusOrderDetail: ({ id, ...data }: UpdateStatusOrderDetailPayload) =>
+    fetcher({
+      url: ORDER_SERVICE.order_activities_by_id(id),
+      method: HttpMethod.PUT,
+      data,
+    }),
 };
 
 export default providers;

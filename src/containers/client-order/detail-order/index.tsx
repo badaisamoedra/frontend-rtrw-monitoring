@@ -1,6 +1,11 @@
 "use client";
 
-import { LayoutContentPage, Tables } from "@rtrw-monitoring-system/components";
+import {
+  LayoutContentPage,
+  ModalConfirmation,
+  Tables,
+  ToastContent,
+} from "@rtrw-monitoring-system/components";
 import { Input, MenuProps, Space } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,6 +17,8 @@ import React from "react";
 import { getDiffDayHour, WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
 import Image from "next/image";
 import ICONS from "@rtrw-monitoring-system/public/assets/icons";
+import { toast } from "react-toastify";
+import { useOrderRepository } from "@rtrw-monitoring-system/services/order";
 
 interface Customer {
   id: string;
@@ -49,14 +56,25 @@ const columns: Column<Customer>[] = [
   { title: "Time Aging", dataIndex: "timeAging" },
 ];
 
+type ModalType = {
+  modalOpen: "APPROVED" | "REJECTED" | "";
+  id: string;
+};
+
 const OrderDetailContainer = () => {
   const router = useRouter();
   const params = useSearchParams();
   const orderId = params.get("orderId");
   const { isMobile } = WINDOW_HELPER.useWindowResize();
+  const [modal, setModal] = React.useState<ModalType>({
+    modalOpen: "",
+    id: "",
+  });
+
+  const { updateStatusOrderDetail } = useOrderRepository();
 
   const {
-    queryResult: { data: listOrderDetail },
+    queryResult: { data: listOrderDetail, refetch },
     setFilterItem,
     filterItem,
   } = useDataTable<ListOrderDetailRespone, ListOrderDetailParam>(
@@ -123,14 +141,35 @@ const OrderDetailContainer = () => {
     switch (status) {
       case "Active":
         return "bg-[#EBFEF3] text-[#008E53]";
-      case "Failed":
+      case "Cancelled":
         return "bg-[#FFF5F6] text-[#B71932]";
-      case "Menunggu Data Pelanggan":
-      case "Menunggu Validasi Data":
-      case "Menunggu Instalasi":
-        return "bg-[#E9F6FF] text-[#0050AE]";
       default:
-        return "bg-gray-100 text-gray-600";
+        return "bg-[#E9F6FF] text-[#0050AE]";
+    }
+  };
+
+  const cancelStatus = async () => {
+    try {
+      const payload: {
+        id: string;
+        status: string;
+      } = {
+        id: modal.id,
+        status: "Cancelled",
+      };
+
+      await updateStatusOrderDetail.mutateAsync(payload);
+      setModal({ modalOpen: "", id: "" });
+      toast.success(<ToastContent description="Order berhasil di batalkan" />);
+      refetch();
+    } catch (error: any) {
+      setModal({ modalOpen: "", id: "" });
+      toast.error(
+        <ToastContent
+          type="error"
+          description={error?.response?.data?.error?.messsage}
+        />
+      );
     }
   };
 
@@ -211,11 +250,6 @@ const OrderDetailContainer = () => {
           showIndex={false}
           statusColorFn={getStatusColor}
           actionItems={actionItems}
-          // onActionClick={(record, actionKey) => {
-          //   if (actionKey === "detail") {
-          //     router.push(`${PAGE_NAME.activity_order}?id=${record.id}`);
-          //   }
-          // }}
           pageSize={pageSize}
           totalItems={totalItems}
           currentPage={currentPage}
@@ -223,25 +257,52 @@ const OrderDetailContainer = () => {
           onPageSizeChange={handlePageSizeChange}
           customActionRender={(record) => (
             <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() =>
-                  router.push(`${PAGE_NAME.activity_order}?id=${record.id}`)
-                }
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-[#EBFEF3] hover:bg-[#d2f7e2] transition"
-              >
-                <Image src={ICONS.IconDetail} alt="icon detail" />
-              </button>
+              {record.status !== "Cancelled" ? (
+                <button
+                  onClick={() =>
+                    router.push(`${PAGE_NAME.activity_order}?id=${record.id}`)
+                  }
+                  className="w-7 h-7 flex items-center justify-center rounded-full bg-[#EBFEF3] hover:bg-[#d2f7e2] transition"
+                >
+                  <Image src={ICONS.IconDetail} alt="icon detail" />
+                </button>
+              ) : (
+                <button className="w-7 h-7 flex items-center justify-center rounded-full bg-[#FFF5F6] hover:bg-[#ffdfe3] transition">
+                  <Image
+                    src={ICONS.IconDetailDisabled}
+                    alt="icon detail disabled"
+                  />
+                </button>
+              )}
 
-              <button
-                // onClick={() => onActionClick(record, "reject")}
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-[#FFF5F6] hover:bg-[#ffdfe3] transition"
-              >
-                <Image src={ICONS.IconCancel} alt="icon cancel" />
-              </button>
+              {record?.status !== "Active" &&
+                record?.status !== "Cancelled" && (
+                  <button
+                    onClick={() =>
+                      setModal({
+                        modalOpen: "REJECTED",
+                        id: record.id,
+                      })
+                    }
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-[#FFF5F6] hover:bg-[#ffdfe3] transition"
+                  >
+                    <Image src={ICONS.IconCancel} alt="icon cancel" />
+                  </button>
+                )}
             </div>
           )}
         />
       </div>
+
+      <ModalConfirmation
+        title="Anda akan membatalkan order"
+        subTitle="Apakah anda yakin membatalkan order ini?"
+        cancelText="Kembali"
+        confirmText="Yakin, Batalkan Order"
+        open={modal.modalOpen === "REJECTED"}
+        onCancel={() => setModal({ modalOpen: "", id: "" })}
+        onConfirm={cancelStatus}
+      />
     </LayoutContentPage>
   );
 };
