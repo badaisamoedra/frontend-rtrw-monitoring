@@ -6,6 +6,7 @@ import localeData from "dayjs/plugin/localeData";
 import "dayjs/locale/id";
 import React from "react";
 import duration from "dayjs/plugin/duration";
+// import * as turf from "@turf/turf";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(duration);
@@ -344,3 +345,16 @@ export const getDiffDayHour = (createdAt: string | Date) => {
 
   return `${days} day ${hours} hours`;
 };
+
+// export const buildCoveragePolygon = (
+//   points: { lng: number; lat: number }[]
+// ): GeoJSON.Feature<GeoJSON.Polygon> | null => {
+//   if (points.length < 3) return null;
+
+//   const turfPoints = points.map((p) => turf.point([p.lng, p.lat]));
+
+//   const fc = turf.featureCollection(turfPoints);
+//   const hull = turf.convex(fc);
+
+//   return hull as GeoJSON.Feature<GeoJSON.Polygon> | null;
+// };

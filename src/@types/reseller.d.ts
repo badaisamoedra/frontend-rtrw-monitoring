@@ -58,6 +58,7 @@ interface ResellerMap {
   resellerNumber: string;
   boundary_building: null;
   createdAt: string;
+  locationPoint?: LocationPoint;
 }
 
 interface ResellerDetail {
@@ -139,6 +140,11 @@ interface TotalResellerStatus {
   INACTIVE: number;
   PENDING: number;
   REJECT: number;
+}
+
+interface LocationPoint {
+  type: string;
+  coordinates: Array<Array<number[]>>;
 }
 
 type ListResellerParam =
