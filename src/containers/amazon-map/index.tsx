@@ -14,7 +14,9 @@ import {
 } from "@rtrw-monitoring-system/components";
 import { toast } from "react-toastify";
 import { useResellerRepository } from "@rtrw-monitoring-system/services/reseller";
-import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
+import {
+  WINDOW_HELPER,
+} from "@rtrw-monitoring-system/utils";
 
 const DEFAULT = { lat: -8.2, lng: 114.05 };
 
@@ -24,9 +26,14 @@ type ModalProps = {
   image?: string;
 };
 
+const POLYGON_SOURCE_ID = "reseller-polygons";
+const POLYGON_FILL_LAYER_ID = "reseller-polygons-fill";
+const POLYGON_LINE_LAYER_ID = "reseller-polygons-line";
+
 const DashboardAmazonContainer = () => {
   const region = process.env.NEXT_PUBLIC_AWS_REGION || "ap-southeast-1";
-  const mapName = process.env.NEXT_PUBLIC_AWS_MAP_NAME || "brainet_map";
+  const mapName =
+    process.env.NEXT_PUBLIC_AWS_MAP_NAME || "brainet_map_here_hybrid";
   const apiKey = process.env.NEXT_PUBLIC_AWS_MAPS_API_KEY || "";
 
   const mapContainer = React.useRef<HTMLDivElement | null>(null);
@@ -50,6 +57,8 @@ const DashboardAmazonContainer = () => {
 
   const { updateReseller } = useResellerRepository();
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const hasInitialZoom = React.useRef(false);
+  const hasInitialPolygonFit = React.useRef(false);
 
   const { isMobile } = WINDOW_HELPER.useWindowResize();
 
@@ -81,118 +90,101 @@ const DashboardAmazonContainer = () => {
     { enabled: !!selectedId }
   );
 
-  // this function will be called when this future on
-  // const renderPolygons = (map: maplibregl.Map) => {
-  //   if (!ticketData?.data?.length) return;
+  const renderResellerPolygons = React.useCallback(
+    (
+      map: maplibregl.Map,
+      geojson: GeoJSON.FeatureCollection<GeoJSON.Polygon>
+    ) => {
+      // update existing
+      const existing = map.getSource(POLYGON_SOURCE_ID) as
+        | maplibregl.GeoJSONSource
+        | undefined;
 
-  //   const districtGroups = ticketData.data.reduce((acc, ticket) => {
-  //     if (!acc[ticket.district]) acc[ticket.district] = [];
-  //     acc[ticket.district].push([
-  //       parseFloat(ticket.longitude),
-  //       parseFloat(ticket.latitude),
-  //     ]);
-  //     return acc;
-  //   }, {} as Record<string, [number, number][]>);
+      if (existing) {
+        existing.setData(geojson);
+      } else {
+        map.addSource(POLYGON_SOURCE_ID, {
+          type: "geojson",
+          data: geojson,
+        });
 
-  //   const features = Object.entries(districtGroups).map(
-  //     ([district, coords]) => {
-  //       const bounds = coords.reduce(
-  //         (b, [lng, lat]) => {
-  //           b.minLng = Math.min(b.minLng, lng);
-  //           b.maxLng = Math.max(b.maxLng, lng);
-  //           b.minLat = Math.min(b.minLat, lat);
-  //           b.maxLat = Math.max(b.maxLat, lat);
-  //           return b;
-  //         },
-  //         {
-  //           minLng: coords[0][0],
-  //           maxLng: coords[0][0],
-  //           minLat: coords[0][1],
-  //           maxLat: coords[0][1],
-  //         }
-  //       );
+        map.addLayer({
+          id: POLYGON_FILL_LAYER_ID,
+          type: "fill",
+          source: POLYGON_SOURCE_ID,
+          paint: {
+            "fill-color": "#ef4444",
+            "fill-opacity": 0.35,
+          },
+        });
 
-  //       return {
-  //         type: "Feature",
-  //         properties: { name: district },
-  //         geometry: {
-  //           type: "Polygon",
-  //           coordinates: [
-  //             [
-  //               [bounds.minLng, bounds.minLat],
-  //               [bounds.maxLng, bounds.minLat],
-  //               [bounds.maxLng, bounds.maxLat],
-  //               [bounds.minLng, bounds.maxLat],
-  //               [bounds.minLng, bounds.minLat],
-  //             ],
-  //           ],
-  //         },
-  //       } satisfies GeoJSON.Feature<GeoJSON.Polygon>;
-  //     }
-  //   );
+        map.addLayer({
+          id: POLYGON_LINE_LAYER_ID,
+          type: "line",
+          source: POLYGON_SOURCE_ID,
+          paint: {
+            "line-color": "#b91c1c",
+            "line-width": 2,
+          },
+        });
 
-  //   const polygonData: GeoJSON.FeatureCollection<GeoJSON.Polygon> = {
-  //     type: "FeatureCollection",
-  //     features,
-  //   };
+        // map.on("click", POLYGON_FILL_LAYER_ID, (e) => {
+        //   const props = e.features?.[0]?.properties as any;
+        //   const resellerId = props?.resellerId ?? "-";
+        //   new maplibregl.Popup()
+        //     .setLngLat(e.lngLat)
+        //     .setHTML(`<strong>Reseller:</strong> ${resellerId}`)
+        //     .addTo(map);
+        // });
 
-  //   if (map.getSource("district-polygons")) {
-  //     (map.getSource("district-polygons") as maplibregl.GeoJSONSource).setData(
-  //       polygonData
-  //     );
-  //   } else {
-  //     map.addSource("district-polygons", {
-  //       type: "geojson",
-  //       data: polygonData,
-  //     } satisfies maplibregl.GeoJSONSourceSpecification);
+        map.on("mouseenter", POLYGON_FILL_LAYER_ID, () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+        map.on("mouseleave", POLYGON_FILL_LAYER_ID, () => {
+          map.getCanvas().style.cursor = "";
+        });
+      }
 
-  //     map.addLayer({
-  //       id: "polygon-fill",
-  //       type: "fill",
-  //       source: "district-polygons",
-  //       paint: {
-  //         "fill-color": [
-  //           "match",
-  //           ["get", "name"],
-  //           "Jakarta Selatan",
-  //           "#4ade80",
-  //           "Jakarta Barat",
-  //           "#60a5fa",
-  //           "Bekasi Barat",
-  //           "#facc15",
-  //           "#a855f7",
-  //         ],
-  //         "fill-opacity": 0.25,
-  //       },
-  //     });
+      if (!hasInitialPolygonFit.current && geojson.features.length) {
+        const bounds = new maplibregl.LngLatBounds();
 
-  //     map.addLayer({
-  //       id: "polygon-outline",
-  //       type: "line",
-  //       source: "district-polygons",
-  //       paint: {
-  //         "line-color": "#1e3a8a",
-  //         "line-width": 2,
-  //       },
-  //     });
+        geojson.features.forEach((feature) => {
+          const ring = feature.geometry.coordinates[0];
+          ring.forEach(([lng, lat]) => bounds.extend([lng, lat]));
+        });
 
-  //     map.on("click", "polygon-fill", (e) => {
-  //       const name = e.features?.[0]?.properties?.name;
-  //       const coordinates = e.lngLat;
-  //       new maplibregl.Popup()
-  //         .setLngLat(coordinates)
-  //         .setHTML(`<strong>${name}</strong>`)
-  //         .addTo(map);
-  //     });
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds, {
+            padding: 80,
+            maxZoom: 18,
+            duration: 1000,
+          });
+          hasInitialPolygonFit.current = true;
+        }
+      }
+    },
+    []
+  );
 
-  //     map.on("mouseenter", "polygon-fill", () => {
-  //       map.getCanvas().style.cursor = "pointer";
-  //     });
-  //     map.on("mouseleave", "polygon-fill", () => {
-  //       map.getCanvas().style.cursor = "";
-  //     });
-  //   }
-  // };
+  const resellerPolygons = React.useMemo(() => {
+    if (!resellerData?.data) return null;
+
+    const features: GeoJSON.Feature<GeoJSON.Polygon>[] = resellerData.data
+      .filter((r: any) => r?.locationPoint?.type === "Polygon")
+      .map((r: any) => ({
+        type: "Feature",
+        properties: {
+          resellerId: r.id,
+          status: r.status,
+        },
+        geometry: r.locationPoint as GeoJSON.Polygon,
+      }));
+
+    return {
+      type: "FeatureCollection",
+      features,
+    } as GeoJSON.FeatureCollection<GeoJSON.Polygon>;
+  }, [resellerData]);
 
   const resellers = React.useMemo(() => {
     if (!resellerData?.data) return [];
@@ -225,7 +217,7 @@ const DashboardAmazonContainer = () => {
       container: mapContainer.current!,
       style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
       center: [DEFAULT.lng, DEFAULT.lat],
-      zoom: 13,
+      zoom: 20,
     });
 
     mapRef.current = map;
@@ -234,6 +226,10 @@ const DashboardAmazonContainer = () => {
       console.log("✅ Amazon map loaded successfully");
       setIsMapReady(true);
       renderMarkers(map);
+
+      if (resellerPolygons) {
+        renderResellerPolygons(map, resellerPolygons);
+      }
     });
 
     map.on("click", "polygon-fill", (e) => {
@@ -258,11 +254,12 @@ const DashboardAmazonContainer = () => {
     });
   }, [region, mapName, apiKey, position]);
 
-  // React.useEffect(() => {
-  //   if (isMapReady && mapRef.current && resellerData?.data?.length) {
-  //     renderPolygons(mapRef.current);
-  //   }
-  // }, [isMapReady, resellerData]);
+  React.useEffect(() => {
+    const map = mapRef.current;
+    if (!isMapReady || !map || !resellerPolygons) return;
+
+    renderResellerPolygons(map, resellerPolygons);
+  }, [isMapReady, resellerPolygons, renderResellerPolygons]);
 
   React.useLayoutEffect(() => {
     const timer = setTimeout(() => {
@@ -331,16 +328,21 @@ const DashboardAmazonContainer = () => {
         setSelected(reseller);
         map.flyTo({
           center: [reseller.lng, reseller.lat],
-          zoom: 15,
+          zoom: 18,
           duration: 800,
         });
         setTimeout(() => scrollToCard(reseller.id), 100);
       });
     });
 
-    if (!bounds.isEmpty()) {
-      map.fitBounds(bounds, { padding: 80, maxZoom: 14, duration: 1000 });
-    }
+    // if (!hasInitialZoom.current && !bounds.isEmpty()) {
+    //   map.flyTo({
+    //     center: [resellers[0].lng, resellers[0].lat],
+    //     zoom: 15,
+    //     duration: 1200,
+    //   });
+    //   hasInitialZoom.current = true;
+    // }
   };
 
   const scrollToCard = (resellerId: string | number) => {
@@ -356,7 +358,7 @@ const DashboardAmazonContainer = () => {
     setSelectedId(reseller.id);
     mapRef.current?.flyTo({
       center: [reseller.lng, reseller.lat],
-      zoom: 15,
+      zoom: 20,
       duration: 800,
     });
   };
