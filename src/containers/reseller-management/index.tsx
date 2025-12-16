@@ -27,19 +27,19 @@ type Reseller = {
   region: string;
   branch: string;
   status: string;
-  cluster: string
-  data_ip: string
-  hp_pic_reseller: string
-  potential_sales: string
-  acquisition_progress: string
-  next_progress: string
-  acq_month: string
-  q_acq: string
-  semester: string
-  acquired_sales_ytd: string
-  sales_ratio: string
-  alamat_point_sales: string
-  detail: string
+  cluster: string;
+  data_ip: string;
+  hp_pic_reseller: string;
+  potential_sales: string;
+  acquisition_progress: string;
+  next_progress: string;
+  acq_month: string;
+  q_acq: string;
+  semester: string;
+  acquired_sales_ytd: string;
+  sales_ratio: string;
+  alamat_point_sales: string;
+  detail: string;
 };
 
 const columns: Column<Reseller>[] = [
@@ -101,7 +101,7 @@ const ResellerManagementContainer = () => {
       name: item.resellerName || "-",
       phone: item.resellerPhone || "-",
       code: item.codeSf || "-",
-      partner: item.partnerName || "-",
+      partner: item.picReseller || "-",
       area: item.area || "-",
       region: item.region || "-",
       branch: item.branch || "-",
@@ -109,17 +109,16 @@ const ResellerManagementContainer = () => {
       cluster: "-",
       data_ip: "-",
       hp_pic_reseller: "-",
-      potential_sales: "-",
-      acquisition_progress: "-",
-      next_progress: "-",
-      acq_month: "-",
-      q_acq: "-",
-      semester: "-",
-      acquired_sales_ytd: "-",
-      sales_ratio: "-",
+      potential_sales: item.potentialSales || "-",
+      acquisition_progress: item.acquisitionProgress || "-",
+      next_progress: item.nextProgress || "-",
+      acq_month: item.acquisitionMonth || "-",
+      q_acq: item.Qacquisition || "-",
+      semester: item.semester || "-",
+      acquired_sales_ytd: item.acquiredSalesYTD || "-",
+      sales_ratio: item.salesRatio || "-",
       alamat_point_sales: "-",
       detail: "-",
-
     }));
   }, [listReseller]);
 
@@ -294,7 +293,9 @@ const ResellerManagementContainer = () => {
           actionItems={actionItems}
           onActionClick={(record, actionKey) => {
             if (actionKey === "detail") {
-              router.push(`${PAGE_NAME.client_order}?resellerNumber=${record.id}`);
+              router.push(
+                `${PAGE_NAME.client_order}?resellerNumber=${record.id}`
+              );
             }
           }}
           statusColorFn={getStatusColor}
