@@ -106,7 +106,7 @@ const OrderCreationContainer = () => {
       toast.success(
         <ToastContent description="Data user berhasil diperbarui" />
       );
-      router.back()
+      router.back();
     } catch (error: any) {
       toast.error(
         <ToastContent
@@ -182,6 +182,9 @@ const OrderCreationContainer = () => {
         onSubmitCreateOrder={(base64, fileType) => {
           setPendingPayload({ base64, fileType });
           setOpenConfirmModal(true);
+        }}
+        downloadTemplate={() => {
+          window.open(process.env["NEXT_PUBLIC_FILE_TEMPLATE_ORDER"], "_blank");
         }}
       />
       <ModalConfirmCreateOrder

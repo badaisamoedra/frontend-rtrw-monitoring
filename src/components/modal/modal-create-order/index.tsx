@@ -18,12 +18,14 @@ type TambahOrderModalProps = {
   open: boolean;
   onClose: () => void;
   onSubmitCreateOrder: (base64: string, fileType: string) => void;
+  downloadTemplate?: () => void
 };
 
 const ModalCreateOrder: React.FC<TambahOrderModalProps> = ({
   open,
   onClose,
   onSubmitCreateOrder,
+  downloadTemplate
 }) => {
   const [file, setFile] = React.useState<File | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -115,7 +117,7 @@ const ModalCreateOrder: React.FC<TambahOrderModalProps> = ({
                 <p className="text-[12px] text-gray-500">XLS • 2.5 MB</p>
               </div>
             </div>
-            <DownloadOutlined className="text-gray-400 text-lg cursor-pointer hover:text-[#E31C25]" />
+            <DownloadOutlined onClick={downloadTemplate} className="text-gray-400 text-lg cursor-pointer hover:text-[#E31C25]" />
           </div>
 
           {/* <div className="border border-[#E5E5E5] rounded-xl flex justify-between items-center p-4 bg-white transition-all">

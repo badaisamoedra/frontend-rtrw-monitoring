@@ -130,12 +130,17 @@ const ListOrderContainer = () => {
         <Space direction="vertical" size={"small"}>
           <h1 className="text-2xl font-bold">End-Client Activation Order</h1>
           <p className="text-sm font-normal text-[#4E5764]">
-            Tambar order RTRW
+            Tambah order RTRW
           </p>
         </Space>
         <Space direction={"horizontal"} size={"small"} className={"gap-4"}>
           <Button
-            // onClick={() => router.push(PAGE_NAME.create_order)}
+            onClick={() => {
+              window.open(
+                process.env["NEXT_PUBLIC_FILE_TEMPLATE_ORDER"],
+                "_blank"
+              );
+            }}
             type="default"
             shape="round"
             danger

@@ -60,6 +60,7 @@ interface ResellerMap {
   boundary_building: null;
   createdAt: string;
   locationPoint?: LocationPoint;
+  isTelkom: boolean;
 }
 
 interface ResellerDetail {
