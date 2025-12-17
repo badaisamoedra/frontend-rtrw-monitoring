@@ -7,10 +7,7 @@ import {
 import { Button, DatePicker, Input, Space } from "antd";
 import React from "react";
 const { RangePicker } = DatePicker;
-import {
-  SearchOutlined,
-  InfoCircleOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import {
   CartesianGrid,
   Line,
@@ -76,7 +73,7 @@ const ListOrderContainer = () => {
       invoiceAmount: item.amount
         ? `Rp ${item.amount.toLocaleString("id-ID")}`
         : "-",
-      countOrder: "-",
+      countOrder: item.countOrdersDetail || "-",
       onDetail: () =>
         router.push(`${PAGE_NAME.order_detail}?orderId=${item.id}`),
       onCopy: () => navigator.clipboard.writeText(item.orderNumber || ""),

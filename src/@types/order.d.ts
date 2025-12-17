@@ -21,6 +21,7 @@ interface ListOrder {
   createdBy: string;
   updatedBy: string;
   deletedBy: null;
+  countOrdersDetail: number;
 }
 
 interface ListOrderDetail {
