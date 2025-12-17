@@ -10,7 +10,7 @@ type InvoiceCardProps = {
   status: "Active" | "Not Active" | string;
   period: string;
   invoiceAmount: string;
-  countOrder: string;
+  countOrder: string | number;
   onDetail?: () => void;
   onCopy?: () => void;
 };
