@@ -279,11 +279,11 @@ const ActivityOrderContainer = () => {
                 // className="[&_.ant-timeline-item-head]:!bg-transparent [&_.ant-timeline-item-head]:!border-none [&_.ant-timeline-item-head]:!shadow-none"
                 items={timelineItems.map((item, index) => {
                   const isApproved = item.status === "APPROVED";
-                  const isPending = item.status === "PENDING";
+                  const isNull = item.status === null;
                   const isRejected = item.status === "REJECTED";
 
                   const eligibleActions =
-                    isPending &&
+                    isNull &&
                     (index === 0 || list[index - 1]?.status === "APPROVED");
 
                   const disabled =
@@ -322,7 +322,7 @@ const ActivityOrderContainer = () => {
                           className={`text-sm mb-3 ${
                             isApproved
                               ? "text-white opacity-90"
-                              : isPending
+                              : isNull
                               ? "text-[#0C1A30]"
                               : isRejected
                               ? "text-white font-normal"
@@ -331,14 +331,14 @@ const ActivityOrderContainer = () => {
                         >
                           {isApproved
                             ? item.desc
-                            : isPending && !disabled
+                            : isNull && !disabled
                             ? "Menunggu Aksi Untuk Melanjutkan Proses"
                             : isRejected
                             ? `Reason: ${item.notes ?? "-"}`
                             : `Menunggu ${item.title}`}
                         </p>
 
-                        {isPending && !disabled && (
+                        {isNull && !disabled && (
                           <p className="text-xs font-normal text-[#EC221F] italic">
                             {`(${getDiffDayHour(item.createdAt)})`}
                           </p>

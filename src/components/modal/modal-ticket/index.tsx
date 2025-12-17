@@ -318,11 +318,27 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
         </Row>
 
         {section === "EDIT" ? (
-          <div className="flex justify-end gap-2 mt-4">
-            <Button type="primary" onClick={handleSave} disabled={!isFormValid}>
-              Simpan
+          <div className="flex justify-between mt-4">
+            <Button
+              onClick={onClose}
+              style={{
+                borderWidth: 1,
+                borderColor: "#000000",
+                color: "#000000",
+              }}
+            >
+              Data Pelanggan
             </Button>
-            <Button onClick={onClose}>Batal</Button>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="primary"
+                onClick={handleSave}
+                disabled={!isFormValid}
+              >
+                Simpan
+              </Button>
+              <Button onClick={onClose}>Batal</Button>
+            </div>
           </div>
         ) : (
           <div className="flex justify-end mt-4">

@@ -188,6 +188,7 @@ const DashboardAmazonContainer = () => {
     return resellerData.data
       .filter(
         (t) =>
+          t.isTelkom === true && 
           t.latitude !== null &&
           t.longitude !== null &&
           !isNaN(t.latitude) &&
