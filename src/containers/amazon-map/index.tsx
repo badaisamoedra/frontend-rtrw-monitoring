@@ -16,7 +16,8 @@ import { toast } from "react-toastify";
 import { useResellerRepository } from "@rtrw-monitoring-system/services/reseller";
 import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
 
-const DEFAULT = { lat: -8.2, lng: 114.05 };
+const DEFAULT = { lat: -8.1764739, lng: 113.6965699 };
+const FOCUS_ZOOM = 18;
 
 type ModalProps = {
   modalOpen: "EDIT" | "STREET_VIEW" | "";
@@ -59,6 +60,7 @@ const DashboardAmazonContainer = () => {
   const hasInitialPolygonFit = React.useRef(false);
 
   const { isMobile } = WINDOW_HELPER.useWindowResize();
+  const resellerDataRef = React.useRef<any[]>([]);
 
   React.useEffect(() => {
     if (isGeolocationEnabled && coords) {
@@ -87,6 +89,10 @@ const DashboardAmazonContainer = () => {
     null,
     { enabled: !!selectedId }
   );
+
+  React.useEffect(() => {
+    resellerDataRef.current = resellerData?.data ?? [];
+  }, [resellerData]);
 
   const renderResellerPolygons = React.useCallback(
     (
@@ -125,14 +131,51 @@ const DashboardAmazonContainer = () => {
           },
         });
 
-        // map.on("click", POLYGON_FILL_LAYER_ID, (e) => {
-        //   const props = e.features?.[0]?.properties as any;
-        //   const resellerId = props?.resellerId ?? "-";
-        //   new maplibregl.Popup()
-        //     .setLngLat(e.lngLat)
-        //     .setHTML(`<strong>Reseller:</strong> ${resellerId}`)
-        //     .addTo(map);
-        // });
+        map.on("click", POLYGON_FILL_LAYER_ID, (e) => {
+          const feature = e.features?.[0];
+          if (!feature) return;
+
+          const resellerId = feature.properties?.resellerId;
+          if (!resellerId) return;
+
+          const reseller = resellerDataRef.current.find(
+            (r: any) => r.id === resellerId
+          );
+          if (!reseller) return;
+
+          setSelectedId(reseller.id);
+          setSelected(reseller);
+
+          const geometry = feature.geometry;
+          const bounds = new maplibregl.LngLatBounds();
+
+          if (geometry.type === "Polygon") {
+            geometry.coordinates[0].forEach(([lng, lat]) =>
+              bounds.extend([lng, lat])
+            );
+          }
+
+          if (geometry.type === "MultiPolygon") {
+            geometry.coordinates.forEach((polygon) =>
+              polygon[0].forEach(([lng, lat]) => bounds.extend([lng, lat]))
+            );
+          }
+
+          if (!bounds.isEmpty()) {
+            map.fitBounds(bounds, {
+              padding: 120,
+              maxZoom: 18,
+              duration: 800,
+            });
+          }
+
+          setTimeout(() => scrollToCard(reseller.id), 100);
+
+          setShowModal({
+            modalOpen: "EDIT",
+            reseller: resellerDetailData?.data,
+          });
+        });
 
         map.on("mouseenter", POLYGON_FILL_LAYER_ID, () => {
           map.getCanvas().style.cursor = "pointer";
@@ -150,14 +193,14 @@ const DashboardAmazonContainer = () => {
           ring.forEach(([lng, lat]) => bounds.extend([lng, lat]));
         });
 
-        if (!bounds.isEmpty()) {
-          map.fitBounds(bounds, {
-            padding: 80,
-            maxZoom: 18,
-            duration: 1000,
-          });
-          hasInitialPolygonFit.current = true;
-        }
+        // if (!bounds.isEmpty()) {
+        //   map.fitBounds(bounds, {
+        //     padding: 80,
+        //     maxZoom: 18,
+        //     duration: 1000,
+        //   });
+        //   hasInitialPolygonFit.current = true;
+        // }
       }
     },
     []
@@ -173,6 +216,7 @@ const DashboardAmazonContainer = () => {
         properties: {
           resellerId: r.id,
           status: r.status,
+          isTelkom: r.isTelkom,
         },
         geometry: r.locationPoint as GeoJSON.Polygon,
       }));
@@ -188,7 +232,6 @@ const DashboardAmazonContainer = () => {
     return resellerData.data
       .filter(
         (t) =>
-          t.isTelkom === true && 
           t.latitude !== null &&
           t.longitude !== null &&
           !isNaN(t.latitude) &&
@@ -203,6 +246,7 @@ const DashboardAmazonContainer = () => {
         lng: t.longitude,
         status: t.status || "UNKNOWN",
         createdAt: t.createdAt,
+        isTelkom: t.isTelkom,
       }));
   }, [resellerData]);
 
@@ -215,7 +259,7 @@ const DashboardAmazonContainer = () => {
       container: mapContainer.current!,
       style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
       center: [DEFAULT.lng, DEFAULT.lat],
-      zoom: 20,
+      zoom: 14,
     });
 
     mapRef.current = map;
@@ -224,6 +268,12 @@ const DashboardAmazonContainer = () => {
       console.log("✅ Amazon map loaded successfully");
       setIsMapReady(true);
       renderMarkers(map);
+
+      map.flyTo({
+        center: [DEFAULT.lng, DEFAULT.lat],
+        zoom: FOCUS_ZOOM,
+        duration: 1000,
+      });
 
       if (resellerPolygons) {
         renderResellerPolygons(map, resellerPolygons);
@@ -287,23 +337,25 @@ const DashboardAmazonContainer = () => {
 
     const bounds = new maplibregl.LngLatBounds();
 
-    resellers.forEach((reseller, index) => {
-      const getMarkerColor = (status: string) => {
-        switch (status?.toUpperCase()) {
-          case "RESELLER_ACTIVE":
-          case "SIGNED_PKS":
-            return "#008E53"; // Hijau
-          case "NEGOTIATION":
-            return "#FC9003"; // Oranye
-          case "RESELLER_NOT_ACTIVE":
-            return "#dc2626"; // Merah
-          default:
-            return "#9CA3AF"; // Abu-abu default
-        }
-      };
-      const el = document.createElement("div");
-      el.className = "custom-marker";
-      el.style.cssText = `
+    resellers
+      .filter((reseller) => reseller.isTelkom === true)
+      .map((reseller) => {
+        const getMarkerColor = (status: string) => {
+          switch (status?.toUpperCase()) {
+            case "RESELLER_ACTIVE":
+            case "SIGNED_PKS":
+              return "#008E53"; // Hijau
+            case "NEGOTIATION":
+              return "#FC9003"; // Oranye
+            case "RESELLER_NOT_ACTIVE":
+              return "#dc2626"; // Merah
+            default:
+              return "#9CA3AF"; // Abu-abu default
+          }
+        };
+        const el = document.createElement("div");
+        el.className = "custom-marker";
+        el.style.cssText = `
         width: 18px;
         height: 18px;
         border-radius: 50%;
@@ -314,24 +366,70 @@ const DashboardAmazonContainer = () => {
         transition: transform 0.2s ease;
       `;
 
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([reseller.lng, reseller.lat])
-        .addTo(map);
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([reseller.lng, reseller.lat])
+          .addTo(map);
 
-      markersRef.current.push(marker);
-      bounds.extend([reseller.lng, reseller.lat]);
+        markersRef.current.push(marker);
+        bounds.extend([reseller.lng, reseller.lat]);
 
-      el.addEventListener("click", () => {
-        setSelectedId(reseller.id);
-        setSelected(reseller);
-        map.flyTo({
-          center: [reseller.lng, reseller.lat],
-          zoom: 18,
-          duration: 800,
+        el.addEventListener("click", () => {
+          setSelectedId(reseller.id);
+          setSelected(reseller);
+          map.flyTo({
+            center: [reseller.lng, reseller.lat],
+            zoom: FOCUS_ZOOM,
+            duration: 800,
+          });
+          setTimeout(() => scrollToCard(reseller.id), 100);
         });
-        setTimeout(() => scrollToCard(reseller.id), 100);
       });
-    });
+
+    // resellers.forEach((reseller, index) => {
+    //   const getMarkerColor = (status: string) => {
+    //     switch (status?.toUpperCase()) {
+    //       case "RESELLER_ACTIVE":
+    //       case "SIGNED_PKS":
+    //         return "#008E53"; // Hijau
+    //       case "NEGOTIATION":
+    //         return "#FC9003"; // Oranye
+    //       case "RESELLER_NOT_ACTIVE":
+    //         return "#dc2626"; // Merah
+    //       default:
+    //         return "#9CA3AF"; // Abu-abu default
+    //     }
+    //   };
+    //   const el = document.createElement("div");
+    //   el.className = "custom-marker";
+    //   el.style.cssText = `
+    //     width: 18px;
+    //     height: 18px;
+    //     border-radius: 50%;
+    //     border: 2px solid white;
+    //     box-shadow: 0 0 6px rgba(0,0,0,0.4);
+    //     background-color: ${getMarkerColor(reseller.status)};
+    //     cursor: pointer;
+    //     transition: transform 0.2s ease;
+    //   `;
+
+    //   const marker = new maplibregl.Marker({ element: el })
+    //     .setLngLat([reseller.lng, reseller.lat])
+    //     .addTo(map);
+
+    //   markersRef.current.push(marker);
+    //   bounds.extend([reseller.lng, reseller.lat]);
+
+    //   el.addEventListener("click", () => {
+    //     setSelectedId(reseller.id);
+    //     setSelected(reseller);
+    //     map.flyTo({
+    //       center: [reseller.lng, reseller.lat],
+    //       zoom: 18,
+    //       duration: 800,
+    //     });
+    //     setTimeout(() => scrollToCard(reseller.id), 100);
+    //   });
+    // });
 
     // if (!hasInitialZoom.current && !bounds.isEmpty()) {
     //   map.flyTo({
