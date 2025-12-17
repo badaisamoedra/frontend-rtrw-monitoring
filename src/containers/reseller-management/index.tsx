@@ -148,9 +148,9 @@ const ResellerManagementContainer = () => {
       semester: item.semester || "-",
       acquired_sales_ytd: item.acquiredSalesYTD || "-",
       sales_ratio: item.salesRatio || "-",
-      alamat_point_sales: "-",
+      alamat_point_sales: item.address || "-",
       detail: "-",
-      address: "-",
+      address: item.address || "-",
     }));
   }, [listReseller]);
 
