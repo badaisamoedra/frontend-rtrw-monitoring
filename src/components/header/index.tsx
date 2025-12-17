@@ -6,9 +6,35 @@ import {
   DownOutlined,
   UserOutlined,
   LogoutOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
-import { Avatar, Dropdown } from "antd";
+import { Avatar, Badge, Button, Dropdown, Empty } from "antd";
 import { useRouter } from "next/navigation";
+
+type NotificationItem = {
+  id: number;
+  title: string;
+  desc: string;
+  time: string;
+  isRead: boolean;
+};
+
+const initialNotifications: NotificationItem[] = [
+  {
+    id: 1,
+    title: "Order Baru",
+    desc: "Order #12345 menunggu approval",
+    time: "5 menit lalu",
+    isRead: false,
+  },
+  {
+    id: 2,
+    title: "Reseller Update",
+    desc: "Reseller A memperbarui data lokasi",
+    time: "1 jam lalu",
+    isRead: false,
+  },
+];
 
 const AppHeader: React.FC<{
   userName?: string;
@@ -19,6 +45,10 @@ const AppHeader: React.FC<{
   const [clientUserName, setClientUserName] = React.useState<string | null>(
     null
   );
+  const [notifications, setNotifications] =
+    React.useState<NotificationItem[]>(initialNotifications);
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -27,6 +57,83 @@ const AppHeader: React.FC<{
       setClientUserName(nameFromStorage);
     }
   }, [userName]);
+
+  const markAsRead = (id: number) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  };
+
+  const markAllAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
+
+  const notificationMenu = {
+    items:
+      notifications.length === 0
+        ? [
+            {
+              key: "empty",
+              label: (
+                <div className="py-4">
+                  <Empty description="Tidak ada notifikasi" />
+                </div>
+              ),
+            },
+          ]
+        : [
+            {
+              key: "header",
+              label: (
+                <div className="flex items-center justify-between w-[300px]">
+                  <span className="font-semibold text-[#0C1B36]">
+                    Notifications
+                  </span>
+                  <Button
+                    type="link"
+                    size="small"
+                    disabled={unreadCount === 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markAllAsRead();
+                    }}
+                  >
+                    Mark all as read
+                  </Button>
+                </div>
+              ),
+            },
+            ...notifications.map((n) => ({
+              key: n.id,
+              label: (
+                <div
+                  className={`w-[300px] cursor-pointer hover:bg-gray-50 p-2 rounded ${
+                    n.isRead ? "opacity-60" : ""
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    markAsRead(n.id);
+                  }}
+                >
+                  <div className="flex items-start gap-2">
+                    {!n.isRead && (
+                      <span className="mt-[6px] w-2 h-2 rounded-full bg-[#FF002E]" />
+                    )}
+                    <div>
+                      <p className="text-sm font-semibold text-[#0C1B36] m-0">
+                        {n.title}
+                      </p>
+                      <p className="text-xs text-gray-600 m-0">{n.desc}</p>
+                      <p className="text-[10px] text-gray-400 mt-1 m-0">
+                        {n.time}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ),
+            })),
+          ],
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -63,9 +170,21 @@ const AppHeader: React.FC<{
         />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
+        <Dropdown
+          menu={notificationMenu}
+          placement="bottomRight"
+          trigger={["click"]}
+          arrow
+        >
+          <div className="cursor-pointer">
+            <Badge dot={unreadCount > 0} size="small">
+              <BellOutlined className="text-[#FF0025] text-[18px]" />
+            </Badge>
+          </div>
+        </Dropdown>
         <Dropdown menu={menu} placement="bottomRight" arrow>
-          <div className="flex items-center gap-2 cursor-pointer">
+          <div className="flex items-center gap-4 cursor-pointer">
             <div className="flex flex-col justify-center leading-none text-right gap-2">
               <span className="text-[12px] text-[#8C8C8C] m-0 p-0">
                 Selamat Datang

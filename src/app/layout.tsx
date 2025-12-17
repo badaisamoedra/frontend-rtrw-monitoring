@@ -5,6 +5,7 @@ import Providers from "@rtrw-monitoring-system/provider";
 import { Suspense } from "react";
 import Image from "next/image";
 import ICONS from "@rtrw-monitoring-system/public/assets/icons";
+import useInitialOneSignal from "libs/hooks/useOneSignal";
 
 const montserratFont = Montserrat({
   subsets: ["latin"],
@@ -23,6 +24,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // useInitialOneSignal();
+
   return (
     <html lang="en" className={montserratFont.variable}>
       <body>

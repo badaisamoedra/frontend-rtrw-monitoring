@@ -14,9 +14,7 @@ import {
 } from "@rtrw-monitoring-system/components";
 import { toast } from "react-toastify";
 import { useResellerRepository } from "@rtrw-monitoring-system/services/reseller";
-import {
-  WINDOW_HELPER,
-} from "@rtrw-monitoring-system/utils";
+import { WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
 
 const DEFAULT = { lat: -8.2, lng: 114.05 };
 
@@ -95,7 +93,6 @@ const DashboardAmazonContainer = () => {
       map: maplibregl.Map,
       geojson: GeoJSON.FeatureCollection<GeoJSON.Polygon>
     ) => {
-      // update existing
       const existing = map.getSource(POLYGON_SOURCE_ID) as
         | maplibregl.GeoJSONSource
         | undefined;
@@ -123,7 +120,7 @@ const DashboardAmazonContainer = () => {
           type: "line",
           source: POLYGON_SOURCE_ID,
           paint: {
-            "line-color": "#b91c1c",
+            "line-color": "#000000",
             "line-width": 2,
           },
         });
@@ -292,12 +289,12 @@ const DashboardAmazonContainer = () => {
     resellers.forEach((reseller, index) => {
       const getMarkerColor = (status: string) => {
         switch (status?.toUpperCase()) {
-          case "ACTIVE":
+          case "RESELLER_ACTIVE":
+          case "SIGNED_PKS":
             return "#008E53"; // Hijau
-          case "PENDING":
+          case "NEGOTIATION":
             return "#FC9003"; // Oranye
-          case "REJECT":
-          case "INACTIVE":
+          case "RESELLER_NOT_ACTIVE":
             return "#dc2626"; // Merah
           default:
             return "#9CA3AF"; // Abu-abu default
@@ -472,15 +469,19 @@ const DashboardAmazonContainer = () => {
           <h4 className="font-semibold mb-2">Legend Information</h4>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#008E53]"></span>
-            <span>Active</span>
+            <span>Reseller Active / Signed PKS</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#FC9003]"></span>
-            <span>Pending</span>
+            <span>Negotiation</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#dc2626]"></span>
-            <span>Inactive / Reject</span>
+            <span>Reseller Not Active</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-3 h-3 rounded-full bg-[#9CA3AF]"></span>
+            <span>Not Deal</span>
           </div>
         </div>
       )}
@@ -512,12 +513,12 @@ const DashboardAmazonContainer = () => {
                 className="w-4 h-4 rounded-full mr-2"
                 style={{
                   backgroundColor:
-                    reseller.status?.toUpperCase() === "ACTIVE"
+                    reseller.status?.toUpperCase() === "RESELLER_ACTIVE" ||
+                    reseller.status?.toUpperCase() === "SIGNED_PKS"
                       ? "#008E53" // Hijau
-                      : reseller.status?.toUpperCase() === "PENDING"
+                      : reseller.status?.toUpperCase() === "NEGOTIATION"
                       ? "#FC9003" // Oranye
-                      : reseller.status?.toUpperCase() === "REJECT" ||
-                        reseller.status?.toUpperCase() === "INACTIVE"
+                      : reseller.status?.toUpperCase() === "RESELLER_NOT_ACTIVE"
                       ? "#dc2626" // Merah
                       : "#9CA3AF", // Abu-abu default
                 }}

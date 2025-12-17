@@ -33,7 +33,7 @@ const ResellerStatus: React.FC<ResellerStatusProps> = ({ status }) => {
               </div>
               <div className="relative p-6">
                 <h4 className="text-3xl font-bold text-[#0F9D58]">
-                  {status.ACTIVE}
+                  {status.RESELLER_ACTIVE}
                 </h4>
                 <p className="text-[#0C1A30] text-sm font-medium mt-2">
                   Reseller Active
@@ -55,7 +55,7 @@ const ResellerStatus: React.FC<ResellerStatusProps> = ({ status }) => {
               </div>
               <div className="relative p-6">
                 <h4 className="text-3xl font-bold text-[#D93025]">
-                  {status.INACTIVE}
+                  {status.RESELLER_NOT_ACTIVE}
                 </h4>
                 <p className="text-[#0C1A30] text-sm font-medium mt-2">
                   Reseller Not Active
@@ -68,7 +68,7 @@ const ResellerStatus: React.FC<ResellerStatusProps> = ({ status }) => {
             <div className="rounded-xl border border-[#E8F0FE] bg-[linear-gradient(135deg,_#FFFFFF_70%,_rgba(252,144,3,0.1)_100%)] relative overflow-hidden">
               <div className="relative p-6">
                 <h4 className="text-3xl font-bold text-[#FC9003]">
-                  {status.PENDING}
+                  {status.NEGOTIATION}
                 </h4>
                 <p className="text-[#0C1A30] text-sm font-medium mt-2">
                   Negotiation
@@ -79,7 +79,7 @@ const ResellerStatus: React.FC<ResellerStatusProps> = ({ status }) => {
             <div className="rounded-xl border border-[#FCE8E6] bg-[linear-gradient(135deg,_#FFFFFF_70%,_rgba(217,48,37,0.1)_100%)] relative overflow-hidden">
               <div className="relative p-6">
                 <h4 className="text-3xl font-bold text-[#D93025]">
-                  {status.REJECT}
+                  {status.NOT_DEAL}
                 </h4>
                 <p className="text-[#0C1A30] text-sm font-medium mt-2">
                   Not Deal
@@ -89,7 +89,9 @@ const ResellerStatus: React.FC<ResellerStatusProps> = ({ status }) => {
 
             <div className="rounded-xl border border-[#E6F4EA] bg-[linear-gradient(135deg,_#FFFFFF_70%,_rgba(15,157,88,0.1)_100%)] relative overflow-hidden">
               <div className="relative p-6">
-                <h4 className="text-3xl font-bold text-[#0F9D58]">{"5"}</h4>
+                <h4 className="text-3xl font-bold text-[#0F9D58]">
+                  {status.SIGNED_PKS}
+                </h4>
                 <p className="text-[#0C1A30] text-sm font-medium mt-2">
                   Signed PKS
                 </p>

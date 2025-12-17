@@ -46,6 +46,7 @@ interface ResellerList {
   createdAt: Date;
   updatedAt: Date;
   resellerClients: any[];
+  address: string;
 }
 
 interface ResellerMap {
@@ -102,24 +103,64 @@ interface ResellerDetail {
 
 interface ResellerClient {
   id: string;
-  clientName: string;
-  clientId: null;
+  resellerName: string;
+  resellerEmail: null;
+  picReseller: null;
+  resellerPhone: null;
+  potentialRevenue: null;
+  potentialThreeMonth: null;
+  potentialSales: null;
+  acquisitionProgress: null;
+  acquisitionMonth: null;
+  Qacquisition: null;
+  semester: null;
+  area: null;
+  region: null;
+  branch: null;
+  address: null;
+  createdBy: null;
+  updatedBy: null;
+  deletedBy: null;
+  status: null;
+  codeSf: string;
+  potentialLow: null;
+  potentialHigh: null;
+  notes: null;
   resellerNumber: string;
-  province: string;
-  city: string;
-  district: string;
+  province: null;
+  city: null;
+  district: null;
   subdistrict: null;
-  latitude: string;
-  longitude: string;
-  boundaryBuilding: null;
-  telcoYearlySpendingIdr: string;
-  probabilityClient: number;
+  isTelkom: boolean;
+  latitude: number;
+  longitude: number;
+  locationPoint: LocationPoint;
+  probabilityScore: null;
   confidenceScore: number;
-  status: string;
-  metadata: null;
+  finalVerdict: string;
+  totalSuspectedClients: number;
+  directEvidenceClients: number;
+  indirectEvidenceClients: number;
+  metadataDirect: MetadataDirect;
+  deviceBreakdownDirect: DeviceBreakdownDirect;
+  metadataIndirect: MetadataIndirect;
+  deviceBreakdownIndirect: DeviceBreakdownDirect;
+  totalUniqueDevices: number;
+  totalHighIncome: number;
+  totalAverageIncome: number;
+  totalLowIncome: number;
+  totalUnknown: number;
+  dominantIncomeSegment: string;
+  dominantIsp: string;
+  dominantIspSharePct: number;
+  marketshareBreakdown: MarketshareBreakdown;
+  nextProgress: null;
+  acquiredSalesYTD: null;
+  salesRatio: null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: null;
+  resellerClients: any[];
 }
 
 interface UpdateResellerPayload {
@@ -136,15 +177,70 @@ interface UpdateResellerPayload {
 }
 
 interface TotalResellerStatus {
-  ACTIVE: number;
-  INACTIVE: number;
-  PENDING: number;
-  REJECT: number;
+  RESELLER_ACTIVE: number;
+  RESELLER_NOT_ACTIVE: number;
+  NEGOTIATION: number;
+  SIGNED_PKS: number;
+  NOT_DEAL: number;
 }
 
 interface LocationPoint {
   type: string;
   coordinates: Array<Array<number[]>>;
+}
+
+interface DeviceBreakdownDirect {
+  IOS: Android[];
+  OTHERS: Android[];
+  ANDROID: Android[];
+  UNKNOWN: any[];
+}
+
+interface Android {
+  details: Detail[];
+  manufacturer: string;
+  total_devices: number;
+}
+
+interface Detail {
+  count: number;
+  model: string;
+}
+
+interface LocationPoint {
+  type: string;
+  coordinates: Array<Array<number[]>>;
+}
+
+interface MarketshareBreakdown {
+  isp_breakdown: ISPBreakdown[];
+}
+
+interface ISPBreakdown {
+  isp_name: string;
+  device_count: number;
+  isp_home_marketshare: number;
+}
+
+interface MetadataDirect {
+  direct_device_id: string[];
+  detected_ips_direct: string[];
+  device_count_direct: number;
+  session_count_direct: number;
+  username_client_direct: string[];
+}
+
+interface MetadataIndirect {
+  indirect_device_id: string[];
+  detected_ips_indirect: string[];
+  device_count_indirect: number;
+  session_count_indirect: number;
+  username_client_indirect: string[];
+}
+
+interface UpdateStatusResellerPayload {
+  id: string;
+  status: string;
 }
 
 type ListResellerParam =

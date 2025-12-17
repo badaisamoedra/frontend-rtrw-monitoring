@@ -24,6 +24,7 @@
     "react-dom": "19.1.0",
     "react-geocode": "^2.0.1",
     "react-geolocated": "^4.3.0",
+    "react-onesignal": "^3.4.0",
     "react-toastify": "^11.0.5",
     "recharts": "^3.2.1",
     "use-query-params": "^2.2.1"
