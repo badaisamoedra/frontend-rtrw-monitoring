@@ -46,6 +46,7 @@ interface ResellerList {
   createdAt: Date;
   updatedAt: Date;
   resellerClients: any[];
+  address: string;
 }
 
 interface ResellerMap {
@@ -176,10 +177,11 @@ interface UpdateResellerPayload {
 }
 
 interface TotalResellerStatus {
-  ACTIVE: number;
-  INACTIVE: number;
-  PENDING: number;
-  REJECT: number;
+  RESELLER_ACTIVE: number;
+  RESELLER_NOT_ACTIVE: number;
+  NEGOTIATION: number;
+  SIGNED_PKS: number;
+  NOT_DEAL: number;
 }
 
 interface LocationPoint {
@@ -234,6 +236,11 @@ interface MetadataIndirect {
   device_count_indirect: number;
   session_count_indirect: number;
   username_client_indirect: string[];
+}
+
+interface UpdateStatusResellerPayload {
+  id: string;
+  status: string;
 }
 
 type ListResellerParam =

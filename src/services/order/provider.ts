@@ -16,7 +16,7 @@ const providers = {
     }),
   updateStatusOrderDetail: ({ id, ...data }: UpdateStatusOrderDetailPayload) =>
     fetcher({
-      url: ORDER_SERVICE.order_activities_by_id(id),
+      url: ORDER_SERVICE.order_details_by_id(id),
       method: HttpMethod.PUT,
       data,
     }),

@@ -9,7 +9,13 @@ const useResellerRepository = () => {
     UpdateResellerPayload
   >(provider.updateReseller);
 
-  return { updateReseller };
+  const updateStatusReseller = useMutation<
+    AxiosResponse,
+    AxiosError,
+    UpdateStatusResellerPayload
+  >(provider.updateStatusReseller);
+
+  return { updateReseller, updateStatusReseller };
 };
 
 export default useResellerRepository;

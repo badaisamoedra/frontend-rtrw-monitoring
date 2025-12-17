@@ -11,6 +11,13 @@ const providers = {
       method: HttpMethod.PUT,
       data,
     }).then((res) => res),
+
+  updateStatusReseller: ({ id, ...data }: UpdateStatusResellerPayload) =>
+    fetcher({
+      url: RESELLER_SERVICE.update_reseller(id),
+      method: HttpMethod.PUT,
+      data,
+    }).then((res) => res),
 };
 
 export default providers;

@@ -74,12 +74,12 @@ const ActivityOrderContainer = () => {
     "Validasi Data Pelanggan": {
       title: "Validasi Data Pelanggan",
       desc: "Menunggu Aksi Untuk Melanjutkan Proses",
-      allowedRoles: ["BRANCH ROLE"],
+      allowedRoles: ["BRANCH SALES"],
     },
     "Penandatanganan Kontrak Berlangganan Pelanggan": {
       title: "Penandatanganan Kontrak Berlangganan Pelanggan",
       desc: "Menunggu Validasi Data Pelanggan",
-      allowedRoles: ["BRANCH ROLE", "IP ROLE"],
+      allowedRoles: ["BRANCH SALES"],
     },
     "Pembuatan Akun Pelanggan": {
       title: "Pembuatan Akun Pelanggan",
@@ -101,7 +101,7 @@ const ActivityOrderContainer = () => {
   const userRoles = React.useMemo(() => {
     if (typeof window === "undefined") return [];
     try {
-      return JSON.parse(localStorage.getItem("roles") || "[]").map(
+      return JSON.parse(localStorage.getItem("pocRole") || "[]").map(
         (r: any) => r.roleName
       );
     } catch {
