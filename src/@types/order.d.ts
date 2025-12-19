@@ -22,6 +22,7 @@ interface ListOrder {
   updatedBy: string;
   deletedBy: null;
   countOrdersDetail: number;
+  source: string;
 }
 
 interface ListOrderDetail {
@@ -40,6 +41,8 @@ interface ListOrderDetail {
   createdBy: string;
   updatedBy: string;
   deletedBy: null;
+  address: string;
+  packageId: string;
 }
 
 interface ListOrderDetailResponseData {
@@ -98,6 +101,15 @@ interface UpdateOrderActivityPayload {
 interface UpdateStatusOrderDetailPayload {
   id: string;
   status: string;
+}
+
+interface UpdateOrderDetailPayload {
+  id: string;
+  clientName?: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  packageId?: string;
 }
 
 type ListOrderParam =

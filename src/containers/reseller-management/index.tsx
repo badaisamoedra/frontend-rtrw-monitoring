@@ -48,8 +48,8 @@ type Reseller = {
 };
 
 const columns: Column<Reseller>[] = [
-  { title: "Nama Reseller", dataIndex: "name" },
-  { title: "Kode SF", dataIndex: "code" },
+  { title: "Reseller Name", dataIndex: "name" },
+  { title: "Reseller ID", dataIndex: "code" },
   { title: "PIC Reseller", dataIndex: "partner" },
   { title: "Area", dataIndex: "area" },
   { title: "Region", dataIndex: "region" },
@@ -64,7 +64,7 @@ const columns: Column<Reseller>[] = [
   { title: "Semester", dataIndex: "semester" },
   { title: "Acquired Sales YTD", dataIndex: "acquired_sales_ytd" },
   { title: "Sales Ratio", dataIndex: "sales_ratio" },
-  { title: "Alamat Point of Sales", dataIndex: "address" },
+  { title: "Alamat Point of Sales", dataIndex: "alamat_point_sales" },
 ];
 
 type ModalType = {
@@ -148,7 +148,9 @@ const ResellerManagementContainer = () => {
       semester: item.semester || "-",
       acquired_sales_ytd: item.acquiredSalesYTD || "-",
       sales_ratio: item.salesRatio || "-",
-      alamat_point_sales: item.address || "-",
+      alamat_point_sales: item.isTelkom
+        ? item.address
+        : `${item.latitude}, ${item.longitude}` || "-",
       detail: "-",
       address: item.address || "-",
     }));

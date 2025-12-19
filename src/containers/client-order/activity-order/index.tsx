@@ -252,7 +252,7 @@ const ActivityOrderContainer = () => {
                 : "text-sm font-semibold text-[#0C1A30]"
             }
           >
-            Kode SF : {orderActivitiesSummary?.data?.codeSf ?? "-"}
+            Reseller ID : {orderActivitiesSummary?.data?.codeSf ?? "-"}
           </p>
           <p
             className={

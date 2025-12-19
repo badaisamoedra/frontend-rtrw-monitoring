@@ -11,6 +11,7 @@ type InvoiceCardProps = {
   period: string;
   invoiceAmount: string;
   countOrder: string | number;
+  source: string;
   onDetail?: () => void;
   onCopy?: () => void;
 };
@@ -21,6 +22,7 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
   period,
   invoiceAmount,
   countOrder,
+  source,
   onDetail,
   onCopy,
 }) => {
@@ -123,6 +125,15 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
         </p>
         <span className="mt-1 text-[13px] sm:text-[14px] font-semibold text-[#0C1B36]">
           {countOrder}
+        </span>
+      </div>
+
+      <div className="flex flex-col sm:w-1/4 w-full">
+        <p className="text-[12px] sm:text-[13px] font-semibold text-[#1A1A1A]">
+          Source
+        </p>
+        <span className="mt-1 text-[13px] sm:text-[14px] font-semibold text-[#0C1B36]">
+          {source}
         </span>
       </div>
 

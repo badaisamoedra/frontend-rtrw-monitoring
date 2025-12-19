@@ -47,6 +47,7 @@ interface ResellerList {
   updatedAt: Date;
   resellerClients: any[];
   address: string;
+  isTelkom: boolean;
 }
 
 interface ResellerMap {

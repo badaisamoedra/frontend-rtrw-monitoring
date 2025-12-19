@@ -16,6 +16,7 @@ interface ModalTicketProps {
   onSave?: (updatedReseller: UpdateResellerPayload) => void;
   ticket?: any;
   section: "VIEW" | "EDIT";
+  onClick?: (resellerNumber: string) => void;
 }
 
 const ListStatus = [
@@ -31,6 +32,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
   onSave,
   ticket,
   section,
+  onClick,
 }) => {
   const [editedTicket, setEditedTicket] = React.useState(ticket);
   const [errors, setErrors] = React.useState({
@@ -320,7 +322,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
         {section === "EDIT" ? (
           <div className="flex justify-between mt-4">
             <Button
-              onClick={onClose}
+              onClick={() => onClick?.(editedTicket?.resellerNumber)}
               style={{
                 borderWidth: 1,
                 borderColor: "#000000",

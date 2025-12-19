@@ -74,6 +74,7 @@ const ListOrderContainer = () => {
         ? `Rp ${item.amount.toLocaleString("id-ID")}`
         : "-",
       countOrder: item.countOrdersDetail || "-",
+      source: item.source || "-",
       onDetail: () =>
         router.push(`${PAGE_NAME.order_detail}?orderId=${item.id}`),
       onCopy: () => navigator.clipboard.writeText(item.orderNumber || ""),
