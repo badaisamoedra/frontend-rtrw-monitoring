@@ -5,7 +5,10 @@ import maplibregl from "maplibre-gl";
 import { Button, Input } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
-import { RESELLER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
+import {
+  ORDER_SERVICE,
+  RESELLER_SERVICE,
+} from "@rtrw-monitoring-system/app/constants/api_url";
 import { useGeolocated } from "react-geolocated";
 import {
   ModalStreetView,
@@ -61,6 +64,9 @@ const DashboardAmazonContainer = () => {
 
   const { isMobile } = WINDOW_HELPER.useWindowResize();
   const resellerDataRef = React.useRef<any[]>([]);
+  const [selectResellerNumber, setSelectResellerNumber] = React.useState<
+    string | null
+  >(null);
 
   React.useEffect(() => {
     if (isGeolocationEnabled && coords) {
@@ -84,11 +90,20 @@ const DashboardAmazonContainer = () => {
       refetch: refetchDetail,
     },
   } = useData<ResellerMapResponse>(
-    { url: RESELLER_SERVICE.reseller_detail(selectedId ?? "") }, // ini diisi reseller id
+    { url: RESELLER_SERVICE.reseller_detail(selectedId ?? "") },
     [RESELLER_SERVICE.reseller_detail(selectedId ?? "")],
     null,
     { enabled: !!selectedId }
   );
+
+  const { queryResult: dataBoundary } = useData<any>(
+    { url: ORDER_SERVICE.order_client_boundary(selectResellerNumber ?? "") },
+    [ORDER_SERVICE.order_client_boundary(selectResellerNumber ?? "")],
+    null,
+    { enabled: !!selectResellerNumber }
+  );
+
+  console.log("BOUNDARY :", dataBoundary);
 
   React.useEffect(() => {
     resellerDataRef.current = resellerData?.data ?? [];
@@ -145,6 +160,7 @@ const DashboardAmazonContainer = () => {
 
           setSelectedId(reseller.id);
           setSelected(reseller);
+          setSelectResellerNumber(reseller.resellerNumber);
 
           const geometry = feature.geometry;
           const bounds = new maplibregl.LngLatBounds();
@@ -376,6 +392,7 @@ const DashboardAmazonContainer = () => {
         el.addEventListener("click", () => {
           setSelectedId(reseller.id);
           setSelected(reseller);
+          setSelectResellerNumber(reseller.resellerNumber);
           map.flyTo({
             center: [reseller.lng, reseller.lat],
             zoom: FOCUS_ZOOM,
@@ -452,6 +469,7 @@ const DashboardAmazonContainer = () => {
   const handleCardClick = (reseller: any) => {
     setSelected(reseller);
     setSelectedId(reseller.id);
+    setSelectResellerNumber(reseller.resellerNumber);
     mapRef.current?.flyTo({
       center: [reseller.lng, reseller.lat],
       zoom: 20,
@@ -507,6 +525,11 @@ const DashboardAmazonContainer = () => {
       );
     }
   };
+
+  const handleClickClientBoundary = (resellerNumber: string) => {
+    setShowModal({modalOpen: ""})
+    setSelectResellerNumber(resellerNumber)
+  }
 
   if (isLoading) return <div className="p-4">Loading resellers...</div>;
 
@@ -699,6 +722,7 @@ const DashboardAmazonContainer = () => {
         section="EDIT"
         onClose={() => setShowModal({ modalOpen: "" })}
         onSave={handleSaveReseller}
+        onClick={handleClickClientBoundary}
       />
     </div>
   );

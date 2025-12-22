@@ -12,6 +12,7 @@ interface OrderItem {
   period: string;
   invoiceAmount: string;
   countOrder: string | number;
+  source: string;
   onDetail: () => void;
   onCopy: () => void;
 }
@@ -128,6 +129,7 @@ const OrderListTable: React.FC<OrderListTableProps> = ({
                 period={item.period}
                 invoiceAmount={item.invoiceAmount}
                 countOrder={item.countOrder}
+                source={item.source}
                 onDetail={item.onDetail}
                 onCopy={item.onCopy}
               />

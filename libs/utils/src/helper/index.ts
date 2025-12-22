@@ -368,3 +368,31 @@ export const formatEnumLabel = (value: string) => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 };
+
+export const validatePhoneNumber = (value: string) => {
+  if (!value) return "";
+
+  if (/^(0|62|\+62)/.test(value)) {
+    return "Nomor tidak boleh diawali 0, 62";
+  }
+
+  if (!/^[0-9]+$/.test(value)) {
+    return "Nomor hanya boleh angka";
+  }
+
+  if (value.length < 9 || value.length > 12) {
+    return "Nomor handphone tidak valid";
+  }
+
+  return "";
+};
+
+export const formatTimeAgo = (date: string | Date) => {
+  const diff = Date.now() - new Date(date).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "Baru saja";
+  if (minutes < 60) return `${minutes} menit lalu`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} jam lalu`;
+  return `${Math.floor(hours / 24)} hari lalu`;
+};

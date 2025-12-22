@@ -7,6 +7,7 @@ const BASE_URL_ORDER_V1 = "/api/v1/orders";
 const BASE_URL_ORDER_DETAIL_V1 = "/api/v1/order-details";
 const BASE_URL_ORDER_ACTIVITIES_V1 = "/api/v1/order-activities";
 const BASE_URL_MASTER_PACKAGE_V1 = "/api/v1/master-packages";
+const BASE_URL_NOTIFICATION_V1 = "/api/v1/notifications";
 
 const AUTH_SERVICE = {
   login: `${BASE_URL_AUTH_V1}/login`,
@@ -44,11 +45,19 @@ const ORDER_SERVICE = {
   order_activities_by_id: (id: string) =>
     `${BASE_URL_ORDER_ACTIVITIES_V1}/${id}`,
   order_details_by_id: (id: string) => `${BASE_URL_ORDER_DETAIL_V1}/${id}`,
+  order_client_boundary: (id: string) =>
+    `${BASE_URL_ORDER_V1}/reseller-number/${id}/details`,
 };
 
 const MASTER_SERVICE = {
   master_package: `${BASE_URL_MASTER_PACKAGE_V1}/paginate`,
   master_package_detail: (id: string) => `${BASE_URL_MASTER_PACKAGE_V1}/${id}`,
+};
+
+const NOTIFICATION_SERVICE = {
+  notifications: BASE_URL_NOTIFICATION_V1,
+  notifications_unread_count: `${BASE_URL_NOTIFICATION_V1}/unread-count`,
+  notifications_read: (id: string) => `${BASE_URL_NOTIFICATION_V1}/${id}/read`,
 };
 
 export {
@@ -57,4 +66,5 @@ export {
   RESELLER_SERVICE,
   ORDER_SERVICE,
   MASTER_SERVICE,
+  NOTIFICATION_SERVICE,
 };

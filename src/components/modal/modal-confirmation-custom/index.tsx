@@ -5,6 +5,7 @@ interface ModalConfirmationCustomProps extends ModalProps {
   title: string;
   subTitle: string;
   children?: React.ReactNode;
+  okButtonDisabled?: boolean;
 }
 
 const ModalConfirmationCustom: React.FC<ModalConfirmationCustomProps> = ({
@@ -16,6 +17,7 @@ const ModalConfirmationCustom: React.FC<ModalConfirmationCustomProps> = ({
   okText,
   onCancel,
   onOk,
+  okButtonDisabled,
   ...props
 }) => {
   return (
@@ -42,8 +44,15 @@ const ModalConfirmationCustom: React.FC<ModalConfirmationCustomProps> = ({
           </button>
           <div className="w-4"></div>
           <button
-            className="px-6 py-2 rounded-full bg-[#FF0025] text-white font-semibold hover:bg-[#d90020] transition flex flex-1 items-center justify-center"
+            className={`px-6 py-2 rounded-full font-semibold transition flex flex-1 items-center justify-center
+            ${
+              okButtonDisabled
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-[#FF0025] text-white hover:bg-[#d90020]"
+            }
+          `}
             onClick={onOk}
+            disabled={okButtonDisabled}
           >
             {okText}
           </button>
