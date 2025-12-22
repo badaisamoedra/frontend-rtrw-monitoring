@@ -1,6 +1,7 @@
 interface NotificationResponseData {
-  list: List[];
+  list: NotficationList[];
   total: number;
+  unread: number;
 }
 
 interface NotficationList {
