@@ -22,7 +22,7 @@ interface ListOrder {
   updatedBy: string;
   deletedBy: null;
   countOrdersDetail: number;
-  source: string;
+  sources: string;
 }
 
 interface ListOrderDetail {
