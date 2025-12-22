@@ -48,6 +48,8 @@ interface ResellerList {
   resellerClients: any[];
   address: string;
   isTelkom: boolean;
+  totalHighIncome: number;
+  totalLowIncome: number;
 }
 
 interface ResellerMap {

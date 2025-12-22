@@ -96,11 +96,17 @@ const DashboardAmazonContainer = () => {
     { enabled: !!selectedId }
   );
 
-  const { queryResult: dataBoundary } = useData<any>(
+  const {
+    queryResult: {
+      data: dataBoundary,
+      isLoading: boundaryLoading,
+      refetch: refetchClientBoundary,
+    },
+  } = useData<any>(
     { url: ORDER_SERVICE.order_client_boundary(selectResellerNumber ?? "") },
-    [ORDER_SERVICE.order_client_boundary(selectResellerNumber ?? "")],
+    ["order-client-boundary"],
     null,
-    { enabled: !!selectResellerNumber }
+    { enabled: false }
   );
 
   console.log("BOUNDARY :", dataBoundary);
@@ -527,9 +533,10 @@ const DashboardAmazonContainer = () => {
   };
 
   const handleClickClientBoundary = (resellerNumber: string) => {
-    setShowModal({modalOpen: ""})
-    setSelectResellerNumber(resellerNumber)
-  }
+    setShowModal({ modalOpen: "" });
+    // setSelectResellerNumber(resellerNumber);
+    refetchClientBoundary()
+  };
 
   if (isLoading) return <div className="p-4">Loading resellers...</div>;
 

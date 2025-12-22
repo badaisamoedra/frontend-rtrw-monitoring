@@ -16,7 +16,11 @@ import { Column } from "@rtrw-monitoring-system/components/table/custom-table";
 import { useData, useDataTable } from "@rtrw-monitoring-system/hooks";
 import { RESELLER_SERVICE } from "@rtrw-monitoring-system/app/constants/api_url";
 import dayjs from "dayjs";
-import { formatEnumLabel, WINDOW_HELPER } from "@rtrw-monitoring-system/utils";
+import {
+  formatEnumLabel,
+  numberWithDots,
+  WINDOW_HELPER,
+} from "@rtrw-monitoring-system/utils";
 import { useResellerRepository } from "@rtrw-monitoring-system/services/reseller";
 import { toast } from "react-toastify";
 
@@ -45,6 +49,8 @@ type Reseller = {
   alamat_point_sales: string;
   address: string;
   detail: string;
+  high_income: string;
+  low_income: string;
 };
 
 const columns: Column<Reseller>[] = [
@@ -65,6 +71,8 @@ const columns: Column<Reseller>[] = [
   { title: "Acquired Sales YTD", dataIndex: "acquired_sales_ytd" },
   { title: "Sales Ratio", dataIndex: "sales_ratio" },
   { title: "Alamat Point of Sales", dataIndex: "alamat_point_sales" },
+  { title: "Total High Income", dataIndex: "high_income" },
+  { title: "Total Low Income", dataIndex: "low_income" },
 ];
 
 type ModalType = {
@@ -153,6 +161,12 @@ const ResellerManagementContainer = () => {
         : `${item.latitude}, ${item.longitude}` || "-",
       detail: "-",
       address: item.address || "-",
+      high_income: item.totalHighIncome
+        ? `Rp. ${numberWithDots(item.totalHighIncome)}`
+        : "-",
+      low_income: item.totalLowIncome
+        ? `Rp. ${numberWithDots(item.totalLowIncome)}`
+        : "-",
     }));
   }, [listReseller]);
 
