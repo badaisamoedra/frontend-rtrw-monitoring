@@ -64,7 +64,7 @@ const AppHeader: React.FC<{
         message: item.message,
         createdAt: formatTimeAgo(item.createdAt),
         readAt: item.readAt,
-        deeplink: item.deepLink,
+        deeplink: item.deeplink,
         data: item.data,
       })
     );
@@ -115,7 +115,7 @@ const AppHeader: React.FC<{
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
-  const unreadCount = notificationUnread?.data?.unread ?? 0;
+  const unreadCount = dataNotification?.data?.unread ?? 0;
 
   const notificationMenu = {
     items: isLoading
