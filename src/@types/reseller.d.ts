@@ -247,6 +247,20 @@ interface UpdateStatusResellerPayload {
   status: string;
 }
 
+interface LayeringMapJemberResponseData {
+  list: LayeringMapJember[];
+}
+
+interface LayeringMapJember {
+  homeId: string;
+  geometry: Geometry;
+}
+
+interface Geometry {
+  type: string;
+  coordinates: Array<Array<number[]>>;
+}
+
 type ListResellerParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.resellerListParam;
 type ListResellerFilter =
@@ -257,3 +271,4 @@ type ResellerResponse = BaseResponse<ResellerResponseData>;
 type ResellerMapResponse = BaseResponse<ResellerMap[]>;
 type ResellerDetail = BaseResponse<ResellerDetail>;
 type TotalResellerStatusResponse = BaseResponse<TotalResellerStatus>;
+type LayeringMapJemberResponse = BaseResponse<LayeringMapJemberResponseData>;

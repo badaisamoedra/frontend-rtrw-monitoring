@@ -8,6 +8,7 @@ const BASE_URL_ORDER_DETAIL_V1 = "/api/v1/order-details";
 const BASE_URL_ORDER_ACTIVITIES_V1 = "/api/v1/order-activities";
 const BASE_URL_MASTER_PACKAGE_V1 = "/api/v1/master-packages";
 const BASE_URL_NOTIFICATION_V1 = "/api/v1/notifications";
+const BASE_URL_BUILDING_FOOTPRINTS_V1 = "/api/v1/building-footprints";
 
 const AUTH_SERVICE = {
   login: `${BASE_URL_AUTH_V1}/login`,
@@ -60,6 +61,12 @@ const NOTIFICATION_SERVICE = {
   notifications_read: (id: string) => `${BASE_URL_NOTIFICATION_V1}/${id}/read`,
 };
 
+const BUILDING_FOOTPRINTS_SERVICE = {
+  building_footprints: BASE_URL_BUILDING_FOOTPRINTS_V1,
+  building_footprints_by_homeid: (id: string) =>
+    `${BASE_URL_BUILDING_FOOTPRINTS_V1}/${id}`,
+};
+
 export {
   AUTH_SERVICE,
   TICKET_SERVICE,
@@ -67,4 +74,5 @@ export {
   ORDER_SERVICE,
   MASTER_SERVICE,
   NOTIFICATION_SERVICE,
+  BUILDING_FOOTPRINTS_SERVICE,
 };

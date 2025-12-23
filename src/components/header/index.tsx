@@ -30,6 +30,7 @@ const AppHeader: React.FC<{
   );
 
   const { readNotification } = useNotificationRepository();
+  const [unreadCount, setUnreadCount] = React.useState(0)
 
   const {
     queryResult: {
@@ -68,6 +69,9 @@ const AppHeader: React.FC<{
         data: item.data,
       })
     );
+
+    const mapUnread = mapped?.filter(i => i.readAt === null)?.length ?? 0
+    setUnreadCount(mapUnread)
 
     setNotifications(mapped);
   }, [dataNotification]);
@@ -115,7 +119,7 @@ const AppHeader: React.FC<{
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
-  const unreadCount = dataNotification?.data?.unread ?? 0;
+  // const unreadCount = dataNotification?.data?.unread ?? 0;
 
   const notificationMenu = {
     items: isLoading
