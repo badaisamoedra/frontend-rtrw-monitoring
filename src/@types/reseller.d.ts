@@ -261,6 +261,32 @@ interface Geometry {
   coordinates: Array<Array<number[]>>;
 }
 
+interface BoundaryClient {
+  id: string;
+  latitude: number;
+  longitude: number;
+  boundaryBuilding: Geometry;
+  deviceBreakdown: DeviceBreakdown;
+}
+
+interface DeviceBreakdown {
+  IOS: any[];
+  OTHERS: any[];
+  ANDROID: Android[];
+  UNKNOWN: any[];
+}
+
+interface Android {
+  details: Detail[];
+  manufacturer: string;
+  total_devices: number;
+}
+
+interface Detail {
+  count: number;
+  model: string;
+}
+
 type ListResellerParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.resellerListParam;
 type ListResellerFilter =
@@ -272,3 +298,4 @@ type ResellerMapResponse = BaseResponse<ResellerMap[]>;
 type ResellerDetail = BaseResponse<ResellerDetail>;
 type TotalResellerStatusResponse = BaseResponse<TotalResellerStatus>;
 type LayeringMapJemberResponse = BaseResponse<LayeringMapJemberResponseData>;
+type BoundaryClientResponse = BaseResponse<BoundaryClient[]>;
