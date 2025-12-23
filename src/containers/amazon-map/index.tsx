@@ -6,6 +6,7 @@ import { Button, Input } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import {
+  BUILDING_FOOTPRINTS_SERVICE,
   ORDER_SERVICE,
   RESELLER_SERVICE,
 } from "@rtrw-monitoring-system/app/constants/api_url";
@@ -31,6 +32,10 @@ type ModalProps = {
 const POLYGON_SOURCE_ID = "reseller-polygons";
 const POLYGON_FILL_LAYER_ID = "reseller-polygons-fill";
 const POLYGON_LINE_LAYER_ID = "reseller-polygons-line";
+
+const POLYGON_JEMBER_SOURCE_ID = "jember-polygons";
+const POLYGON_JEMBER_FILL_LAYER_ID = "jember-polygons-fill";
+const POLYGON_JEMBER_LINE_LAYER_ID = "jember-polygons-line";
 
 const DashboardAmazonContainer = () => {
   const region = process.env.NEXT_PUBLIC_AWS_REGION || "ap-southeast-1";
@@ -59,8 +64,8 @@ const DashboardAmazonContainer = () => {
 
   const { updateReseller } = useResellerRepository();
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
-  const hasInitialZoom = React.useRef(false);
   const hasInitialPolygonFit = React.useRef(false);
+  const hasInitialPolygonJemberFit = React.useRef(false);
 
   const { isMobile } = WINDOW_HELPER.useWindowResize();
   const resellerDataRef = React.useRef<any[]>([]);
@@ -109,7 +114,14 @@ const DashboardAmazonContainer = () => {
     { enabled: false }
   );
 
-  console.log("BOUNDARY :", dataBoundary);
+  const {
+    queryResult: { data: layeringMapJember },
+  } = useData<LayeringMapJemberResponse>(
+    { url: BUILDING_FOOTPRINTS_SERVICE.building_footprints },
+    [BUILDING_FOOTPRINTS_SERVICE.building_footprints],
+    null,
+    { enabled: true }
+  );
 
   React.useEffect(() => {
     resellerDataRef.current = resellerData?.data ?? [];
@@ -214,15 +226,63 @@ const DashboardAmazonContainer = () => {
           const ring = feature.geometry.coordinates[0];
           ring.forEach(([lng, lat]) => bounds.extend([lng, lat]));
         });
+      }
+    },
+    []
+  );
 
-        // if (!bounds.isEmpty()) {
-        //   map.fitBounds(bounds, {
-        //     padding: 80,
-        //     maxZoom: 18,
-        //     duration: 1000,
-        //   });
-        //   hasInitialPolygonFit.current = true;
-        // }
+  const renderJemberPolygons = React.useCallback(
+    (
+      map: maplibregl.Map,
+      geojson: GeoJSON.FeatureCollection<GeoJSON.Polygon>
+    ) => {
+      const existing = map.getSource(POLYGON_JEMBER_SOURCE_ID) as
+        | maplibregl.GeoJSONSource
+        | undefined;
+
+      if (existing) {
+        existing.setData(geojson);
+      } else {
+        map.addSource(POLYGON_JEMBER_SOURCE_ID, {
+          type: "geojson",
+          data: geojson,
+        });
+
+        map.addLayer({
+          id: POLYGON_JEMBER_FILL_LAYER_ID,
+          type: "fill",
+          source: POLYGON_JEMBER_SOURCE_ID,
+          paint: {
+            "fill-color": "#F5F2F2",
+            "fill-opacity": 0.35,
+          },
+        });
+
+        map.addLayer({
+          id: POLYGON_JEMBER_LINE_LAYER_ID,
+          type: "line",
+          source: POLYGON_JEMBER_SOURCE_ID,
+          paint: {
+            "line-color": "#000000",
+            "line-width": 2,
+          },
+        });
+
+        map.on("mouseenter", POLYGON_JEMBER_FILL_LAYER_ID, () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+        map.on("mouseleave", POLYGON_JEMBER_FILL_LAYER_ID, () => {
+          map.getCanvas().style.cursor = "";
+        });
+      }
+
+      if (!hasInitialPolygonJemberFit.current && geojson.features.length) {
+        const bounds = new maplibregl.LngLatBounds();
+
+        geojson.features.forEach((feature) => {
+          const ring = feature.geometry.coordinates[0];
+          ring.forEach(([lng, lat]) => bounds.extend([lng, lat]));
+        });
       }
     },
     []
@@ -248,6 +308,26 @@ const DashboardAmazonContainer = () => {
       features,
     } as GeoJSON.FeatureCollection<GeoJSON.Polygon>;
   }, [resellerData]);
+
+  const jemberPolygons = React.useMemo(() => {
+    if (!layeringMapJember?.data) return null;
+
+    const features: GeoJSON.Feature<GeoJSON.Polygon>[] =
+      layeringMapJember.data?.list
+        .filter((r: any) => r?.geometry?.type === "Polygon")
+        .map((r: any) => ({
+          type: "Feature",
+          properties: {
+            homeId: r.homeId,
+          },
+          geometry: r.geometry as GeoJSON.Polygon,
+        }));
+
+    return {
+      type: "FeatureCollection",
+      features,
+    } as GeoJSON.FeatureCollection<GeoJSON.Polygon>;
+  }, [layeringMapJember]);
 
   const resellers = React.useMemo(() => {
     if (!resellerData?.data) return [];
@@ -300,6 +380,10 @@ const DashboardAmazonContainer = () => {
       if (resellerPolygons) {
         renderResellerPolygons(map, resellerPolygons);
       }
+
+      if (jemberPolygons) {
+        renderJemberPolygons(map, jemberPolygons);
+      }
     });
 
     map.on("click", "polygon-fill", (e) => {
@@ -330,6 +414,13 @@ const DashboardAmazonContainer = () => {
 
     renderResellerPolygons(map, resellerPolygons);
   }, [isMapReady, resellerPolygons, renderResellerPolygons]);
+
+  React.useEffect(() => {
+    const map = mapRef.current;
+    if (!isMapReady || !map || !jemberPolygons) return;
+
+    renderJemberPolygons(map, jemberPolygons);
+  }, [isMapReady, jemberPolygons, renderJemberPolygons]);
 
   React.useLayoutEffect(() => {
     const timer = setTimeout(() => {
@@ -535,7 +626,7 @@ const DashboardAmazonContainer = () => {
   const handleClickClientBoundary = (resellerNumber: string) => {
     setShowModal({ modalOpen: "" });
     // setSelectResellerNumber(resellerNumber);
-    refetchClientBoundary()
+    refetchClientBoundary();
   };
 
   if (isLoading) return <div className="p-4">Loading resellers...</div>;
