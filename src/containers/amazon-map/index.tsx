@@ -37,6 +37,10 @@ const POLYGON_JEMBER_SOURCE_ID = "jember-polygons";
 const POLYGON_JEMBER_FILL_LAYER_ID = "jember-polygons-fill";
 const POLYGON_JEMBER_LINE_LAYER_ID = "jember-polygons-line";
 
+const POLYGON_CLIENT_BOUNDARY_SOURCE_ID = "client-boundary-polygons";
+const POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID = "client-boundary-fill";
+const POLYGON_CLIENT_BOUNDARY_LINE_LAYER_ID = "client-boundary-line";
+
 const DashboardAmazonContainer = () => {
   const region = process.env.NEXT_PUBLIC_AWS_REGION || "ap-southeast-1";
   const mapName =
@@ -91,8 +95,6 @@ const DashboardAmazonContainer = () => {
   const {
     queryResult: {
       data: resellerDetailData,
-      isLoading: loadingDetail,
-      refetch: refetchDetail,
     },
   } = useData<ResellerMapResponse>(
     { url: RESELLER_SERVICE.reseller_detail(selectedId ?? "") },
@@ -101,15 +103,19 @@ const DashboardAmazonContainer = () => {
     { enabled: !!selectedId }
   );
 
+  const boundaryUrl = React.useMemo(() => {
+    return ORDER_SERVICE.order_client_boundary(selectedId ?? "");
+  }, [selectedId]);
+
   const {
     queryResult: {
       data: dataBoundary,
       isLoading: boundaryLoading,
       refetch: refetchClientBoundary,
     },
-  } = useData<any>(
-    { url: ORDER_SERVICE.order_client_boundary(selectResellerNumber ?? "") },
-    ["order-client-boundary"],
+  } = useData<BoundaryClientResponse>(
+    { url: boundaryUrl },
+    [boundaryUrl],
     null,
     { enabled: false }
   );
@@ -288,12 +294,77 @@ const DashboardAmazonContainer = () => {
     []
   );
 
+  const renderClientBoundaryPolygons = React.useCallback(
+    (
+      map: maplibregl.Map,
+      geojson: GeoJSON.FeatureCollection<GeoJSON.Polygon>
+    ) => {
+      if (map.getLayer(POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID))
+        map.removeLayer(POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID);
+      if (map.getLayer(POLYGON_CLIENT_BOUNDARY_LINE_LAYER_ID))
+        map.removeLayer(POLYGON_CLIENT_BOUNDARY_LINE_LAYER_ID);
+      if (map.getSource(POLYGON_CLIENT_BOUNDARY_SOURCE_ID))
+        map.removeSource(POLYGON_CLIENT_BOUNDARY_SOURCE_ID);
+
+      map.addSource(POLYGON_CLIENT_BOUNDARY_SOURCE_ID, {
+        type: "geojson",
+        data: geojson,
+      });
+
+      map.addLayer({
+        id: POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID,
+        type: "fill",
+        source: POLYGON_CLIENT_BOUNDARY_SOURCE_ID,
+        paint: {
+          "fill-color": "#F97316",
+          "fill-opacity": 0.55,
+        },
+      });
+
+      map.addLayer({
+        id: POLYGON_CLIENT_BOUNDARY_LINE_LAYER_ID,
+        type: "line",
+        source: POLYGON_CLIENT_BOUNDARY_SOURCE_ID,
+        paint: {
+          "line-color": "#9A3412",
+          "line-width": 3,
+        },
+      });
+
+      if (map.getLayer(POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID))
+        map.moveLayer(POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID);
+      if (map.getLayer(POLYGON_CLIENT_BOUNDARY_LINE_LAYER_ID))
+        map.moveLayer(POLYGON_CLIENT_BOUNDARY_LINE_LAYER_ID);
+
+      const bounds = new maplibregl.LngLatBounds();
+      geojson.features.forEach((f) => {
+        f.geometry.coordinates[0].forEach(([lng, lat]) => {
+          bounds.extend([lng, lat]);
+        });
+      });
+
+      if (!bounds.isEmpty()) {
+        map.fitBounds(bounds, {
+          padding: 140,
+          maxZoom: 21,
+          duration: 900,
+        });
+      }
+
+      console.log("✅ CLIENT BOUNDARY RENDERED", {
+        features: geojson.features.length,
+        boundsEmpty: bounds.isEmpty(),
+      });
+    },
+    []
+  );
+
   const resellerPolygons = React.useMemo(() => {
     if (!resellerData?.data) return null;
 
     const features: GeoJSON.Feature<GeoJSON.Polygon>[] = resellerData.data
-      .filter((r: any) => r?.locationPoint?.type === "Polygon")
-      .map((r: any) => ({
+      .filter((r: ResellerMap) => r?.locationPoint?.type === "Polygon")
+      .map((r: ResellerMap) => ({
         type: "Feature",
         properties: {
           resellerId: r.id,
@@ -314,8 +385,8 @@ const DashboardAmazonContainer = () => {
 
     const features: GeoJSON.Feature<GeoJSON.Polygon>[] =
       layeringMapJember.data?.list
-        .filter((r: any) => r?.geometry?.type === "Polygon")
-        .map((r: any) => ({
+        .filter((r: LayeringMapJember) => r?.geometry?.type === "Polygon")
+        .map((r: LayeringMapJember) => ({
           type: "Feature",
           properties: {
             homeId: r.homeId,
@@ -328,6 +399,39 @@ const DashboardAmazonContainer = () => {
       features,
     } as GeoJSON.FeatureCollection<GeoJSON.Polygon>;
   }, [layeringMapJember]);
+
+  const extractBoundaryList = React.useCallback((raw: any): any[] => {
+    if (Array.isArray(raw)) return raw;
+
+    if (Array.isArray(raw?.data)) return raw.data;
+
+    if (Array.isArray(raw?.data?.list)) return raw.data.list;
+
+    if (Array.isArray(raw?.list)) return raw.list;
+
+    return [];
+  }, []);
+
+  const clientBoundaryPolygons = React.useMemo(() => {
+    const list = extractBoundaryList(dataBoundary);
+
+    if (!list.length) return null;
+
+    const features: GeoJSON.Feature<GeoJSON.Polygon>[] = list
+      .filter((x: BoundaryClient) => x?.boundaryBuilding?.type === "Polygon")
+      .map((x: BoundaryClient) => ({
+        type: "Feature",
+        properties: { id: x.id },
+        geometry: x.boundaryBuilding as GeoJSON.Polygon,
+      }));
+
+    if (!features.length) return null;
+
+    return {
+      type: "FeatureCollection",
+      features,
+    } as GeoJSON.FeatureCollection<GeoJSON.Polygon>;
+  }, [dataBoundary, extractBoundaryList]);
 
   const resellers = React.useMemo(() => {
     if (!resellerData?.data) return [];
@@ -422,6 +526,24 @@ const DashboardAmazonContainer = () => {
     renderJemberPolygons(map, jemberPolygons);
   }, [isMapReady, jemberPolygons, renderJemberPolygons]);
 
+  React.useEffect(() => {
+    const map = mapRef.current;
+    if (!isMapReady || !map || !clientBoundaryPolygons) return;
+
+    const run = () => renderClientBoundaryPolygons(map, clientBoundaryPolygons);
+
+    if (!map.isStyleLoaded() && !dataBoundary?.data) {
+      map.once("idle", run);
+    } else {
+      run();
+    }
+  }, [
+    isMapReady,
+    clientBoundaryPolygons,
+    renderClientBoundaryPolygons,
+    dataBoundary,
+  ]);
+
   React.useLayoutEffect(() => {
     const timer = setTimeout(() => {
       initializeMap();
@@ -498,61 +620,6 @@ const DashboardAmazonContainer = () => {
           setTimeout(() => scrollToCard(reseller.id), 100);
         });
       });
-
-    // resellers.forEach((reseller, index) => {
-    //   const getMarkerColor = (status: string) => {
-    //     switch (status?.toUpperCase()) {
-    //       case "RESELLER_ACTIVE":
-    //       case "SIGNED_PKS":
-    //         return "#008E53"; // Hijau
-    //       case "NEGOTIATION":
-    //         return "#FC9003"; // Oranye
-    //       case "RESELLER_NOT_ACTIVE":
-    //         return "#dc2626"; // Merah
-    //       default:
-    //         return "#9CA3AF"; // Abu-abu default
-    //     }
-    //   };
-    //   const el = document.createElement("div");
-    //   el.className = "custom-marker";
-    //   el.style.cssText = `
-    //     width: 18px;
-    //     height: 18px;
-    //     border-radius: 50%;
-    //     border: 2px solid white;
-    //     box-shadow: 0 0 6px rgba(0,0,0,0.4);
-    //     background-color: ${getMarkerColor(reseller.status)};
-    //     cursor: pointer;
-    //     transition: transform 0.2s ease;
-    //   `;
-
-    //   const marker = new maplibregl.Marker({ element: el })
-    //     .setLngLat([reseller.lng, reseller.lat])
-    //     .addTo(map);
-
-    //   markersRef.current.push(marker);
-    //   bounds.extend([reseller.lng, reseller.lat]);
-
-    //   el.addEventListener("click", () => {
-    //     setSelectedId(reseller.id);
-    //     setSelected(reseller);
-    //     map.flyTo({
-    //       center: [reseller.lng, reseller.lat],
-    //       zoom: 18,
-    //       duration: 800,
-    //     });
-    //     setTimeout(() => scrollToCard(reseller.id), 100);
-    //   });
-    // });
-
-    // if (!hasInitialZoom.current && !bounds.isEmpty()) {
-    //   map.flyTo({
-    //     center: [resellers[0].lng, resellers[0].lat],
-    //     zoom: 15,
-    //     duration: 1200,
-    //   });
-    //   hasInitialZoom.current = true;
-    // }
   };
 
   const scrollToCard = (resellerId: string | number) => {
@@ -625,8 +692,13 @@ const DashboardAmazonContainer = () => {
 
   const handleClickClientBoundary = (resellerNumber: string) => {
     setShowModal({ modalOpen: "" });
-    // setSelectResellerNumber(resellerNumber);
-    refetchClientBoundary();
+    setSelectResellerNumber(resellerNumber);
+
+    // tunggu state update commit (microtask)
+    setTimeout(() => {
+      console.log("🟠 Refetch boundary for:", resellerNumber);
+      refetchClientBoundary();
+    }, 0);
   };
 
   if (isLoading) return <div className="p-4">Loading resellers...</div>;
