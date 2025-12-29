@@ -15,6 +15,7 @@ import OrderListTable from "./table/order-table";
 import ModalConfirmCreateOrder from "./modal/modal-confirmation-order";
 import ModalConfirmation from "./modal/modal-confirmation"
 import ModalConfirmationCustom from "./modal/modal-confirmation-custom"
+import ModalDeviceBreakdown from "./modal/modal-device-breakdown"
 
 export {
   LayoutContentPage,
@@ -33,5 +34,6 @@ export {
   OrderListTable,
   ModalConfirmCreateOrder,
   ModalConfirmation,
-  ModalConfirmationCustom
+  ModalConfirmationCustom,
+  ModalDeviceBreakdown
 };

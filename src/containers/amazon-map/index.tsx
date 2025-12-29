@@ -12,6 +12,7 @@ import {
 } from "@rtrw-monitoring-system/app/constants/api_url";
 import { useGeolocated } from "react-geolocated";
 import {
+  ModalDeviceBreakdown,
   ModalStreetView,
   ModalTicket,
   ToastContent,
@@ -77,6 +78,32 @@ const DashboardAmazonContainer = () => {
     string | null
   >(null);
 
+  const [deviceModal, setDeviceModal] = React.useState<{
+    open: boolean;
+    data: DeviceBreakdown | null;
+    id: string;
+  }>({
+    open: false,
+    data: {
+      IOS: [],
+      OTHERS: [],
+      ANDROID: [
+        {
+          details: [
+            {
+              count: 0,
+              model: "",
+            },
+          ],
+          manufacturer: "",
+          total_devices: 0,
+        },
+      ],
+      UNKNOWN: [],
+    },
+    id: "",
+  });
+
   React.useEffect(() => {
     if (isGeolocationEnabled && coords) {
       setPosition({ lat: coords.latitude, lng: coords.longitude });
@@ -93,9 +120,7 @@ const DashboardAmazonContainer = () => {
   );
 
   const {
-    queryResult: {
-      data: resellerDetailData,
-    },
+    queryResult: { data: resellerDetailData },
   } = useData<ResellerMapResponse>(
     { url: RESELLER_SERVICE.reseller_detail(selectedId ?? "") },
     [RESELLER_SERVICE.reseller_detail(selectedId ?? "")],
@@ -336,6 +361,27 @@ const DashboardAmazonContainer = () => {
       if (map.getLayer(POLYGON_CLIENT_BOUNDARY_LINE_LAYER_ID))
         map.moveLayer(POLYGON_CLIENT_BOUNDARY_LINE_LAYER_ID);
 
+      map.on("click", POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID, (e) => {
+        const feature = e.features?.[0];
+        if (!feature) return;
+
+        const deviceBreakdown = feature.properties?.deviceBreakdown;
+
+        setDeviceModal({
+          open: true,
+          data: deviceBreakdown ?? {},
+          id: feature.properties?.id,
+        });
+      });
+
+      map.on("mouseenter", POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+
+      map.on("mouseleave", POLYGON_CLIENT_BOUNDARY_FILL_LAYER_ID, () => {
+        map.getCanvas().style.cursor = "";
+      });
+
       const bounds = new maplibregl.LngLatBounds();
       geojson.features.forEach((f) => {
         f.geometry.coordinates[0].forEach(([lng, lat]) => {
@@ -421,7 +467,7 @@ const DashboardAmazonContainer = () => {
       .filter((x: BoundaryClient) => x?.boundaryBuilding?.type === "Polygon")
       .map((x: BoundaryClient) => ({
         type: "Feature",
-        properties: { id: x.id },
+        properties: { id: x.id, deviceBreakdown: x.deviceBreakdown },
         geometry: x.boundaryBuilding as GeoJSON.Polygon,
       }));
 
@@ -893,6 +939,13 @@ const DashboardAmazonContainer = () => {
         onClose={() => setShowModal({ modalOpen: "" })}
         onSave={handleSaveReseller}
         onClick={handleClickClientBoundary}
+      />
+
+      <ModalDeviceBreakdown
+        open={deviceModal.open}
+        onClose={() => setDeviceModal({ open: false, data: null, id: "" })}
+        deviceBreakDown={deviceModal.data}
+        id={deviceModal.id ?? ""}
       />
     </div>
   );
