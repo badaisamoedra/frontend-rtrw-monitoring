@@ -73,7 +73,7 @@ const ListOrderContainer = () => {
       invoiceAmount: item.amount
         ? `Rp ${item.amount.toLocaleString("id-ID")}`
         : "-",
-      countOrder: item.countOrdersDetail || "-",
+      countOrder: item.countOrder || "-",
       sources: item.sources || "-",
       onDetail: () =>
         router.push(`${PAGE_NAME.order_detail}?orderId=${item.id}`),
