@@ -65,6 +65,7 @@ const BUILDING_FOOTPRINTS_SERVICE = {
   building_footprints: BASE_URL_BUILDING_FOOTPRINTS_V1,
   building_footprints_by_homeid: (id: string) =>
     `${BASE_URL_BUILDING_FOOTPRINTS_V1}/${id}`,
+  building_footprints_bbox: `${BASE_URL_BUILDING_FOOTPRINTS_V1}/bbox`,
 };
 
 export {

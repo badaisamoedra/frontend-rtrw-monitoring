@@ -287,6 +287,13 @@ interface Detail {
   model: string;
 }
 
+interface BboxPayload {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
 type ListResellerParam =
   typeof import("@rtrw-monitoring-system/app/constants").PARAMS.resellerListParam;
 type ListResellerFilter =

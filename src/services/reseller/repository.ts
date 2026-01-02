@@ -15,7 +15,11 @@ const useResellerRepository = () => {
     UpdateStatusResellerPayload
   >(provider.updateStatusReseller);
 
-  return { updateReseller, updateStatusReseller };
+  const renderBbox = useMutation<AxiosResponse, AxiosError, BboxPayload>(
+    provider.renderBbox
+  );
+
+  return { updateReseller, updateStatusReseller, renderBbox };
 };
 
 export default useResellerRepository;
