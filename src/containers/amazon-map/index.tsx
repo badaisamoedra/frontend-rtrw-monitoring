@@ -67,7 +67,7 @@ const DashboardAmazonContainer = () => {
     modalOpen: "",
   });
 
-  const { updateReseller } = useResellerRepository();
+  const { updateReseller, renderBbox } = useResellerRepository();
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const hasInitialPolygonFit = React.useRef(false);
   const hasInitialPolygonJemberFit = React.useRef(false);
@@ -103,6 +103,67 @@ const DashboardAmazonContainer = () => {
     },
     id: "",
   });
+
+  const [bbox, setBbox] = React.useState<{
+    west: number;
+    south: number;
+    east: number;
+    north: number;
+  } | null>(null);
+
+  const [viewportGeojson, setViewportGeojson] =
+    React.useState<GeoJSON.FeatureCollection<GeoJSON.Polygon> | null>(null);
+
+  const [isViewportLoading, setIsViewportLoading] = React.useState(false);
+
+  const fetchViewportData = React.useCallback(
+    async (payload: {
+      west: number;
+      south: number;
+      east: number;
+      north: number;
+    }) => {
+      try {
+        setIsViewportLoading(true);
+
+        const res = await renderBbox.mutateAsync(payload);
+
+        const list = res?.data?.data?.list ?? [];
+
+        console.log("RES BBOX LIST:", list.length);
+
+        if (!list.length) {
+          setViewportGeojson(null);
+          return;
+        }
+
+        const features: GeoJSON.Feature<GeoJSON.Polygon>[] = list
+          .filter((item: any) => item?.geometry?.type === "Polygon")
+          .map((item: any) => ({
+            type: "Feature",
+            properties: {
+              homeId: item.homeId,
+            },
+            geometry: item.geometry,
+          }));
+
+        if (!features.length) {
+          setViewportGeojson(null);
+          return;
+        }
+
+        setViewportGeojson({
+          type: "FeatureCollection",
+          features,
+        });
+      } catch (err) {
+        console.error("❌ Viewport fetch error:", err);
+      } finally {
+        setIsViewportLoading(false);
+      }
+    },
+    []
+  );
 
   React.useEffect(() => {
     if (isGeolocationEnabled && coords) {
@@ -145,14 +206,14 @@ const DashboardAmazonContainer = () => {
     { enabled: false }
   );
 
-  const {
-    queryResult: { data: layeringMapJember },
-  } = useData<LayeringMapJemberResponse>(
-    { url: BUILDING_FOOTPRINTS_SERVICE.building_footprints },
-    [BUILDING_FOOTPRINTS_SERVICE.building_footprints],
-    null,
-    { enabled: true }
-  );
+  // const {
+  //   queryResult: { data: layeringMapJember },
+  // } = useData<LayeringMapJemberResponse>(
+  //   { url: BUILDING_FOOTPRINTS_SERVICE.building_footprints },
+  //   [BUILDING_FOOTPRINTS_SERVICE.building_footprints],
+  //   null,
+  //   { enabled: true }
+  // );
 
   React.useEffect(() => {
     resellerDataRef.current = resellerData?.data ?? [];
@@ -426,25 +487,25 @@ const DashboardAmazonContainer = () => {
     } as GeoJSON.FeatureCollection<GeoJSON.Polygon>;
   }, [resellerData]);
 
-  const jemberPolygons = React.useMemo(() => {
-    if (!layeringMapJember?.data) return null;
+  // const jemberPolygons = React.useMemo(() => {
+  //   if (!layeringMapJember?.data) return null;
 
-    const features: GeoJSON.Feature<GeoJSON.Polygon>[] =
-      layeringMapJember.data?.list
-        .filter((r: LayeringMapJember) => r?.geometry?.type === "Polygon")
-        .map((r: LayeringMapJember) => ({
-          type: "Feature",
-          properties: {
-            homeId: r.homeId,
-          },
-          geometry: r.geometry as GeoJSON.Polygon,
-        }));
+  //   const features: GeoJSON.Feature<GeoJSON.Polygon>[] =
+  //     layeringMapJember.data?.list
+  //       .filter((r: LayeringMapJember) => r?.geometry?.type === "Polygon")
+  //       .map((r: LayeringMapJember) => ({
+  //         type: "Feature",
+  //         properties: {
+  //           homeId: r.homeId,
+  //         },
+  //         geometry: r.geometry as GeoJSON.Polygon,
+  //       }));
 
-    return {
-      type: "FeatureCollection",
-      features,
-    } as GeoJSON.FeatureCollection<GeoJSON.Polygon>;
-  }, [layeringMapJember]);
+  //   return {
+  //     type: "FeatureCollection",
+  //     features,
+  //   } as GeoJSON.FeatureCollection<GeoJSON.Polygon>;
+  // }, [layeringMapJember]);
 
   const extractBoundaryList = React.useCallback((raw: any): any[] => {
     if (Array.isArray(raw)) return raw;
@@ -531,9 +592,29 @@ const DashboardAmazonContainer = () => {
         renderResellerPolygons(map, resellerPolygons);
       }
 
-      if (jemberPolygons) {
-        renderJemberPolygons(map, jemberPolygons);
-      }
+      // if (jemberPolygons) {
+      //   renderJemberPolygons(map, jemberPolygons);
+      // }
+    });
+
+    let debounceTimer: any;
+
+    map.on("move", () => {
+      clearTimeout(debounceTimer);
+
+      debounceTimer = setTimeout(() => {
+        const b = map.getBounds();
+
+        const nextBbox = {
+          west: b.getWest(),
+          south: b.getSouth(),
+          east: b.getEast(),
+          north: b.getNorth(),
+        };
+
+        setBbox(nextBbox);
+        fetchViewportData(nextBbox);
+      }, 400);
     });
 
     map.on("click", "polygon-fill", (e) => {
@@ -565,12 +646,19 @@ const DashboardAmazonContainer = () => {
     renderResellerPolygons(map, resellerPolygons);
   }, [isMapReady, resellerPolygons, renderResellerPolygons]);
 
+  // React.useEffect(() => {
+  //   const map = mapRef.current;
+  //   if (!isMapReady || !map || !jemberPolygons) return;
+
+  //   renderJemberPolygons(map, jemberPolygons);
+  // }, [isMapReady, jemberPolygons, renderJemberPolygons]);
+
   React.useEffect(() => {
     const map = mapRef.current;
-    if (!isMapReady || !map || !jemberPolygons) return;
+    if (!map || !isMapReady || !viewportGeojson) return;
 
-    renderJemberPolygons(map, jemberPolygons);
-  }, [isMapReady, jemberPolygons, renderJemberPolygons]);
+    renderJemberPolygons(map, viewportGeojson);
+  }, [viewportGeojson, isMapReady, renderJemberPolygons]);
 
   React.useEffect(() => {
     const map = mapRef.current;
