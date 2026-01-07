@@ -20,10 +20,11 @@ interface ModalTicketProps {
 }
 
 const ListStatus = [
-  { value: "ACTIVE", label: "Active" },
-  { value: "INACTIVE", label: "In Active" },
-  { value: "REJECT", label: "Reject" },
-  { value: "PENDING", label: "Pending" },
+  { value: "RESELLER_ACTIVE", label: "Reseller Active" },
+  { value: "RESELLER_NOT_ACTIVE", label: "Reseller Not Active" },
+  { value: "NEGOTIATION", label: "Negotiation" },
+  { value: "NOT_DEAL", label: "Not Deal" },
+  { value: "SIGNED_PKS", label: "Signed PKS" },
 ];
 
 const ModalTicket: React.FC<ModalTicketProps> = ({
