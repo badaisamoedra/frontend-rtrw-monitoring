@@ -130,8 +130,6 @@ const DashboardAmazonContainer = () => {
 
         const list = res?.data?.data?.list ?? [];
 
-        console.log("RES BBOX LIST:", list.length);
-
         if (!list.length) {
           setViewportGeojson(null);
           return;
@@ -457,11 +455,6 @@ const DashboardAmazonContainer = () => {
           duration: 900,
         });
       }
-
-      console.log("✅ CLIENT BOUNDARY RENDERED", {
-        features: geojson.features.length,
-        boundsEmpty: bounds.isEmpty(),
-      });
     },
     []
   );
@@ -777,12 +770,13 @@ const DashboardAmazonContainer = () => {
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    const found = resellers.find((t) =>
-      t.id.toLowerCase().includes(value.toLowerCase())
-    );
+    // const found = resellers.find((t) =>
+    //   t.id.toLowerCase().includes(value.toLowerCase())
+    // );
+    const found = resellers.find((t) => t.resellerNumber === value)
     if (found) {
       handleCardClick(found);
-      scrollToCard(found.id);
+      scrollToCard(found.resellerNumber);
     }
   };
 
@@ -830,7 +824,6 @@ const DashboardAmazonContainer = () => {
 
     // tunggu state update commit (microtask)
     setTimeout(() => {
-      console.log("🟠 Refetch boundary for:", resellerNumber);
       refetchClientBoundary();
     }, 0);
   };
@@ -929,7 +922,7 @@ const DashboardAmazonContainer = () => {
             id={`card-${reseller.id}`}
             onClick={() => handleCardClick(reseller)}
             className={`min-w-[320px] bg-white rounded-2xl shadow-md p-4 flex-shrink-0 cursor-pointer transition-all duration-300 scroll-snap-align-center ${
-              selected?.id === reseller.id
+              selected?.resellerNumber === reseller.resellerNumber
                 ? "ring-4 ring-red-500 scale-105"
                 : ""
             }`}
@@ -950,7 +943,7 @@ const DashboardAmazonContainer = () => {
                 }}
               />
 
-              <h3 className="font-semibold text-sm">#{reseller.id ?? ""}</h3>
+              <h3 className="font-semibold text-sm">#{reseller.resellerNumber ?? ""}</h3>
             </div>
             <p className="text-xs text-gray-700">
               <b>Longitude:</b> {reseller.lng}
