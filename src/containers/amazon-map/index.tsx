@@ -249,8 +249,8 @@ const DashboardAmazonContainer = () => {
           type: "fill",
           source: POLYGON_SOURCE_ID,
           paint: {
-            "fill-color": "#ef4444",
-            "fill-opacity": 0.35,
+            "fill-color": "#FF0025",
+            // "fill-opacity": 0.35,
           },
         });
 
@@ -897,22 +897,22 @@ const DashboardAmazonContainer = () => {
           }`}
         >
           <h4 className="font-semibold mb-2">Legend Information</h4>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#008E53]"></span>
             <span>Reseller Active / Signed PKS</span>
-          </div>
+          </div> */}
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#FC9003]"></span>
-            <span>Negotiation</span>
+            <span>Client</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#dc2626]"></span>
-            <span>Reseller Not Active</span>
+            <span>Reseller</span>
           </div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-[#9CA3AF]"></span>
             <span>Not Deal</span>
-          </div>
+          </div> */}
         </div>
       )}
 

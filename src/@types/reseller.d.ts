@@ -64,6 +64,13 @@ interface ResellerMap {
   createdAt: string;
   locationPoint?: LocationPoint;
   isTelkom: boolean;
+  isp_breakdown: ISPBreakdown[];
+}
+
+interface ISPBreakdown {
+  isp_name: string;
+  device_count: number;
+  isp_home_marketshare: number;
 }
 
 interface ResellerDetail {
