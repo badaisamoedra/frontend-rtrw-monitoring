@@ -217,6 +217,16 @@ const DashboardAmazonContainer = () => {
     resellerDataRef.current = resellerData?.data ?? [];
   }, [resellerData]);
 
+  React.useEffect(() => {
+    if (!selectedId) return;
+    if (!resellerDetailData?.data) return;
+
+    setShowModal({
+      modalOpen: "EDIT",
+      reseller: resellerDetailData.data,
+    });
+  }, [selectedId, resellerDetailData]);
+
   const renderResellerPolygons = React.useCallback(
     (
       map: maplibregl.Map,
@@ -295,10 +305,11 @@ const DashboardAmazonContainer = () => {
 
           setTimeout(() => scrollToCard(reseller.id), 100);
 
-          setShowModal({
-            modalOpen: "EDIT",
-            reseller: resellerDetailData?.data,
-          });
+          // console.log("RESELLER DATA :", resellerDetailData)
+          // setShowModal({
+          //   modalOpen: "EDIT",
+          //   reseller: resellerDetailData?.data,
+          // });
         });
 
         map.on("mouseenter", POLYGON_FILL_LAYER_ID, () => {
@@ -773,7 +784,7 @@ const DashboardAmazonContainer = () => {
     // const found = resellers.find((t) =>
     //   t.id.toLowerCase().includes(value.toLowerCase())
     // );
-    const found = resellers.find((t) => t.resellerNumber === value)
+    const found = resellers.find((t) => t.resellerNumber === value);
     if (found) {
       handleCardClick(found);
       scrollToCard(found.resellerNumber);
@@ -943,7 +954,9 @@ const DashboardAmazonContainer = () => {
                 }}
               />
 
-              <h3 className="font-semibold text-sm">#{reseller.resellerNumber ?? ""}</h3>
+              <h3 className="font-semibold text-sm">
+                #{reseller.resellerNumber ?? ""}
+              </h3>
             </div>
             <p className="text-xs text-gray-700">
               <b>Longitude:</b> {reseller.lng}
@@ -1017,7 +1030,10 @@ const DashboardAmazonContainer = () => {
         open={showModal.modalOpen === "EDIT"}
         ticket={showModal.reseller}
         section="EDIT"
-        onClose={() => setShowModal({ modalOpen: "" })}
+        onClose={() => {
+          setShowModal({ modalOpen: "" });
+          setSelectedId(null);
+        }}
         onSave={handleSaveReseller}
         onClick={handleClickClientBoundary}
       />
