@@ -83,10 +83,22 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
         }
       }
 
-      if (!value || value === "") {
-        setErrors((prev) => ({ ...prev, [field]: "Field ini wajib diisi." }));
-      } else if (field !== "potentialLow" && field !== "potentialHigh") {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
+      // if (!value || value === "") {
+      //   setErrors((prev) => ({ ...prev, [field]: "Field ini wajib diisi." }));
+      // } else if (field !== "potentialLow" && field !== "potentialHigh") {
+      //   setErrors((prev) => ({ ...prev, [field]: "" }));
+      // }
+
+      if (value === null || value === undefined || value === "") {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "Field ini wajib diisi.",
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "",
+        }));
       }
 
       return updated;
