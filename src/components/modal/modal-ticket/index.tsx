@@ -45,6 +45,8 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
     notes: "",
   });
 
+  const marketShareBreakDown = ticket?.marketshareBreakdown;
+
   React.useEffect(() => {
     setEditedTicket(ticket);
     setErrors({
@@ -313,6 +315,30 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
               </Text>
             )}
           </Col>
+        </Row>
+
+        <Row gutter={[12, 12]} className="mb-3">
+          <Col span={24}>
+            <Text strong>Market Share Breakdown</Text>
+          </Col>
+
+          {marketShareBreakDown?.isp_breakdown?.map((item: any, index: number) => (
+            <Col key={index} span={24}>
+              <div className="flex gap-3 items-center">
+                <Input value={item.isp_name} disabled style={{ flex: 2 }} />
+                <Input
+                  value={`${item.device_count} Device`}
+                  disabled
+                  style={{ flex: 1, textAlign: "center" }}
+                />
+                <Input
+                  value={`${item.isp_home_marketshare}%`}
+                  disabled
+                  style={{ flex: 1, textAlign: "center" }}
+                />
+              </div>
+            </Col>
+          ))}
         </Row>
 
         <Row className="mb-3">
