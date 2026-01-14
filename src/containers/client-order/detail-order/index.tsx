@@ -343,17 +343,25 @@ const OrderDetailContainer = () => {
           onPageSizeChange={handlePageSizeChange}
           customActionRender={(record) => (
             <div className="flex items-center justify-center gap-3">
-              <Tooltip title="Edit" placement="top">
-                <button
-                  onClick={() => {
-                    setSelectedRecord(record);
-                    setModal({ modalOpen: "EDIT", id: record.id });
-                  }}
-                  className="w-7 h-7 flex items-center justify-center rounded-full bg-[#FFF5F6] hover:bg-[#ffdfe3] transition"
-                >
-                  <Image src={ICONS.IconDetail} alt="icon detail" />
-                </button>
-              </Tooltip>
+              {record.status !== "Cancelled" ? (
+                <Tooltip title="Edit" placement="top">
+                  <button
+                    onClick={() => {
+                      setSelectedRecord(record);
+                      setModal({ modalOpen: "EDIT", id: record.id });
+                    }}
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-[#FFF5F6] hover:bg-[#ffdfe3] transition"
+                  >
+                    <Image src={ICONS.IconDetail} alt="icon detail" />
+                  </button>
+                </Tooltip>
+              ) : (
+                <Tooltip title="Edit" placement="top">
+                  <button className="w-7 h-7 flex items-center justify-center rounded-full bg-[#FFF5F6] cursor-not-allowed">
+                    <Image src={ICONS.IconDetailDisabled} alt="icon detail" width={ 18 }/>
+                  </button>
+                </Tooltip>
+              )}
 
               {record?.status !== "Active" &&
                 record?.status !== "Cancelled" && (

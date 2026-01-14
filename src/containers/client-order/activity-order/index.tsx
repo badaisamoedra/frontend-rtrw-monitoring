@@ -74,12 +74,12 @@ const ActivityOrderContainer = () => {
     "Validasi Data Pelanggan": {
       title: "Validasi Data Pelanggan",
       desc: "Menunggu Aksi Untuk Melanjutkan Proses",
-      allowedRoles: ["BRANCH SALES"],
+      allowedRoles: ["BRANCH SALES", "BRANCH ROLE"],
     },
     "Penandatanganan Kontrak Berlangganan Pelanggan": {
       title: "Penandatanganan Kontrak Berlangganan Pelanggan",
       desc: "Menunggu Validasi Data Pelanggan",
-      allowedRoles: ["BRANCH SALES"],
+      allowedRoles: ["BRANCH SALES", "BRANCH ROLE", "IP ROLE"],
     },
     "Pembuatan Akun Pelanggan": {
       title: "Pembuatan Akun Pelanggan",

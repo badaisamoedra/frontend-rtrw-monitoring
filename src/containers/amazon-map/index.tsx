@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import maplibregl from "maplibre-gl";
-import { Button, Input } from "antd";
-import { InfoCircleOutlined } from "@ant-design/icons";
+import { Button, Input, Switch } from "antd";
+import { InfoCircleOutlined, CheckOutlined, CloseOutlined, AimOutlined } from "@ant-design/icons";
 import { useData } from "@rtrw-monitoring-system/hooks";
 import {
   BUILDING_FOOTPRINTS_SERVICE,
@@ -116,6 +116,8 @@ const DashboardAmazonContainer = () => {
 
   const [isViewportLoading, setIsViewportLoading] = React.useState(false);
 
+  const [isToggleOn, setIsToggleOn] = React.useState(true);
+
   const fetchViewportData = React.useCallback(
     async (payload: {
       west: number;
@@ -172,10 +174,10 @@ const DashboardAmazonContainer = () => {
   const {
     queryResult: { data: resellerData, isLoading, refetch },
   } = useData<ResellerMapResponse>(
-    { url: RESELLER_SERVICE.reseller_map },
-    [RESELLER_SERVICE.reseller_map],
+    { url: `${RESELLER_SERVICE.reseller_map}?isTelkom=${!isToggleOn}` },
+    [RESELLER_SERVICE.reseller_map, isToggleOn],
     null,
-    { enabled: true }
+    { enabled: true, keepPreviousData: true }
   );
 
   const {
@@ -221,10 +223,10 @@ const DashboardAmazonContainer = () => {
     if (!selectedId) return;
     if (!resellerDetailData?.data) return;
 
-    setShowModal({
-      modalOpen: "EDIT",
-      reseller: resellerDetailData.data,
-    });
+    // setShowModal({
+    //   modalOpen: "EDIT",
+    //   reseller: resellerDetailData.data,
+    // });
   }, [selectedId, resellerDetailData]);
 
   const renderResellerPolygons = React.useCallback(
@@ -474,6 +476,7 @@ const DashboardAmazonContainer = () => {
     if (!resellerData?.data) return null;
 
     const features: GeoJSON.Feature<GeoJSON.Polygon>[] = resellerData.data
+      .filter((r: ResellerMap) => r.isTelkom === !isToggleOn)
       .filter((r: ResellerMap) => r?.locationPoint?.type === "Polygon")
       .map((r: ResellerMap) => ({
         type: "Feature",
@@ -787,7 +790,7 @@ const DashboardAmazonContainer = () => {
     const found = resellers.find((t) => t.resellerNumber === value);
     if (found) {
       handleCardClick(found);
-      scrollToCard(found.resellerNumber);
+      scrollToCard(found.id);
     }
   };
 
@@ -857,36 +860,68 @@ const DashboardAmazonContainer = () => {
           onSearch={handleSearch}
           className={isMobile ? "flex-1 max-w-[210px]" : "flex-1 w-full"}
         />
-        <Button
-          onClick={() => {
-            setSearch("");
-            setSelected(null);
-            mapRef.current?.flyTo({
-              center: [DEFAULT.lng, DEFAULT.lat],
-              zoom: 11,
-            });
-          }}
-        >
-          Reset View
-        </Button>
+
+        {!isMobile ? (
+          <Button
+            onClick={() => {
+              setSearch("");
+              setSelected(null);
+              mapRef.current?.flyTo({
+                center: [DEFAULT.lng, DEFAULT.lat],
+                zoom: 11,
+              });
+            }}
+          >
+            Reset View
+          </Button>
+        ) : (
+          <Button
+            icon={<AimOutlined />}
+            onClick={() => {
+              setSearch("");
+              setSelected(null);
+              mapRef.current?.flyTo({
+                center: [DEFAULT.lng, DEFAULT.lat],
+                zoom: 11,
+              });
+            }}
+          />
+        )}
 
         {isMobile && (
-          <Button
-            icon={<InfoCircleOutlined />}
-            onClick={() => setShowLegend((prev) => !prev)}
-            className="ml-[2px]"
-          />
+          <>
+            <Switch
+              checkedChildren={<CheckOutlined />}
+              unCheckedChildren={<CloseOutlined />}
+              onChange={() => setIsToggleOn(prev => !prev)}
+              defaultChecked
+            />
+
+            <Button
+              icon={<InfoCircleOutlined />}
+              onClick={() => setShowLegend((prev) => !prev)}
+              className="ml-[2px]"
+            />
+          </>
         )}
       </div>
 
       {!isMobile && (
         <div className="absolute top-[50px] right-6 z-50 flex items-center">
+          <Switch
+            checkedChildren={<CheckOutlined />}
+            unCheckedChildren={<CloseOutlined />}
+            onChange={() => setIsToggleOn(prev => !prev)}
+            defaultChecked
+          />
+
           <Button
             icon={<InfoCircleOutlined />}
             onClick={() => setShowLegend((prev) => !prev)}
+            className="ml-2"
           >
             Legend
-          </Button>
+          </Button>          
         </div>
       )}
 

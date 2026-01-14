@@ -51,6 +51,7 @@ type Reseller = {
   detail: string;
   high_income: string;
   low_income: string;
+  is_telkom: string;
 };
 
 const columns: Column<Reseller>[] = [
@@ -73,6 +74,7 @@ const columns: Column<Reseller>[] = [
   { title: "Alamat Point of Sales", dataIndex: "alamat_point_sales" },
   { title: "Total High Income", dataIndex: "high_income" },
   { title: "Total Low Income", dataIndex: "low_income" },
+  { title: "Source", dataIndex: "is_telkom" },
 ];
 
 type ModalType = {
@@ -167,6 +169,7 @@ const ResellerManagementContainer = () => {
       low_income: item.totalLowIncome
         ? `Rp. ${numberWithDots(item.totalLowIncome)}`
         : "-",
+      is_telkom: item.isTelkom ? 'Manual' : 'Model Output',
     }));
   }, [listReseller]);
 
