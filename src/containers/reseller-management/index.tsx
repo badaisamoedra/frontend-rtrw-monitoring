@@ -91,6 +91,12 @@ const RESELLER_STATUS = [
   { label: "Not Deal", value: "NOT_DEAL" },
 ];
 
+const DATA_SOURCE = [
+  { label: 'All Source', value: '' },
+  { label: 'Manual', value: 'true' },
+  { label: 'Model Output', value: 'false' },
+];
+
 const ResellerManagementContainer = () => {
   const {
     queryResult: {
@@ -327,8 +333,23 @@ const ResellerManagementContainer = () => {
                 }))
               }
               style={{ width: "28%" }}
-            />
+            />            
           </div>
+
+          <Select
+              placeholder="All Source"
+              suffixIcon={<DownOutlined />}
+              value={filterItem?.isTelkom ?? undefined}
+              style={{ width: "70%" }}
+              options={DATA_SOURCE}
+              onChange={(value) =>
+                setFilterItem((prev) => ({
+                  ...prev,
+                  isTelkom: value,
+                  page: 1,
+                }))
+              }
+            />
         </div>
       ) : (
         <div className="flex justify-between items-center mb-4 px-6 pt-6">
@@ -367,6 +388,21 @@ const ResellerManagementContainer = () => {
                 setFilterItem((prev) => ({
                   ...prev,
                   branch: value,
+                  page: 1,
+                }))
+              }
+            />
+
+            <Select
+              placeholder="All Source"
+              suffixIcon={<DownOutlined />}
+              value={filterItem?.isTelkom ?? undefined}
+              style={{ width: "40%" }}
+              options={DATA_SOURCE}
+              onChange={(value) =>
+                setFilterItem((prev) => ({
+                  ...prev,
+                  isTelkom: value,
                   page: 1,
                 }))
               }

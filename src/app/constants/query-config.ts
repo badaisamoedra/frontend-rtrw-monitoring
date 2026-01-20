@@ -45,6 +45,7 @@ export const resellerListParam = {
   startDate: StringParam,
   endDate: StringParam,
   branch: StringParam,
+  isTelkom: StringParam,
 };
 
 export const orderListParam = {
