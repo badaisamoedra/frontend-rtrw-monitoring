@@ -46,6 +46,30 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
   });
 
   const marketShareBreakDown = ticket?.marketshareBreakdown;
+  const validateLowHigh = React.useCallback((data: any) => {
+    const next = {
+      potentialHigh: "",
+      potentialLow: "",
+    };
+
+    const low = data?.potentialLow;
+    const high = data?.potentialHigh;
+
+    if (
+      low !== undefined &&
+      low !== null &&
+      low !== "" &&
+      high !== undefined &&
+      high !== null &&
+      high !== ""
+    ) {
+      if (Number(low) > Number(high)) {
+        next.potentialLow = "Nilai Low tidak boleh lebih besar dari High.";
+      }
+    }
+
+    return next;
+  }, []);
 
   React.useEffect(() => {
     setEditedTicket(ticket);
@@ -57,6 +81,13 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
       status: "",
       notes: "",
     });
+
+    const lh = validateLowHigh(ticket);
+    setErrors((prev) => ({
+      ...prev,
+      potentialHigh: lh.potentialHigh,
+      potentialLow: lh.potentialLow,
+    }));
   }, [ticket]);
 
   const handleChange = (field: string, value: any) => {
@@ -67,10 +98,10 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
         if (Number(value) > Number(updated.potentialHigh)) {
           setErrors((prev) => ({
             ...prev,
-            potentialLow: "Nilai Low tidak boleh lebih besar dari High.",
+            potentialHigh: "Nilai High tidak boleh lebih besar dari Low.",
           }));
         } else {
-          setErrors((prev) => ({ ...prev, potentialLow: "" }));
+          setErrors((prev) => ({ ...prev, potentialHigh: "" }));
         }
       }
 
@@ -84,12 +115,6 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
           setErrors((prev) => ({ ...prev, potentialLow: "" }));
         }
       }
-
-      // if (!value || value === "") {
-      //   setErrors((prev) => ({ ...prev, [field]: "Field ini wajib diisi." }));
-      // } else if (field !== "potentialLow" && field !== "potentialHigh") {
-      //   setErrors((prev) => ({ ...prev, [field]: "" }));
-      // }
 
       if (value === null || value === undefined || value === "") {
         setErrors((prev) => ({
@@ -154,7 +179,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
             <Text strong>Tanggal</Text>
             <Input
               value={dayjs(editedTicket?.createdAt).format(
-                "DD-MMM-YYYY HH:mm:ss"
+                "DD-MMM-YYYY HH:mm:ss",
               )}
               disabled
             />
@@ -285,7 +310,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
               onChange={(e) =>
                 handleChange(
                   "potentialThreeMonth",
-                  removeNonNumeric(e.target.value)
+                  removeNonNumeric(e.target.value),
                 )
               }
             />
@@ -305,7 +330,7 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
               onChange={(e) =>
                 handleChange(
                   "potentialRevenue",
-                  removeNonNumeric(e.target.value)
+                  removeNonNumeric(e.target.value),
                 )
               }
             />
@@ -322,23 +347,25 @@ const ModalTicket: React.FC<ModalTicketProps> = ({
             <Text strong>Market Share Breakdown</Text>
           </Col>
 
-          {marketShareBreakDown?.isp_breakdown?.map((item: any, index: number) => (
-            <Col key={index} span={24}>
-              <div className="flex gap-3 items-center">
-                <Input value={item.isp_name} disabled style={{ flex: 2 }} />
-                <Input
-                  value={`${item.device_count} Device`}
-                  disabled
-                  style={{ flex: 1, textAlign: "center" }}
-                />
-                <Input
-                  value={`${item.isp_home_marketshare}%`}
-                  disabled
-                  style={{ flex: 1, textAlign: "center" }}
-                />
-              </div>
-            </Col>
-          ))}
+          {marketShareBreakDown?.isp_breakdown?.map(
+            (item: any, index: number) => (
+              <Col key={index} span={24}>
+                <div className="flex gap-3 items-center">
+                  <Input value={item.isp_name} disabled style={{ flex: 2 }} />
+                  <Input
+                    value={`${item.device_count} Device`}
+                    disabled
+                    style={{ flex: 1, textAlign: "center" }}
+                  />
+                  <Input
+                    value={`${item.isp_home_marketshare}%`}
+                    disabled
+                    style={{ flex: 1, textAlign: "center" }}
+                  />
+                </div>
+              </Col>
+            ),
+          )}
         </Row>
 
         <Row className="mb-3">
