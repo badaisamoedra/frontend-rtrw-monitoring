@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "antd";
-import { CopyOutlined } from "@ant-design/icons";
+import { CheckCircleFilled, CopyOutlined } from "@ant-design/icons";
 import clsx from "clsx";
 
 type InvoiceCardProps = {
@@ -26,6 +26,34 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
   onDetail,
   onCopy,
 }) => {
+  const [copied, setCopied] = React.useState(false);
+  const timerRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const handleCopyClick = async (
+    e: React.MouseEvent<HTMLElement, MouseEvent>,
+  ) => {
+    e.stopPropagation();
+
+    try {
+      await onCopy?.();
+      setCopied(true);
+
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => {
+        setCopied(false);
+      }, 1200);
+    } catch (err) {
+      console.error("Copy failed:", err);
+      setCopied(false);
+    }
+  };
+
   const statusColor =
     {
       SUCCESS: "text-[#007C4C]",
@@ -46,10 +74,10 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
     status === "SUCCESS"
       ? "linear-gradient(90deg, rgba(0,124,76,0.08) 0%, rgba(255,255,255,1) 100%)"
       : status === "PENDING"
-      ? "linear-gradient(90deg, rgba(252,144,3,0.08) 0%, rgba(255,255,255,1) 100%)"
-      : status === "CANCELLED" || status === "FAILED"
-      ? "linear-gradient(90deg, rgba(183,25,50,0.08) 0%, rgba(255,255,255,1) 100%)"
-      : "linear-gradient(90deg, rgba(0,0,0,0.03) 0%, rgba(255,255,255,1) 100%)";
+        ? "linear-gradient(90deg, rgba(252,144,3,0.08) 0%, rgba(255,255,255,1) 100%)"
+        : status === "CANCELLED" || status === "FAILED"
+          ? "linear-gradient(90deg, rgba(183,25,50,0.08) 0%, rgba(255,255,255,1) 100%)"
+          : "linear-gradient(90deg, rgba(0,0,0,0.03) 0%, rgba(255,255,255,1) 100%)";
 
   const formattedStatus = (() => {
     const s = String(status);
@@ -72,10 +100,20 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
           <span className="text-[#0C1B36] font-medium truncate">
             {orderNumber}
           </span>
-          <CopyOutlined
-            onClick={onCopy}
-            className="text-[#8C8C8C] cursor-pointer hover:text-[#FF002E] transition"
-          />
+          {copied ? (
+            <CheckCircleFilled
+              onClick={handleCopyClick}
+              style={{color: "#22C55E"}}
+              className="cursor-pointer transition"
+              title="Copied"
+            />
+          ) : (
+            <CopyOutlined
+              onClick={handleCopyClick}
+              className="text-[#8C8C8C] cursor-pointer hover:text-[#FF002E] transition"
+              title="Copy"
+            />
+          )}
         </div>
       </div>
 
@@ -87,13 +125,13 @@ const OrderCard: React.FC<InvoiceCardProps> = ({
           <span
             className={clsx(
               "w-[8px] h-[8px] rounded-full inline-block",
-              dotColor
+              dotColor,
             )}
           ></span>
           <span
             className={clsx(
               "text-[13px] sm:text-[14px] font-semibold",
-              statusColor
+              statusColor,
             )}
           >
             {formattedStatus}

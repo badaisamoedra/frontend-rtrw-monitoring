@@ -50,7 +50,7 @@ const ListOrderContainer = () => {
       url: ORDER_SERVICE.order_list,
     },
     [ORDER_SERVICE.order_list],
-    PARAMS.orderListParam
+    PARAMS.orderListParam,
   );
 
   React.useEffect(() => {
@@ -62,6 +62,29 @@ const ListOrderContainer = () => {
       }));
     }
   }, [resellerNumber, setFilterItem]);
+
+  const copyText = async (text: string) => {
+    try {
+      if (!text) return;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const el = document.createElement("textarea");
+      el.value = text;
+      el.style.position = "fixed";
+      el.style.left = "-9999px";
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    } catch (e) {
+      console.error("Copy failed:", e);
+    }
+  };
 
   const orderData = React.useMemo(() => {
     const list = listOrder?.data?.list || [];
@@ -77,7 +100,7 @@ const ListOrderContainer = () => {
       sources: item.sources || "-",
       onDetail: () =>
         router.push(`${PAGE_NAME.order_detail}?orderId=${item.id}`),
-      onCopy: () => navigator.clipboard.writeText(item.orderNumber || ""),
+      onCopy: () => copyText(item.orderNumber || ""),
     }));
   }, [listOrder, router]);
 
@@ -139,7 +162,7 @@ const ListOrderContainer = () => {
             onClick={() => {
               window.open(
                 process.env["NEXT_PUBLIC_FILE_TEMPLATE_ORDER"],
-                "_blank"
+                "_blank",
               );
             }}
             type="default"
@@ -157,7 +180,7 @@ const ListOrderContainer = () => {
           <Button
             onClick={() =>
               router.push(
-                `${PAGE_NAME.create_order}?resellerNumber=${resellerNumber}`
+                `${PAGE_NAME.create_order}?resellerNumber=${resellerNumber}`,
               )
             }
             type="default"
@@ -244,93 +267,6 @@ const ListOrderContainer = () => {
           </div>
         </div>
       )}
-      {/* <div className="border border-[#E9EEF6] rounded-xl p-6 mb-6">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-[#0C1A30]">
-            End-Client Acquisition
-          </h2>
-          <p className="text-sm text-gray-500">Data Penjualan RTRW</p>
-        </div>
-
-        <div
-          className={`grid ${
-            isMobile ? "grid-cols-1 gap-4" : "grid-cols-3 gap-4"
-          } mb-8`}
-        >
-          <div className="bg-white border border-[#E9EEF6] rounded-xl p-5">
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-xs font-semibold text-[#D93025]">
-                TARGET SALES
-              </p>
-              <InfoCircleOutlined className="text-gray-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-[#0C1A30]">5.300 User</h2>
-          </div>
-
-          <div className="bg-white border border-[#E9EEF6] rounded-xl p-5">
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-xs font-semibold text-[#D93025]">
-                SALES ACHIEVEMENT (USER)
-              </p>
-              <InfoCircleOutlined className="text-gray-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-[#0C1A30]">2.345</h2>
-            <div className="bg-[#F6F7FB] mt-3 px-2 py-1 rounded-lg inline-block text-xs text-[#0F9D58]">
-              +9% Month to Date
-            </div>
-          </div>
-
-          <div className="bg-white border border-[#E9EEF6] rounded-xl p-5">
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-xs font-semibold text-[#D93025]">
-                SALES ACHIEVEMENT (%)
-              </p>
-              <InfoCircleOutlined className="text-gray-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-[#0C1A30]">62.14%</h2>
-            <div className="bg-[#F6F7FB] mt-3 px-2 py-1 rounded-lg inline-block text-xs text-[#0F9D58]">
-              +9% Month to Date
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <div
-            className={`flex ${
-              isMobile ? "flex-col gap-4 mb-4" : "justify-end mb-8 gap-2"
-            }`}
-          >
-            <Button
-              type={mode === "daily" ? "primary" : "default"}
-              onClick={() => setMode("daily")}
-            >
-              Daily
-            </Button>
-            <Button
-              type={mode === "monthly" ? "primary" : "default"}
-              onClick={() => setMode("monthly")}
-            >
-              Monthly
-            </Button>
-          </div>
-
-          <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
-            <LineChart data={data}>
-              <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#A16AE8"
-                strokeWidth={2}
-                dot={{ fill: "#000", r: isMobile ? 3 : 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div> */}
       <OrderListTable
         data={orderData}
         totalItems={totalItems}
